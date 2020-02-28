@@ -1,0 +1,20 @@
+{
+  "name": "source-maps",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "test": "mocha --require ts-node/register --watch-extensions ts,tsx \"**/*.test.{ts,tsx}\""
+  },
+  "dependencies": {
+    "@parcel/utils": "^2.0.0-nightly.132",
+    "@types/mocha": "^7.0.1",
+    "mocha": "^7.1.0",
+    "source-map": "^0.7.3",
+    "ts-node": "^8.6.2",
+    "typescript": "^3.8.2"
+  },
+  "devDependencies": {
+    "@types/node": "^13.7.6"
+  }
+}
