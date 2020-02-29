@@ -5,20 +5,30 @@
   "license": "MIT",
   "scripts": {
     "test": "mocha --require ts-node/register --watch-extensions ts,tsx \"**/*.test.{ts,tsx}\"",
-    "benchmark": "node ./bench/run.js"
+    "benchmark": "node ./bench/run.js",
+    "prebuild": "prebuild -t 3 -r napi --strip",
+    "rebuild": "node-gyp rebuild"
+  },
+  "binary": {
+    "napi_versions": [
+      3
+    ]
   },
   "dependencies": {
     "@parcel/utils": "^2.0.0-nightly.132",
-    "@types/mocha": "^7.0.1",
-    "benchmark": "^2.1.4",
+    "bindings": "^1.5.0",
     "clone": "^2.1.2",
-    "mocha": "^7.1.0",
-    "source-map": "^0.7.3",
-    "ts-node": "^8.6.2",
-    "typescript": "^3.8.2"
+    "node-addon-api": "^2.0.0",
+    "prebuild-install": "^5.3.3"
   },
   "devDependencies": {
+    "@types/mocha": "^7.0.1",
+    "source-map": "^0.7.3",
+    "ts-node": "^8.6.2",
+    "typescript": "^3.8.2",
+    "mocha": "^7.1.0",
     "@types/node": "^13.7.6",
+    "prebuild": "^10.0.0",
     "tiny-benchy": "^1.0.0"
   }
 }
