@@ -4,11 +4,13 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "test": "mocha --require ts-node/register --watch-extensions ts,tsx \"**/*.test.{ts,tsx}\""
+    "test": "mocha --require ts-node/register --watch-extensions ts,tsx \"**/*.test.{ts,tsx}\"",
+    "benchmark": "node ./bench/run.js"
   },
   "dependencies": {
     "@parcel/utils": "^2.0.0-nightly.132",
     "@types/mocha": "^7.0.1",
+    "benchmark": "^2.1.4",
     "clone": "^2.1.2",
     "mocha": "^7.1.0",
     "source-map": "^0.7.3",
@@ -16,6 +18,7 @@
     "typescript": "^3.8.2"
   },
   "devDependencies": {
-    "@types/node": "^13.7.6"
+    "@types/node": "^13.7.6",
+    "tiny-benchy": "^1.0.0"
   }
 }
