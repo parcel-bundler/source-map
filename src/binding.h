@@ -10,6 +10,6 @@ public:
 
 private:
     static Napi::FunctionReference constructor;
-    Napi::Value fromString(const Napi::CallbackInfo& info);
+    void addMappings(const Napi::CallbackInfo& info);
     SourceMap *_sourceMap;
 };

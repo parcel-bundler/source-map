@@ -33,14 +33,13 @@ suite.add("source-map#consume", async () => {
 
 suite.add("cpp#consume", async () => {
   for (let map of test_maps) {
-    let sm = new SourceMap();
-    sm.fromString(map.mappings);
+    let sm = new SourceMap(map.mappings, map.sources.length, map.names.length);
+    // sm.addMappings(map.mappings, map.sources.length, map.names.length);
   }
 });
 
 suite.run();
 
-/*let sm = new SourceMap();
-console.log(test_maps[0].mappings);
-sm.fromString(test_maps[0].mappings);
+/*console.log(test_maps[0].mappings);
+let sm = new SourceMap(test_maps[0].mappings, test_maps[0].sources.length, test_maps[0].sources.length);
 */

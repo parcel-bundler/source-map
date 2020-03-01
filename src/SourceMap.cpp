@@ -2,7 +2,27 @@
 #include "SourceMap.h"
 #include "Base64.h"
 
-SourceMap::SourceMap() {}
+SourceMap::SourceMap(const std::string *mappings_input, int sources, int names, int line_offset, int column_offset) {
+    addMappings(mappings_input, sources, names, line_offset, column_offset);
+}
+
+SourceMap::~SourceMap() {
+    cleanupRawMappings();
+}
+
+void SourceMap::readRawMappings() {
+    if (_raw_mappings != nullptr) {
+        readMappings(*_raw_mappings, _raw_sources, _raw_names);
+        cleanupRawMappings();
+    }
+}
+
+void SourceMap::cleanupRawMappings() {
+    if (_raw_mappings != nullptr) {
+        delete _raw_mappings;
+        _raw_mappings = nullptr;
+    }
+}
 
 void SourceMap::addMapping(int generatedLine, int *segment, int segmentIndex) {
     bool hasSource = segmentIndex > 3;
@@ -11,9 +31,9 @@ void SourceMap::addMapping(int generatedLine, int *segment, int segmentIndex) {
     Mapping m = {
             .generatedLine = generatedLine,
             .generatedColumn = segment[0],
-            .originalLine = hasSource ? segment[1] : -1,
-            .originalColumn = hasSource ? segment[2] : -1,
-            .source = hasSource ? segment[3] : -1,
+            .originalLine = hasSource ? segment[2] : -1,
+            .originalColumn = hasSource ? segment[3] : -1,
+            .source = hasSource ? segment[1] : -1,
             .name = hasName ? segment[4] : -1
     };
 
@@ -24,23 +44,24 @@ void SourceMap::addMapping(int generatedLine, int *segment, int segmentIndex) {
     std::cout << "source: " << (hasSource ? segment[3] : -1) << std::endl;
     std::cout << "name: " << (hasName ? segment[4] : -1) << std::endl;*/
 
-    _mappings.push_back(m);
+    _parsed_mappings.push_back(m);
 }
 
-void SourceMap::fromString(const std::string &mappings_input) {
+void SourceMap::readMappings(const std::string &mappings_input, int sources, int names, int line_offset,
+                                int column_offset) {
     // SourceMap information
-    int generatedLine = 0;
+    int generatedLine = line_offset;
     Base64Decoder decoder = Base64Decoder();
 
     // VLQ Decoding
     int value = 0;
     int shift = 0;
-    int segment[5] = {};
+    int segment[5] = {column_offset, _parsed_sources, 0, 0, _parsed_names};
     int segmentIndex = 0;
 
     // `input.len() / 2` is the upper bound on how many mappings the string
     // might contain. There would be some sequence like `A,A,...` or `A;A...`
-    _mappings.reserve(mappings_input.length() / 2);
+    _parsed_mappings.reserve(mappings_input.length() / 2);
 
     std::string::const_iterator it = mappings_input.begin();
     std::string::const_iterator end = mappings_input.end();
@@ -78,5 +99,23 @@ void SourceMap::fromString(const std::string &mappings_input) {
     // Process last mapping...
     if (segmentIndex > 0) {
         this->addMapping(generatedLine, segment, segmentIndex);
+    }
+
+    _parsed_sources += sources;
+    _parsed_names += names;
+}
+
+void SourceMap::addMappings(const std::string *mappings_input, int sources, int names, int line_offset,
+                            int column_offset) {
+    if (line_offset != 0 || column_offset != 0 || !_parsed_mappings.empty()) {
+        // Process any raw mappings
+        readRawMappings();
+
+        // Append new mappings
+        readMappings(*mappings_input, sources, names, line_offset, column_offset);
+    } else {
+        _raw_mappings = mappings_input;
+        _raw_sources = sources;
+        _raw_names = names;
     }
 }
