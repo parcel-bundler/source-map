@@ -11,11 +11,13 @@ This also removes overhead of I assume WebAssembly which results in more reliabl
 ### Large Sourcemap
 
 few runs (10): this module is 150x faster than `source-map`.
+
 a lot of runs (1000): this module is the same speed as `source-map`.
 
 ### Small Sourcemap
 
 few runs (10): this module is 200x faster than `source-map`.
+
 a lot of runs (1000): this module is 10x faster than `source-map`.
 
 ## State
