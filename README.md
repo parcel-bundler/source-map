@@ -9,11 +9,10 @@ Mozilla's SourceMap module already handles most of this and this module is heavi
 - [x] Be able to parse mappings
 - [x] Be able to parse full source-map
 - [x] Be able to append mappings
-- [ ] Be able to compile mappings
-- [ ] Be able to compile full source-map
+- [x] Be able to compile mappings
+- [x] Be able to compile full source-map
 - [ ] Build a mappings tree for fast manipulations
 - [ ] Be able to insert mappings
 - [ ] Be able to query mappings by generated location
 - [ ] Be able to query mappings by original location
 - [ ] Be able to merge source maps
-- [ ] More features?
