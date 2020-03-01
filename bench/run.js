@@ -26,20 +26,27 @@ suite.add("source-map#consume", async () => {
 /*suite.add("source-map#consume->generate", async () => {
   for (let map of test_maps) {
     let smc = await new MozillaSourceMap.SourceMapConsumer(map);
-    smg = sourceMap.SourceMapGenerator.fromSourceMap(smc);
+    smg = MozillaSourceMap.SourceMapGenerator.fromSourceMap(smc);
     smc.destroy();
+    smg.toString();
   }
 });*/
 
 suite.add("cpp#consume", async () => {
   for (let map of test_maps) {
+    new SourceMap(map.mappings, map.sources.length, map.names.length);
+  }
+});
+
+suite.add("cpp#consume->generate", async () => {
+  for (let map of test_maps) {
     let sm = new SourceMap(map.mappings, map.sources.length, map.names.length);
-    // sm.addMappings(map.mappings, map.sources.length, map.names.length);
+    sm.toString();
   }
 });
 
 suite.run();
 
-/*console.log(test_maps[0].mappings);
 let sm = new SourceMap(test_maps[0].mappings, test_maps[0].sources.length, test_maps[0].sources.length);
-*/
+console.log(test_maps[0].mappings);
+console.log(sm.toString());

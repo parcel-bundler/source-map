@@ -2,25 +2,15 @@
 #include "SourceMap.h"
 #include "Base64.h"
 
-SourceMap::SourceMap(const std::string *mappings_input, int sources, int names, int line_offset, int column_offset) {
-    addMappings(mappings_input, sources, names, line_offset, column_offset);
-}
+SourceMap::SourceMap() {}
 
-SourceMap::~SourceMap() {
-    cleanupRawMappings();
-}
+SourceMap::~SourceMap() {}
+
+void SourceMap::Finalize() {}
 
 void SourceMap::readRawMappings() {
-    if (_raw_mappings != nullptr) {
-        readMappings(*_raw_mappings, _raw_sources, _raw_names);
-        cleanupRawMappings();
-    }
-}
-
-void SourceMap::cleanupRawMappings() {
-    if (_raw_mappings != nullptr) {
-        delete _raw_mappings;
-        _raw_mappings = nullptr;
+    if (_raw_mappings.length() > 0) {
+        readMappings(_raw_mappings, _raw_sources, _raw_names);
     }
 }
 
@@ -48,7 +38,7 @@ void SourceMap::addMapping(int generatedLine, int *segment, int segmentIndex) {
 }
 
 void SourceMap::readMappings(const std::string &mappings_input, int sources, int names, int line_offset,
-                                int column_offset) {
+                             int column_offset) {
     // SourceMap information
     int generatedLine = line_offset;
     Base64Decoder decoder = Base64Decoder();
@@ -105,17 +95,28 @@ void SourceMap::readMappings(const std::string &mappings_input, int sources, int
     _parsed_names += names;
 }
 
-void SourceMap::addMappings(const std::string *mappings_input, int sources, int names, int line_offset,
+void SourceMap::addMappings(const std::string &mappings_input, int sources, int names, int line_offset,
                             int column_offset) {
     if (line_offset != 0 || column_offset != 0 || !_parsed_mappings.empty()) {
         // Process any raw mappings
         readRawMappings();
 
         // Append new mappings
-        readMappings(*mappings_input, sources, names, line_offset, column_offset);
+        readMappings(mappings_input, sources, names, line_offset, column_offset);
     } else {
         _raw_mappings = mappings_input;
         _raw_sources = sources;
         _raw_names = names;
+    }
+}
+
+std::string SourceMap::toString() {
+    if (_parsed_mappings.empty()) {
+        // std::cout << "return _raw_mappings " << *_raw_mappings << std::endl;
+
+        return _raw_mappings;
+    } else {
+        // TODO: Compile mappings...
+        return "";
     }
 }
