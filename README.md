@@ -7,7 +7,7 @@ Mozilla's SourceMap module already handles most of this and this module is heavi
 ## State
 
 - [x] Be able to parse mappings
-- [ ] Be able to parse full source-map
+- [x] Be able to parse full source-map
 - [ ] Be able to compile mappings
 - [ ] Be able to compile full source-map
 - [ ] Build a mappings tree for fast manipulations
