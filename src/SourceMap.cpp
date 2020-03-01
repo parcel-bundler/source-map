@@ -41,7 +41,6 @@ void SourceMap::readMappings(const std::string &mappings_input, int sources, int
                              int column_offset) {
     // SourceMap information
     int generatedLine = line_offset;
-    Base64Decoder decoder = Base64Decoder();
 
     // VLQ Decoding
     int value = 0;
@@ -69,7 +68,7 @@ void SourceMap::readMappings(const std::string &mappings_input, int sources, int
             continue;
         }
 
-        const int decodedCharacter = decoder.decode(c);
+        const int decodedCharacter = decode_char(c);
 
         value += (decodedCharacter & 31) << shift;
 
@@ -97,7 +96,7 @@ void SourceMap::readMappings(const std::string &mappings_input, int sources, int
 
 void SourceMap::addMappings(const std::string &mappings_input, int sources, int names, int line_offset,
                             int column_offset) {
-    if (line_offset != 0 || column_offset != 0 || !_parsed_mappings.empty()) {
+    if (line_offset != 0 || column_offset != 0 || !_parsed_mappings.empty() || true) {
         // Process any raw mappings
         readRawMappings();
 

@@ -2,7 +2,7 @@ const Benchmark = require("tiny-benchy");
 const MozillaSourceMap = require("source-map");
 const SourceMap = require("../");
 
-const ITERATIONS = 1000;
+const ITERATIONS = 50;
 
 const test_maps = [
   {
