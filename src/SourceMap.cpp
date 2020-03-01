@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include "SourceMap.h"
 #include "Base64.h"
 
@@ -68,12 +69,12 @@ void SourceMap::readMappings(const std::string &mappings_input, int sources, int
             continue;
         }
 
-        const int decodedCharacter = decode_char(c);
+        const int decodedCharacter = decodeBase64Char(c);
 
-        value += (decodedCharacter & 31) << shift;
+        value += (decodedCharacter & VLQ_BASE_MASK) << shift;
 
-        if ((decodedCharacter & 32) != 0) {
-            shift += 5;
+        if ((decodedCharacter & VLQ_BASE) != 0) {
+            shift += VLQ_BASE_SHIFT;
         } else {
             // The low bit holds the sign.
             if ((value & 1) != 0) {
@@ -96,7 +97,7 @@ void SourceMap::readMappings(const std::string &mappings_input, int sources, int
 
 void SourceMap::addMappings(const std::string &mappings_input, int sources, int names, int line_offset,
                             int column_offset) {
-    if (line_offset != 0 || column_offset != 0 || !_parsed_mappings.empty() || true) {
+    if (line_offset != 0 || column_offset != 0 || !_parsed_mappings.empty()) {
         // Process any raw mappings
         readRawMappings();
 
@@ -109,13 +110,72 @@ void SourceMap::addMappings(const std::string &mappings_input, int sources, int 
     }
 }
 
+void SourceMap::encodeVlq(int i, std::ostream &os) {
+    int vlq = (i < 0) ? ((-i) << 1) + 1 : (i << 1) + 0;
+    do {
+        int digit = vlq & VLQ_BASE_MASK;
+        vlq >>= VLQ_BASE_SHIFT;
+        if (vlq > 0) {
+            digit |= VLQ_CONTINUATION_BIT;
+        }
+        os.put(encodeBase64Char(digit));
+    } while (vlq > 0);
+}
+
 std::string SourceMap::toString() {
     if (_parsed_mappings.empty()) {
         // std::cout << "return _raw_mappings " << *_raw_mappings << std::endl;
 
         return _raw_mappings;
     } else {
-        // TODO: Compile mappings...
-        return "";
+        std::stringstream out;
+        int previousGeneratedLine = 0;
+        int previousGeneratedColumn = 0;
+        int previousSource = 0;
+        int previousOriginalLine = 0;
+        int previousOriginalColumn = 0;
+        int previousName = 0;
+        bool isFirst = true;
+
+        for (auto it = _parsed_mappings.begin(); it != _parsed_mappings.end(); it++) {
+            Mapping &mapping = *it;
+
+            if (previousGeneratedLine < mapping.generatedLine) {
+                previousGeneratedColumn = 0;
+                isFirst = true;
+
+                while (previousGeneratedLine < mapping.generatedLine) {
+                    out << ";";
+                    previousGeneratedLine++;
+                }
+            }
+
+            if (!isFirst) {
+                out << ",";
+            }
+
+            encodeVlq(mapping.generatedColumn - previousGeneratedColumn, out);
+            previousGeneratedColumn = mapping.generatedColumn;
+
+            if (mapping.source > -1) {
+                encodeVlq(mapping.source - previousSource, out);
+                previousSource = mapping.source;
+
+                encodeVlq(mapping.originalLine - previousOriginalLine, out);
+                previousOriginalLine = mapping.originalLine;
+
+                encodeVlq(mapping.originalColumn - previousOriginalColumn, out);
+                previousOriginalColumn = mapping.originalColumn;
+            }
+
+            if (mapping.name > -1) {
+                encodeVlq(mapping.name - previousName, out);
+                previousName = mapping.name;
+            }
+
+            isFirst = false;
+        }
+
+        return out.str();
     }
 }
