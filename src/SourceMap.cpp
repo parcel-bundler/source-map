@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 
 #include "SourceMap.h"
 #include "sourcemap-schema_generated.h"
@@ -88,43 +89,58 @@ void SourceMapBinding::addBufferMappings(const Napi::CallbackInfo &info) {
     int names = this->_mapping_container.getNamesCount();
 
     this->_mapping_container.reserve(map->mappings()->size());
-    auto mappingsIterator = map->mappings()->begin();
     auto mappingsEnd = map->mappings()->end();
-    for (; mappingsIterator != mappingsEnd; ++mappingsIterator) {
+    for (auto it = map->mappings()->begin(); it != mappingsEnd; ++it) {
         Position generated = {
-                .line = mappingsIterator->generatedLine() + second,
-                .column = mappingsIterator->generatedColumn() + third,
+                .line = it->generatedLine() + second,
+                .column = it->generatedColumn() + third,
         };
 
         Position original = {
-                .line = mappingsIterator->originalLine(),
-                .column = mappingsIterator->originalColumn(),
+                .line = it->originalLine(),
+                .column = it->originalColumn(),
         };
 
-        this->_mapping_container.addMapping(generated, original, mappingsIterator->source() > -1 ? mappingsIterator->source() + sources : -1,
-                                            mappingsIterator->name() > -1 ? mappingsIterator->name() + names : -1);
+        this->_mapping_container.addMapping(generated, original,
+                                            it->source() > -1 ? it->source() + sources : -1,
+                                            it->name() > -1 ? it->name() + names : -1);
     }
 
-    auto sourcesIterator = map->sources()->begin();
     auto sourcesEnd = map->sources()->end();
-    for (; sourcesIterator != sourcesEnd; ++sourcesIterator) {
-        this->_mapping_container.addSource(sourcesIterator->str());
+    for (auto it = map->sources()->begin(); it != sourcesEnd; ++it) {
+        this->_mapping_container.addSource(it->str());
     }
 
-    auto namesIterator = map->names()->begin();
     auto namesEnd = map->names()->end();
-    for (; namesIterator != namesEnd; ++namesIterator) {
-        this->_mapping_container.addName(namesIterator->str());
+    for (auto it = map->names()->begin(); it != namesEnd; ++it) {
+        this->_mapping_container.addName(it->str());
     }
 }
 
-Napi::Value SourceMapBinding::toString(const Napi::CallbackInfo &info) {
+Napi::Value SourceMapBinding::stringify(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
 
-    std::string s = this->_mapping_container.toVLQMappings();
+    Napi::Object obj = Napi::Object::New(env);
+    obj.Set("mappings", this->_mapping_container.toVLQMappings());
 
-    return Napi::String::New(env, s);
+    auto sourcesVector = this->_mapping_container.getSourcesVector();
+    int len = sourcesVector.size();
+    Napi::Array sourcesArray = Napi::Array::New(env, len);
+    for (int i = 0; i < len; ++i) {
+        sourcesArray.Set(i, sourcesVector[i]);
+    }
+    obj.Set("sources", sourcesArray);
+
+    auto namesVector = this->_mapping_container.getNamesVector();
+    len = namesVector.size();
+    Napi::Array namesArray = Napi::Array::New(env, len);
+    for (int i = 0; i < len; ++i) {
+        namesArray.Set(i, namesVector[i]);
+    }
+    obj.Set("names", namesArray);
+
+    return obj;
 }
 
 Napi::Value SourceMapBinding::toBuffer(const Napi::CallbackInfo &info) {
@@ -136,10 +152,9 @@ Napi::Value SourceMapBinding::toBuffer(const Napi::CallbackInfo &info) {
     std::vector<SourceMapSchema::Mapping> mappings_vector;
     auto mappingsVector = this->_mapping_container.getMappingsVector();
     mappings_vector.reserve(mappingsVector.size());
-    auto mappingsIterator = mappingsVector.begin();
     auto mappingsIteratorEnd = mappingsVector.end();
-    for (; mappingsIterator != mappingsIteratorEnd; ++mappingsIterator) {
-        Mapping mapping = *mappingsIterator;
+    for (auto it = mappingsVector.begin(); it != mappingsIteratorEnd; ++it) {
+        Mapping mapping = *it;
         mappings_vector.push_back(
                 SourceMapSchema::Mapping(mapping.generated.line, mapping.generated.column, mapping.original.line,
                                          mapping.original.column, mapping.source, mapping.name));
@@ -148,19 +163,17 @@ Napi::Value SourceMapBinding::toBuffer(const Napi::CallbackInfo &info) {
     std::vector<flatbuffers::Offset<flatbuffers::String>> names_vector;
     auto namesVector = this->_mapping_container.getNamesVector();
     names_vector.reserve(namesVector.size());
-    auto namesIterator = namesVector.begin();
     auto namesEnd = namesVector.end();
-    for (; namesIterator != namesEnd; ++namesIterator) {
-        names_vector.push_back(builder.CreateString(*namesIterator));
+    for (auto it = namesVector.begin(); it != namesEnd; ++it) {
+        names_vector.push_back(builder.CreateString(*it));
     }
 
     std::vector<flatbuffers::Offset<flatbuffers::String>> sources_vector;
     auto sourcesVector = this->_mapping_container.getSourcesVector();
     sources_vector.reserve(sourcesVector.size());
-    auto sourcesIterator = sourcesVector.begin();
     auto sourcesEnd = sourcesVector.end();
-    for (; sourcesIterator != sourcesEnd; ++sourcesIterator) {
-        sources_vector.push_back(builder.CreateString(*sourcesIterator));
+    for (auto it = sourcesVector.begin(); it != sourcesEnd; ++it) {
+        sources_vector.push_back(builder.CreateString(*it));
     }
 
     auto map = SourceMapSchema::CreateMapDirect(builder, &names_vector, &sources_vector, &mappings_vector);
@@ -207,9 +220,8 @@ Napi::Value SourceMapBinding::addStringMappings(const Napi::CallbackInfo &info) 
 
 std::vector<int> SourceMapBinding::_addNames(Napi::Array &namesArray) {
     std::vector<int> insertions;
-    int i = 0;
     int length = namesArray.Length();
-    for (; i < length; ++i) {
+    for (int i = 0; i < length; ++i) {
         auto name = namesArray.Get(i);
 
         // Not sure if this should throw an error or not
@@ -234,25 +246,23 @@ Napi::Value SourceMapBinding::addNames(const Napi::CallbackInfo &info) {
     std::vector<int> indexes = this->_addNames(arr);
     int size = indexes.size();
     Napi::Array indexesArr = Napi::Array::New(env, size);
-    int i = 0;
-    for (; i < size; ++i) {
+    for (int i = 0; i < size; ++i) {
         indexesArr.Set(i, Napi::Number::New(env, indexes[i]));
     }
     return indexesArr;
 }
 
-std::vector<int> SourceMapBinding::_addSources(Napi::Array &sourcesArray){
+std::vector<int> SourceMapBinding::_addSources(Napi::Array &sourcesArray) {
     std::vector<int> insertions;
-    int i = 0;
     int length = sourcesArray.Length();
-    for (; i < length; ++i) {
+    for (int i = 0; i < length; ++i) {
         auto source = sourcesArray.Get(i);
 
         // Not sure if this should throw an error or not
         if (!source.IsString()) {
             insertions.push_back(this->_mapping_container.addName(""));
         } else {
-            insertions.push_back(this->_mapping_container.addName(source.As<Napi::String>().Utf8Value()));
+            insertions.push_back(this->_mapping_container.addSource(source.As<Napi::String>().Utf8Value()));
         }
     }
     return insertions;
@@ -270,8 +280,7 @@ Napi::Value SourceMapBinding::addSources(const Napi::CallbackInfo &info) {
     std::vector<int> indexes = this->_addSources(arr);
     int size = indexes.size();
     Napi::Array indexesArr = Napi::Array::New(env, size);
-    int i = 0;
-    for (; i < size; ++i) {
+    for (int i = 0; i < size; ++i) {
         indexesArr.Set(i, Napi::Number::New(env, indexes[i]));
     }
     return indexesArr;
@@ -285,7 +294,7 @@ Napi::Object SourceMapBinding::Init(Napi::Env env, Napi::Object exports) {
     Napi::Function func = DefineClass(env, "SourceMap", {
             InstanceMethod("addRawMappings", &SourceMapBinding::addRawMappings),
             InstanceMethod("addBufferMappings", &SourceMapBinding::addBufferMappings),
-            InstanceMethod("toString", &SourceMapBinding::toString),
+            InstanceMethod("stringify", &SourceMapBinding::stringify),
             InstanceMethod("toBuffer", &SourceMapBinding::toBuffer),
             InstanceMethod("getMap", &SourceMapBinding::getMap),
             InstanceMethod("findByGenerated", &SourceMapBinding::findByGenerated),

@@ -37,7 +37,7 @@ private:
 
     Napi::Value getMap(const Napi::CallbackInfo &info);
 
-    Napi::Value toString(const Napi::CallbackInfo &info);
+    Napi::Value stringify(const Napi::CallbackInfo &info);
 
     Napi::Value toBuffer(const Napi::CallbackInfo &info);
 

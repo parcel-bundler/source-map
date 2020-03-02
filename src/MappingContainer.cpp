@@ -101,9 +101,8 @@ void MappingContainer::addVLQMappings(const std::string &mappings_input, int lin
     // might contain. There would be some sequence like `A,A,...` or `A;A...`
     _mappings.reserve(mappings_input.length() / 2);
 
-    auto it = mappings_input.begin();
     auto end = mappings_input.end();
-    for (; it != end; ++it) {
+    for (auto it = mappings_input.begin(); it != end; ++it) {
         const char c = *it;
         if (c == ',' || c == ';') {
             this->addMappingBySegment(generatedLine, segment, segmentIndex);
@@ -150,9 +149,8 @@ std::string MappingContainer::toVLQMappings() {
     int previousName = 0;
     bool isFirst = true;
 
-    auto it = _mappings.begin();
     auto end = _mappings.end();
-    for (; it != end; ++it) {
+    for (auto it = _mappings.begin(); it != end; ++it) {
         Mapping mapping = *it;
 
         if (previousGeneratedLine < mapping.generated.line) {
@@ -197,9 +195,8 @@ std::string MappingContainer::toVLQMappings() {
 std::string MappingContainer::debugString() {
     std::stringstream out;
 
-    auto it = this->_mappings.begin();
     auto end = this->_mappings.end();
-    for (; it != end; ++it) {
+    for (auto it = this->_mappings.begin(); it != end; ++it) {
         Mapping mapping = *it;
         out << "==== Start Mapping ====" << std::endl;
         out << "Generated line: " << mapping.generated.line << std::endl;

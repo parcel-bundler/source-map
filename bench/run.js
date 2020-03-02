@@ -47,10 +47,10 @@ suite.add("cpp#consume", async () => {
   }
 });
 
-suite.add("cpp#consume->toString", async () => {
+suite.add("cpp#consume->stringify", async () => {
   for (let map of test_maps) {
     let sm = new SourceMap(map.mappings, map.sources, map.names);
-    let s = sm.toString();
+    let s = sm.stringify();
   }
 });
 
@@ -77,17 +77,16 @@ let sm = new SourceMap(
   test_maps[0].names
 );
 console.log(test_maps[0].mappings);
-let s = sm.toString();
-console.log(s);
-console.log("is equal?", test_maps[0].mappings === s);
+let s = sm.stringify();
+console.log(JSON.stringify(s));
+console.log("is equal?", test_maps[0].mappings === s.mappings);
 let buff = sm.toBuffer();
 console.log(buff);
 let resurrectedSourcemap = new SourceMap(buff);
-let resurrectedString = resurrectedSourcemap.toString();
-console.log(resurrectedString);
-console.log("is equal?", test_maps[0].mappings === resurrectedString);
+let resurrectedString = resurrectedSourcemap.stringify();
+console.log(JSON.stringify(resurrectedString));
+console.log("is equal?", test_maps[0].mappings === resurrectedString.mappings);
 console.log(resurrectedSourcemap.addSources(test_maps[0].sources));
 console.log(resurrectedSourcemap.addSources(test_maps[0].sources));
-
 console.log(resurrectedSourcemap.addNames(['test']));
 console.log(resurrectedSourcemap.addNames(['test']));
