@@ -1,5 +1,6 @@
 const ParcelSourceMap = require("./parcel-source-map").default;
 const Benchmark = require("tiny-benchy");
+const assert = require("assert");
 const SourceMap = require("../");
 
 const ITERATIONS = 50;
@@ -29,29 +30,56 @@ suite.add("@parcel/source-map#consume->serialize->JSON.stringify", async () => {
   }
 });
 
+suite.add(
+  "@parcel/source-map#consume->serialize->JSON.stringify->JSON.parse->new SourceMap",
+  async () => {
+    for (let map of test_maps) {
+      let sm = await ParcelSourceMap.fromRawSourceMap(map);
+      let parsed = JSON.parse(JSON.stringify(sm.serialize()));
+      sm = new ParcelSourceMap(map);
+    }
+  }
+);
+
 suite.add("cpp#consume", async () => {
   for (let map of test_maps) {
-    new SourceMap(map.mappings, map.sources.length, map.names.length);
+    let sm = new SourceMap(map.mappings, map.sources.length, map.names.length);
   }
 });
 
 suite.add("cpp#consume->toString", async () => {
   for (let map of test_maps) {
     let sm = new SourceMap(map.mappings, map.sources.length, map.names.length);
-    sm.toString();
+    let s = sm.toString();
   }
 });
 
 suite.add("cpp#consume->toBuffer", async () => {
   for (let map of test_maps) {
     let sm = new SourceMap(map.mappings, map.sources.length, map.names.length);
-    sm.toBuffer();
+    let buff = sm.toBuffer();
   }
 });
 
-suite.run();
+suite.add("cpp#consume->toBuffer->fromBuffer", async () => {
+  for (let map of test_maps) {
+    let sm = new SourceMap(map.mappings, map.sources.length, map.names.length);
+    let buff = sm.toBuffer();
+  }
+});
 
-let sm = new SourceMap(test_maps[0].mappings, test_maps[0].sources.length, test_maps[0].sources.length);
+// suite.run();
+
+let sm = new SourceMap(
+  test_maps[0].mappings,
+  test_maps[0].sources.length,
+  test_maps[0].names.length
+);
 console.log(test_maps[0].mappings);
-console.log(sm.toString());
-console.log(sm.toBuffer());
+let s = sm.toString();
+console.log(s);
+let buff = sm.toBuffer();
+console.log(buff);
+let resurrectedSourcemap = new SourceMap(buff);
+console.log(resurrectedSourcemap.toString());
+// assert.equal(s, resurrectedSourcemap.toString());

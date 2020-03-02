@@ -1,191 +1,179 @@
 #include <iostream>
-#include <sstream>
+
 #include "SourceMap.h"
-#include "vlq.h"
+#include "sourcemap-schema_generated.h"
 
-SourceMap::SourceMap() {}
+SourceMapBinding::SourceMapBinding(const Napi::CallbackInfo &info) : Napi::ObjectWrap<SourceMapBinding>(info) {
+    Napi::Env env = info.Env();
+    Napi::HandleScope scope(env);
 
-SourceMap::~SourceMap() {}
-
-void SourceMap::Finalize() {}
-
-void SourceMap::addMapping(int generatedLine, int *segment, int segmentIndex) {
-    bool hasSource = segmentIndex > 3;
-    bool hasName = segmentIndex > 4;
-
-    Mapping m = {
-            .generatedLine = generatedLine,
-            .generatedColumn = segment[0],
-            .originalLine = hasSource ? segment[2] : -1,
-            .originalColumn = hasSource ? segment[3] : -1,
-            .source = hasSource ? segment[1] : -1,
-            .name = hasName ? segment[4] : -1
-    };
-
-    /*std::cout << "generatedLine: " << generatedLine << std::endl;
-    std::cout << "generatedColumn: " << segment[0] << std::endl;
-    std::cout << "originalLine: " << (hasSource ? segment[1] : -1) << std::endl;
-    std::cout << "originalColumn: " << (hasSource ? segment[2] : -1) << std::endl;
-    std::cout << "source: " << (hasSource ? segment[3] : -1) << std::endl;
-    std::cout << "name: " << (hasName ? segment[4] : -1) << std::endl;*/
-
-    _mappings.push_back(m);
+    if (info.Length() > 0) {
+        if (info[0].IsString()) {
+            this->addRawMappings(info);
+        } else if (info[0].IsBuffer()) {
+            this->addBufferMappings(info);
+        }
+    }
 }
 
-void SourceMap::processRawMappings(const std::string &mappings_input, int sources, int names, int line_offset,
-                                   int column_offset) {
-    // SourceMap information
-    int generatedLine = line_offset;
+SourceMapBinding::~SourceMapBinding() {}
 
-    // VLQ Decoding
-    int value = 0;
-    int shift = 0;
-    int segment[5] = {column_offset, _sources, 0, 0, _names};
-    int segmentIndex = 0;
+void SourceMapBinding::addRawMappings(const Napi::CallbackInfo &info) {
+    Napi::Env env = info.Env();
+    Napi::HandleScope scope(env);
 
-    // `input.len() / 2` is the upper bound on how many mappings the string
-    // might contain. There would be some sequence like `A,A,...` or `A;A...`
-    _mappings.reserve(mappings_input.length() / 2);
+    if (info.Length() < 3) {
+        Napi::TypeError::New(env, "Expected 3-5 parameters").ThrowAsJavaScriptException();
+    }
 
-    std::string::const_iterator it = mappings_input.begin();
-    std::string::const_iterator end = mappings_input.end();
+    if (!info[0].IsString()) {
+        Napi::TypeError::New(env, "First parameter should be a positive string").ThrowAsJavaScriptException();
+    }
+
+    if (!info[1].IsNumber() || !info[2].IsNumber()) {
+        Napi::TypeError::New(env,
+                             "Second and third parameter should be a positive number").ThrowAsJavaScriptException();
+    }
+
+    if (info.Length() > 3 && !info[3].IsNumber()) {
+        Napi::TypeError::New(env, "Fourth parameter should be a positive number").ThrowAsJavaScriptException();
+    }
+
+    if (info.Length() > 4 && !info[4].IsNumber()) {
+        Napi::TypeError::New(env, "Fifth parameter should be a positive number").ThrowAsJavaScriptException();
+    }
+
+    std::string rawMappings = info[0].As<Napi::String>().Utf8Value().c_str();
+    unsigned int sources = info[1].As<Napi::Number>().Uint32Value();
+    unsigned int names = info[2].As<Napi::Number>().Uint32Value();
+    unsigned int lineOffset = info.Length() > 3 ? info[3].As<Napi::Number>().Uint32Value() : 0;
+    unsigned int columnOffset = info.Length() > 4 ? info[4].As<Napi::Number>().Uint32Value() : 0;
+
+    this->_mapping_container.addVLQMappings(rawMappings, lineOffset, columnOffset);
+    this->_mapping_container.addNames(names);
+    this->_mapping_container.addSources(sources);
+}
+
+void SourceMapBinding::addBufferMappings(const Napi::CallbackInfo &info) {
+    Napi::Env env = info.Env();
+    Napi::HandleScope scope(env);
+
+    if (info.Length() < 1) {
+        Napi::TypeError::New(env, "Expected 1-3 parameters").ThrowAsJavaScriptException();
+    }
+
+    if (!info[0].IsBuffer()) {
+        Napi::TypeError::New(env, "Expected a string for the first parameter").ThrowAsJavaScriptException();
+        return;
+    }
+
+    if (info.Length() > 1 && !info[1].IsNumber()) {
+        Napi::TypeError::New(env, "Expected a number for the second parameter").ThrowAsJavaScriptException();
+        return;
+    }
+
+    if (info.Length() > 2 && !info[2].IsNumber()) {
+        Napi::TypeError::New(env, "Expected a number for the third parameter").ThrowAsJavaScriptException();
+        return;
+    }
+
+    auto first = info[0].As<Napi::Buffer<uint8_t>>();
+    int second = info.Length() > 1 ? info[1].As<Napi::Number>().Int32Value() : 0;
+    int third = info.Length() > 2 ? info[2].As<Napi::Number>().Int32Value() : 0;
+    auto map = SourceMapSchema::GetMap(first.Data());
+    int sources = this->_mapping_container.getSources();
+    int names = this->_mapping_container.getNames();
+
+    std::cout << "_mappings.reserve" << std::endl;
+    this->_mapping_container.reserve(map->mappings()->size());
+    auto it = map->mappings()->begin();
+    auto end = map->mappings()->end();
     for (; it != end; ++it) {
-        const char c = *it;
-        if (c == ',' || c == ';') {
-            this->addMapping(generatedLine, segment, segmentIndex);
+        std::cout << "generatedLine: " << it->generatedLine() << std::endl;
 
-            if (c == ';') {
-                segment[0] = 0;
-                generatedLine++;
-            }
-
-            segmentIndex = 0;
-            continue;
-        }
-
-        const int decodedCharacter = decodeBase64Char(c);
-
-        value += (decodedCharacter & VLQ_BASE_MASK) << shift;
-
-        if ((decodedCharacter & VLQ_BASE) != 0) {
-            shift += VLQ_BASE_SHIFT;
-        } else {
-            // The low bit holds the sign.
-            if ((value & 1) != 0) {
-                value = -value;
-            }
-
-            segment[segmentIndex++] += value / 2;
-            shift = value = 0;
-        }
-    }
-
-    // Process last mapping...
-    if (segmentIndex > 0) {
-        this->addMapping(generatedLine, segment, segmentIndex);
-    }
-
-    _sources += sources;
-    _names += names;
-}
-
-void SourceMap::addRawMappings(const std::string &mappings_input, int sources, int names, int line_offset,
-                               int column_offset) {
-    // Append new mappings
-    processRawMappings(mappings_input, sources, names, line_offset, column_offset);
-}
-
-void SourceMap::addBufferMappings(uint8_t *bufferPointer, int line_offset, int column_offset) {
-    auto map = SourceMapSchema::GetMap(bufferPointer);
-
-    _mappings.reserve(map->mappings()->size());
-    for (auto it = map->mappings()->begin(); it != map->mappings()->end(); it++) {
-        Mapping m = {
-                .generatedLine = it->generatedLine() + line_offset,
-                .generatedColumn = it->generatedLine() + column_offset,
-                .originalLine = it->originalLine(),
-                .originalColumn = it->originalColumn(),
-                .source = it->source() > -1 ? it->source() + _sources : -1,
-                .name = it->name() > -1 ? it->name() + _names : -1
+        Position generated = {
+                .line = it->generatedLine() + second,
+                .column = it->generatedColumn() + third,
         };
 
-        _mappings.push_back(m);
+        Position original = {
+                .line = it->originalLine(),
+                .column = it->originalColumn(),
+        };
+
+        this->_mapping_container.addMapping(generated, original, it->source() > -1 ? it->source() + sources : -1,
+                                            it->name() > -1 ? it->name() + names : -1);
     }
 
-    _sources += map->sources();
-    _names += map->names();
+    std::cout << "update metadata..." << std::endl;
+
+    this->_mapping_container.addSources(map->sources());
+    this->_mapping_container.addNames(map->names());
+
+    std::cout << "finished processing..." << std::endl;
 }
 
-std::pair<uint8_t *, size_t> SourceMap::toBuffer() {
-    flatbuffers::FlatBufferBuilder builder;
+Napi::Value SourceMapBinding::toString(const Napi::CallbackInfo &info) {
+    Napi::Env env = info.Env();
+    Napi::HandleScope scope(env);
 
+    std::string s = this->_mapping_container.toVLQMappings();
+
+    return Napi::String::New(env, s);
+}
+
+Napi::Value SourceMapBinding::toBuffer(const Napi::CallbackInfo &info) {
+    Napi::Env env = info.Env();
+    Napi::HandleScope scope(env);
+
+    flatbuffers::FlatBufferBuilder builder;
     std::vector<SourceMapSchema::Mapping> mappings_vector;
-    mappings_vector.reserve(_mappings.size());
-    for (auto it = _mappings.begin(); it != _mappings.end(); it++) {
+    auto mappingsVector = this->_mapping_container.getMappingsVector();
+    mappings_vector.reserve(mappingsVector.size());
+    auto it = mappingsVector.begin();
+    auto end = mappingsVector.end();
+    for (; it != end; ++it) {
         Mapping mapping = *it;
         mappings_vector.push_back(
-                SourceMapSchema::Mapping(mapping.generatedLine, mapping.generatedColumn, mapping.originalLine,
-                                         mapping.originalColumn, mapping.source, mapping.name));
+                SourceMapSchema::Mapping(mapping.generated.line, mapping.generated.column, mapping.original.line,
+                                         mapping.original.column, mapping.source, mapping.name));
     }
 
-    auto map = SourceMapSchema::CreateMapDirect(builder, _names, _sources, &mappings_vector);
+    auto map = SourceMapSchema::CreateMapDirect(builder, this->_mapping_container.getNames(),
+                                                this->_mapping_container.getSources(), &mappings_vector);
+
     builder.Finish(map);
 
-    std::pair<uint8_t *, char> res;
-    res.first = builder.GetBufferPointer();
-    res.second = builder.GetSize();
-
-    return res;
+    return Napi::Buffer<uint8_t>::Copy(env, builder.GetBufferPointer(), builder.GetSize());
 }
 
-std::string SourceMap::toString() {
-    std::stringstream out;
-    int previousGeneratedLine = 0;
-    int previousGeneratedColumn = 0;
-    int previousSource = 0;
-    int previousOriginalLine = 0;
-    int previousOriginalColumn = 0;
-    int previousName = 0;
-    bool isFirst = true;
-
-    for (auto it = _mappings.begin(); it != _mappings.end(); it++) {
-        Mapping mapping = *it;
-
-        if (previousGeneratedLine < mapping.generatedLine) {
-            previousGeneratedColumn = 0;
-            isFirst = true;
-
-            while (previousGeneratedLine < mapping.generatedLine) {
-                out << ";";
-                previousGeneratedLine++;
-            }
-        }
-
-        if (!isFirst) {
-            out << ",";
-        }
-
-        encodeVlq(mapping.generatedColumn - previousGeneratedColumn, out);
-        previousGeneratedColumn = mapping.generatedColumn;
-
-        if (mapping.source > -1) {
-            encodeVlq(mapping.source - previousSource, out);
-            previousSource = mapping.source;
-
-            encodeVlq(mapping.originalLine - previousOriginalLine, out);
-            previousOriginalLine = mapping.originalLine;
-
-            encodeVlq(mapping.originalColumn - previousOriginalColumn, out);
-            previousOriginalColumn = mapping.originalColumn;
-        }
-
-        if (mapping.name > -1) {
-            encodeVlq(mapping.name - previousName, out);
-            previousName = mapping.name;
-        }
-
-        isFirst = false;
-    }
-
-    return out.str();
+// Gets called when object gets destroyed, use this instead of destructor...
+void SourceMapBinding::Finalize(Napi::Env env) {
+    Napi::HandleScope scope(env);
+    this->_mapping_container.Finalize();
 }
+
+Napi::FunctionReference SourceMapBinding::constructor;
+
+Napi::Object SourceMapBinding::Init(Napi::Env env, Napi::Object exports) {
+    Napi::HandleScope scope(env);
+
+    Napi::Function func = DefineClass(env, "SourceMap", {
+            InstanceMethod("addRawMappings", &SourceMapBinding::addRawMappings),
+            InstanceMethod("addBufferMappings", &SourceMapBinding::addBufferMappings),
+            InstanceMethod("toString", &SourceMapBinding::toString),
+            InstanceMethod("toBuffer", &SourceMapBinding::toBuffer),
+    });
+
+    constructor = Napi::Persistent(func);
+    constructor.SuppressDestruct();
+
+    exports.Set("SourceMap", func);
+    return exports;
+}
+
+Napi::Object Init(Napi::Env env, Napi::Object exports) {
+    return SourceMapBinding::Init(env, exports);
+}
+
+NODE_API_MODULE(NODE_GYP_MODULE_NAME, Init);

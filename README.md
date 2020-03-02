@@ -10,7 +10,7 @@ This module is a very early work in progress, which has as end goal to allow lig
 - [x] Compile full source-map
 - [x] Be able to append mappings
 - [x] Serialise sourcemap to buffer
-- [ ] Parse sourcemap from buffer
+- [x] Parse sourcemap from buffer
 - [ ] Build a mappings tree for fast manipulations
 - [ ] Be able to merge source maps
 - [ ] Be able to insert mappings

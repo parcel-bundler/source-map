@@ -1,41 +1,27 @@
+#include <napi.h>
 #include <string>
-#include <vector>
-#include "sourcemap-schema_generated.h"
+#include "MappingContainer.h"
 
-struct Mapping {
-    int generatedLine;
-    int generatedColumn;
-    int originalLine;
-    int originalColumn;
-    int source;
-    int name;
-};
-
-class SourceMap {
+class SourceMapBinding : public Napi::ObjectWrap<SourceMapBinding> {
 public:
-    SourceMap();
+    static Napi::Object Init(Napi::Env env, Napi::Object exports);
 
-    ~SourceMap();
+    SourceMapBinding(const Napi::CallbackInfo &info);
 
-    void Finalize();
+    ~SourceMapBinding();
 
-    void addRawMappings(const std::string &mappings_input, int sources, int names, int line_offset = 0,
-                        int column_offset = 0);
-
-    void addBufferMappings(uint8_t * bufferPointer, int line_offset = 0, int column_offset = 0);
-
-    std::string toString();
-
-    std::pair<uint8_t *, size_t> toBuffer();
+    void Finalize(Napi::Env env);
 
 private:
-    void addMapping(int generatedLine, int *segment, int segmentIndex);
+    static Napi::FunctionReference constructor;
 
-    void processRawMappings(const std::string &mappings_input, int sources, int names, int line_offset = 0,
-                      int column_offset = 0);
+    void addRawMappings(const Napi::CallbackInfo &info);
 
-    // Processed mappings, for all kinds of modifying within the sourcemap
-    std::vector<Mapping> _mappings;
-    int _sources = 0;
-    int _names = 0;
+    void addBufferMappings(const Napi::CallbackInfo &info);
+
+    Napi::Value toString(const Napi::CallbackInfo &info);
+
+    Napi::Value toBuffer(const Napi::CallbackInfo &info);
+
+    MappingContainer _mapping_container;
 };
