@@ -1,11 +1,6 @@
 #include <string>
 #include <vector>
 
-#define VLQ_BASE_SHIFT 5
-#define VLQ_BASE (1 << VLQ_BASE_SHIFT)
-#define VLQ_BASE_MASK (VLQ_BASE - 1)
-#define VLQ_CONTINUATION_BIT VLQ_BASE
-
 struct Mapping {
     int generatedLine;
     int generatedColumn;
@@ -35,8 +30,6 @@ private:
                       int column_offset = 0);
 
     void readRawMappings();
-
-    void encodeVlq(int i, std::ostream &os);
 
     // Raw mappings data, used in case no modifications are done
     // This makes sourcemap generation about 10x faster if no changes are needed...

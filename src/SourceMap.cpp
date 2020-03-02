@@ -1,7 +1,7 @@
 #include <iostream>
 #include <sstream>
 #include "SourceMap.h"
-#include "Base64.h"
+#include "vlq.h"
 
 SourceMap::SourceMap() {}
 
@@ -108,18 +108,6 @@ void SourceMap::addMappings(const std::string &mappings_input, int sources, int 
         _raw_sources = sources;
         _raw_names = names;
     }
-}
-
-void SourceMap::encodeVlq(int i, std::ostream &os) {
-    int vlq = (i < 0) ? ((-i) << 1) + 1 : (i << 1) + 0;
-    do {
-        int digit = vlq & VLQ_BASE_MASK;
-        vlq >>= VLQ_BASE_SHIFT;
-        if (vlq > 0) {
-            digit |= VLQ_CONTINUATION_BIT;
-        }
-        os.put(encodeBase64Char(digit));
-    } while (vlq > 0);
 }
 
 std::string SourceMap::toString() {

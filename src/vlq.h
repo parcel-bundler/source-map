@@ -1,6 +1,11 @@
 #include <vector>
 
-static unsigned char _base64_encode_table[65] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+#define VLQ_BASE_SHIFT 5
+#define VLQ_BASE (1 << VLQ_BASE_SHIFT)
+#define VLQ_BASE_MASK (VLQ_BASE - 1)
+#define VLQ_CONTINUATION_BIT VLQ_BASE
+
+#define BASE64_ENCODE_TABLE "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 static signed char _base64_decode_table[] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
                                              -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
                                              -1, -1, -1, -1, -1, 62, -1, -1, -1, 63, 52, 53, 54, 55, 56, 57, 58, 59, 60,
@@ -13,10 +18,18 @@ bool isBase64(unsigned char c) {
     return (isalnum(c) || (c == '+') || (c == '/'));
 }
 
-unsigned char encodeBase64Char(int i) {
-    return _base64_encode_table[i];
-}
-
 int decodeBase64Char(unsigned char c) {
     return _base64_decode_table[c];
+}
+
+void encodeVlq(int i, std::ostream &os) {
+    int vlq = (i < 0) ? ((-i) << 1) + 1 : (i << 1) + 0;
+    do {
+        int digit = vlq & VLQ_BASE_MASK;
+        vlq >>= VLQ_BASE_SHIFT;
+        if (vlq > 0) {
+            digit |= VLQ_CONTINUATION_BIT;
+        }
+        os.put(BASE64_ENCODE_TABLE[digit]);
+    } while (vlq > 0);
 }
