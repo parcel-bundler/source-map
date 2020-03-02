@@ -8,14 +8,15 @@ This module is a very early work in progress, which has as end goal to allow lig
 - [x] Parse full source-map
 - [x] Compile mappings
 - [x] Compile full source-map
-- [x] Be able to append mappings
+- [x] Be able to add sourcemaps
 - [x] Serialise sourcemap to buffer
 - [x] Parse sourcemap from buffer
-- [ ] Build a mappings tree for fast manipulations
-- [ ] Be able to merge source maps
-- [ ] Be able to insert mappings
-- [ ] Be able to query mappings by generated location
-- [ ] Be able to query mappings by original location
+- [ ] Store names and sources string values in cpp
+- [ ] Sorting
+- [ ] Add ability to get a sorted parsed map (non-vlq encoded mappings)
+- [ ] Create a queue for sorting that runs using background threads?
+- [ ] Query mappings by generated location
+- [ ] Query mappings by original location
 
 ## Compile flatbuffer schema
 
