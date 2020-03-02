@@ -65,10 +65,11 @@ suite.add("cpp#consume->toBuffer->fromBuffer", async () => {
   for (let map of test_maps) {
     let sm = new SourceMap(map.mappings, map.sources.length, map.names.length);
     let buff = sm.toBuffer();
+    sm = new SourceMap(buff);
   }
 });
 
-// suite.run();
+suite.run();
 
 let sm = new SourceMap(
   test_maps[0].mappings,
@@ -82,4 +83,4 @@ let buff = sm.toBuffer();
 console.log(buff);
 let resurrectedSourcemap = new SourceMap(buff);
 console.log(resurrectedSourcemap.toString());
-// assert.equal(s, resurrectedSourcemap.toString());
+assert.equal(s, resurrectedSourcemap.toString());

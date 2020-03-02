@@ -84,13 +84,10 @@ void SourceMapBinding::addBufferMappings(const Napi::CallbackInfo &info) {
     int sources = this->_mapping_container.getSources();
     int names = this->_mapping_container.getNames();
 
-    std::cout << "_mappings.reserve" << std::endl;
     this->_mapping_container.reserve(map->mappings()->size());
     auto it = map->mappings()->begin();
     auto end = map->mappings()->end();
     for (; it != end; ++it) {
-        std::cout << "generatedLine: " << it->generatedLine() << std::endl;
-
         Position generated = {
                 .line = it->generatedLine() + second,
                 .column = it->generatedColumn() + third,
@@ -105,12 +102,8 @@ void SourceMapBinding::addBufferMappings(const Napi::CallbackInfo &info) {
                                             it->name() > -1 ? it->name() + names : -1);
     }
 
-    std::cout << "update metadata..." << std::endl;
-
     this->_mapping_container.addSources(map->sources());
     this->_mapping_container.addNames(map->names());
-
-    std::cout << "finished processing..." << std::endl;
 }
 
 Napi::Value SourceMapBinding::toString(const Napi::CallbackInfo &info) {
