@@ -23,14 +23,14 @@ suite.add("source-map#consume", async () => {
   }
 });
 
-/*suite.add("source-map#consume->generate", async () => {
+suite.add("source-map#consume->generate", async () => {
   for (let map of test_maps) {
     let smc = await new MozillaSourceMap.SourceMapConsumer(map);
     smg = MozillaSourceMap.SourceMapGenerator.fromSourceMap(smc);
     smc.destroy();
     smg.toString();
   }
-});*/
+});
 
 suite.add("cpp#consume", async () => {
   for (let map of test_maps) {
