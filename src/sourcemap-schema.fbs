@@ -1,0 +1,19 @@
+// Schema for serializing a sourcemap using flatbuffers.
+namespace SourceMapSchema;
+
+struct Mapping {
+  generatedLine:int;
+  generatedColumn:int;
+  originalLine:int;
+  originalColumn:int;
+  source:int;
+  name:int;
+}
+
+table Map {
+  names:int;
+  sources:int;
+  mappings:[Mapping];
+}
+
+root_type Map;

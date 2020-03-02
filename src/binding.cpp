@@ -10,8 +10,10 @@ Napi::Object SourceMapBinding::Init(Napi::Env env, Napi::Object exports) {
     Napi::HandleScope scope(env);
 
     Napi::Function func = DefineClass(env, "SourceMap", {
-            InstanceMethod("addMappings", &SourceMapBinding::addMappings),
+            InstanceMethod("addRawMappings", &SourceMapBinding::addRawMappings),
+            InstanceMethod("addBufferMappings", &SourceMapBinding::addBufferMappings),
             InstanceMethod("toString", &SourceMapBinding::toString),
+            InstanceMethod("toBuffer", &SourceMapBinding::toBuffer),
     });
 
     constructor = Napi::Persistent(func);
@@ -26,12 +28,12 @@ SourceMapBinding::SourceMapBinding(const Napi::CallbackInfo &info) : Napi::Objec
     Napi::HandleScope scope(env);
 
     this->_sourceMap = new SourceMap();
-    this->addMappings(info);
+    this->addRawMappings(info);
 }
 
 SourceMapBinding::~SourceMapBinding() {}
 
-void SourceMapBinding::addMappings(const Napi::CallbackInfo &info) {
+void SourceMapBinding::addRawMappings(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
 
@@ -63,7 +65,45 @@ void SourceMapBinding::addMappings(const Napi::CallbackInfo &info) {
         unsigned int fourth = info.Length() > 3 ? info[3].As<Napi::Number>().Uint32Value() : 0;
         unsigned int fifth = info.Length() > 4 ? info[4].As<Napi::Number>().Uint32Value() : 0;
 
-        this->GetInternalInstance()->addMappings(first, second, third, fourth, fifth);
+        this->GetInternalInstance()->addRawMappings(first, second, third, fourth, fifth);
+    } catch (const std::exception &e) {
+        Napi::Error::New(env, e.what()).ThrowAsJavaScriptException();
+    }
+}
+
+void SourceMapBinding::addBufferMappings(const Napi::CallbackInfo &info) {
+    Napi::Env env = info.Env();
+    Napi::HandleScope scope(env);
+
+    if (info.Length() < 3) {
+        Napi::TypeError::New(env, "Expected 3-5 parameters").ThrowAsJavaScriptException();
+    }
+
+    if (!info[0].IsString()) {
+        Napi::TypeError::New(env, "First parameter should be a positive string").ThrowAsJavaScriptException();
+    }
+
+    if (!info[1].IsNumber() || !info[2].IsNumber()) {
+        Napi::TypeError::New(env,
+                             "Second and third parameter should be a positive number").ThrowAsJavaScriptException();
+    }
+
+    if (info.Length() > 3 && !info[3].IsNumber()) {
+        Napi::TypeError::New(env, "Fourth parameter should be a positive number").ThrowAsJavaScriptException();
+    }
+
+    if (info.Length() > 4 && !info[4].IsNumber()) {
+        Napi::TypeError::New(env, "Fifth parameter should be a positive number").ThrowAsJavaScriptException();
+    }
+
+    try {
+        std::string first = info[0].As<Napi::String>().Utf8Value().c_str();
+        unsigned int second = info[1].As<Napi::Number>().Uint32Value();
+        unsigned int third = info[2].As<Napi::Number>().Uint32Value();
+        unsigned int fourth = info.Length() > 3 ? info[3].As<Napi::Number>().Uint32Value() : 0;
+        unsigned int fifth = info.Length() > 4 ? info[4].As<Napi::Number>().Uint32Value() : 0;
+
+        this->GetInternalInstance()->addRawMappings(first, second, third, fourth, fifth);
     } catch (const std::exception &e) {
         Napi::Error::New(env, e.what()).ThrowAsJavaScriptException();
     }
@@ -81,6 +121,20 @@ Napi::Value SourceMapBinding::toString(const Napi::CallbackInfo &info) {
     }
 
     return Napi::String::New(env, "");
+}
+
+Napi::Value SourceMapBinding::toBuffer(const Napi::CallbackInfo &info) {
+    Napi::Env env = info.Env();
+    Napi::HandleScope scope(env);
+
+    try {
+        std::pair<uint8_t *, size_t> p = this->GetInternalInstance()->toBuffer();
+        return Napi::Buffer<uint8_t>::Copy(env, p.first, p.second);
+    } catch (const std::exception &e) {
+        Napi::Error::New(env, e.what()).ThrowAsJavaScriptException();
+    }
+
+    return Napi::Buffer<uint8_t>::New(env, 0);
 }
 
 void SourceMapBinding::Finalize(Napi::Env env) {

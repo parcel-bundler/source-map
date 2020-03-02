@@ -1,5 +1,5 @@
+const ParcelSourceMap = require("./parcel-source-map").default;
 const Benchmark = require("tiny-benchy");
-const MozillaSourceMap = require("source-map");
 const SourceMap = require("../");
 
 const ITERATIONS = 50;
@@ -16,19 +16,16 @@ const test_maps = [
 ];
 const suite = new Benchmark(ITERATIONS);
 
-suite.add("source-map#consume", async () => {
+suite.add("@parcel/source-map#consume", async () => {
   for (let map of test_maps) {
-    let smc = await new MozillaSourceMap.SourceMapConsumer(map);
-    smc.destroy();
+    let sm = await ParcelSourceMap.fromRawSourceMap(map);
   }
 });
 
-suite.add("source-map#consume->generate", async () => {
+suite.add("@parcel/source-map#consume->serialize->JSON.stringify", async () => {
   for (let map of test_maps) {
-    let smc = await new MozillaSourceMap.SourceMapConsumer(map);
-    smg = MozillaSourceMap.SourceMapGenerator.fromSourceMap(smc);
-    smc.destroy();
-    smg.toString();
+    let sm = await ParcelSourceMap.fromRawSourceMap(map);
+    JSON.stringify(sm.serialize());
   }
 });
 
@@ -38,10 +35,17 @@ suite.add("cpp#consume", async () => {
   }
 });
 
-suite.add("cpp#consume->generate", async () => {
+suite.add("cpp#consume->toString", async () => {
   for (let map of test_maps) {
     let sm = new SourceMap(map.mappings, map.sources.length, map.names.length);
     sm.toString();
+  }
+});
+
+suite.add("cpp#consume->toBuffer", async () => {
+  for (let map of test_maps) {
+    let sm = new SourceMap(map.mappings, map.sources.length, map.names.length);
+    sm.toBuffer();
   }
 });
 
@@ -50,3 +54,4 @@ suite.run();
 let sm = new SourceMap(test_maps[0].mappings, test_maps[0].sources.length, test_maps[0].sources.length);
 console.log(test_maps[0].mappings);
 console.log(sm.toString());
+console.log(sm.toBuffer());

@@ -135,6 +135,7 @@ export default class SourceMap {
     if (sourcemap.sourceRoot != null) {
       delete sourcemap.sourceRoot;
     }
+    // @ts-ignore
     return new SourceMapConsumer(sourcemap);
   }
 
@@ -158,6 +159,7 @@ export default class SourceMap {
       }
     });
 
+    // @ts-ignore
     consumer.destroy();
 
     return this;

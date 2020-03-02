@@ -89,10 +89,53 @@ void SourceMap::processRawMappings(const std::string &mappings_input, int source
     _names += names;
 }
 
-void SourceMap::addMappings(const std::string &mappings_input, int sources, int names, int line_offset,
-                            int column_offset) {
+void SourceMap::addRawMappings(const std::string &mappings_input, int sources, int names, int line_offset,
+                               int column_offset) {
     // Append new mappings
     processRawMappings(mappings_input, sources, names, line_offset, column_offset);
+}
+
+void SourceMap::addBufferMappings(uint8_t *bufferPointer, int line_offset, int column_offset) {
+    auto map = SourceMapSchema::GetMap(bufferPointer);
+
+    _mappings.reserve(map->mappings()->size());
+    for (auto it = map->mappings()->begin(); it != map->mappings()->end(); it++) {
+        Mapping m = {
+                .generatedLine = it->generatedLine() + line_offset,
+                .generatedColumn = it->generatedLine() + column_offset,
+                .originalLine = it->originalLine(),
+                .originalColumn = it->originalColumn(),
+                .source = it->source() > -1 ? it->source() + _sources : -1,
+                .name = it->name() > -1 ? it->name() + _names : -1
+        };
+
+        _mappings.push_back(m);
+    }
+
+    _sources += map->sources();
+    _names += map->names();
+}
+
+std::pair<uint8_t *, size_t> SourceMap::toBuffer() {
+    flatbuffers::FlatBufferBuilder builder;
+
+    std::vector<SourceMapSchema::Mapping> mappings_vector;
+    mappings_vector.reserve(_mappings.size());
+    for (auto it = _mappings.begin(); it != _mappings.end(); it++) {
+        Mapping mapping = *it;
+        mappings_vector.push_back(
+                SourceMapSchema::Mapping(mapping.generatedLine, mapping.generatedColumn, mapping.originalLine,
+                                         mapping.originalColumn, mapping.source, mapping.name));
+    }
+
+    auto map = SourceMapSchema::CreateMapDirect(builder, _names, _sources, &mappings_vector);
+    builder.Finish(map);
+
+    std::pair<uint8_t *, char> res;
+    res.first = builder.GetBufferPointer();
+    res.second = builder.GetSize();
+
+    return res;
 }
 
 std::string SourceMap::toString() {
@@ -106,7 +149,7 @@ std::string SourceMap::toString() {
     bool isFirst = true;
 
     for (auto it = _mappings.begin(); it != _mappings.end(); it++) {
-        Mapping &mapping = *it;
+        Mapping mapping = *it;
 
         if (previousGeneratedLine < mapping.generatedLine) {
             previousGeneratedColumn = 0;

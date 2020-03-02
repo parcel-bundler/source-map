@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "test": "mocha --require ts-node/register --watch-extensions ts,tsx \"**/*.test.{ts,tsx}\"",
-    "benchmark": "node ./bench/run.js",
+    "benchmark": "node ./bench/run",
     "prebuild": "prebuild -t 3 -r napi --strip",
     "rebuild": "node-gyp rebuild"
   },
@@ -15,15 +15,15 @@
     ]
   },
   "dependencies": {
-    "@parcel/utils": "^2.0.0-nightly.132",
     "bindings": "^1.5.0",
-    "clone": "^2.1.2",
     "node-addon-api": "^2.0.0",
     "prebuild-install": "^5.3.3"
   },
   "devDependencies": {
+    "@parcel/utils": "^2.0.0-nightly.133",
     "@types/mocha": "^7.0.1",
     "@types/node": "^13.7.6",
+    "clone": "^2.1.2",
     "mocha": "^7.1.0",
     "prebuild": "^10.0.0",
     "source-map": "^0.7.3",

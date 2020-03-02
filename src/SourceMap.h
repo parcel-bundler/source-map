@@ -1,5 +1,6 @@
 #include <string>
 #include <vector>
+#include "sourcemap-schema_generated.h"
 
 struct Mapping {
     int generatedLine;
@@ -18,10 +19,14 @@ public:
 
     void Finalize();
 
-    void addMappings(const std::string &mappings_input, int sources, int names, int line_offset = 0,
-                     int column_offset = 0);
+    void addRawMappings(const std::string &mappings_input, int sources, int names, int line_offset = 0,
+                        int column_offset = 0);
+
+    void addBufferMappings(uint8_t * bufferPointer, int line_offset = 0, int column_offset = 0);
 
     std::string toString();
+
+    std::pair<uint8_t *, size_t> toBuffer();
 
 private:
     void addMapping(int generatedLine, int *segment, int segmentIndex);

@@ -17,9 +17,13 @@ public:
 private:
     static Napi::FunctionReference constructor;
 
-    void addMappings(const Napi::CallbackInfo &info);
+    void addRawMappings(const Napi::CallbackInfo &info);
+
+    void addBufferMappings(const Napi::CallbackInfo &info);
 
     Napi::Value toString(const Napi::CallbackInfo &info);
+
+    Napi::Value toBuffer(const Napi::CallbackInfo &info);
 
     SourceMap *_sourceMap = nullptr;
 };
