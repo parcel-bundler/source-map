@@ -86,3 +86,8 @@ let resurrectedSourcemap = new SourceMap(buff);
 let resurrectedString = resurrectedSourcemap.toString();
 console.log(resurrectedString);
 console.log("is equal?", test_maps[0].mappings === resurrectedString);
+console.log(resurrectedSourcemap.addSources(test_maps[0].sources));
+console.log(resurrectedSourcemap.addSources(test_maps[0].sources));
+
+console.log(resurrectedSourcemap.addNames(['test']));
+console.log(resurrectedSourcemap.addNames(['test']));

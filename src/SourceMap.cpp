@@ -52,32 +52,8 @@ void SourceMapBinding::addRawMappings(const Napi::CallbackInfo &info) {
     this->_mapping_container.addVLQMappings(rawMappings, lineOffset, columnOffset,
                                             this->_mapping_container.getSourcesCount(),
                                             this->_mapping_container.getNamesCount());
-
-    int i = 0;
-    int length = sources.Length();
-    for (; i < length; ++i) {
-        auto source = sources.Get(i);
-
-        // Not sure if this should throw an error or not
-        if (!source.IsString()) {
-            this->_mapping_container.addSource("");
-        } else {
-            this->_mapping_container.addSource(source.As<Napi::String>().Utf8Value());
-        }
-    }
-
-    i = 0;
-    length = names.Length();
-    for (; i < length; ++i) {
-        auto name = names.Get(i);
-
-        // Not sure if this should throw an error or not
-        if (!name.IsString()) {
-            this->_mapping_container.addName("");
-        } else {
-            this->_mapping_container.addName(name.As<Napi::String>().Utf8Value());
-        }
-    }
+    this->_addNames(names);
+    this->_addSources(sources);
 }
 
 void SourceMapBinding::addBufferMappings(const Napi::CallbackInfo &info) {
@@ -229,12 +205,76 @@ Napi::Value SourceMapBinding::addStringMappings(const Napi::CallbackInfo &info) 
     return Napi::Value();
 }
 
+std::vector<int> SourceMapBinding::_addNames(Napi::Array &namesArray) {
+    std::vector<int> insertions;
+    int i = 0;
+    int length = namesArray.Length();
+    for (; i < length; ++i) {
+        auto name = namesArray.Get(i);
+
+        // Not sure if this should throw an error or not
+        if (!name.IsString()) {
+            insertions.push_back(this->_mapping_container.addName(""));
+        } else {
+            insertions.push_back(this->_mapping_container.addName(name.As<Napi::String>().Utf8Value()));
+        }
+    }
+    return insertions;
+}
+
 Napi::Value SourceMapBinding::addNames(const Napi::CallbackInfo &info) {
-    return Napi::Value();
+    Napi::Env env = info.Env();
+    Napi::HandleScope scope(env);
+
+    if (info.Length() != 1 || !info[0].IsArray()) {
+        Napi::TypeError::New(env, "Expected one parameter of type Array<string>").ThrowAsJavaScriptException();
+    }
+
+    Napi::Array arr = info[0].As<Napi::Array>();
+    std::vector<int> indexes = this->_addNames(arr);
+    int size = indexes.size();
+    Napi::Array indexesArr = Napi::Array::New(env, size);
+    int i = 0;
+    for (; i < size; ++i) {
+        indexesArr.Set(i, Napi::Number::New(env, indexes[i]));
+    }
+    return indexesArr;
+}
+
+std::vector<int> SourceMapBinding::_addSources(Napi::Array &sourcesArray){
+    std::vector<int> insertions;
+    int i = 0;
+    int length = sourcesArray.Length();
+    for (; i < length; ++i) {
+        auto source = sourcesArray.Get(i);
+
+        // Not sure if this should throw an error or not
+        if (!source.IsString()) {
+            insertions.push_back(this->_mapping_container.addName(""));
+        } else {
+            insertions.push_back(this->_mapping_container.addName(source.As<Napi::String>().Utf8Value()));
+        }
+    }
+    return insertions;
 }
 
 Napi::Value SourceMapBinding::addSources(const Napi::CallbackInfo &info) {
-    return Napi::Value();
+    Napi::Env env = info.Env();
+    Napi::HandleScope scope(env);
+
+    if (info.Length() != 1 || !info[0].IsArray()) {
+        Napi::TypeError::New(env, "Expected one parameter of type Array<string>").ThrowAsJavaScriptException();
+    }
+
+    Napi::Array arr = info[0].As<Napi::Array>();
+    std::vector<int> indexes = this->_addSources(arr);
+    int size = indexes.size();
+    Napi::Array indexesArr = Napi::Array::New(env, size);
+    int i = 0;
+    for (; i < size; ++i) {
+        indexesArr.Set(i, Napi::Number::New(env, indexes[i]));
+    }
+    return indexesArr;
 }
 
 Napi::FunctionReference SourceMapBinding::constructor;

@@ -33,13 +33,13 @@ public:
 
     int getSourcesCount();
 
-    void addSource(std::string source);
+    int addSource(std::string source);
 
     std::vector<std::string> &getNamesVector();
 
     int getNamesCount();
 
-    void addName(std::string name);
+    int addName(std::string name);
 
     int getGeneratedColumns();
 

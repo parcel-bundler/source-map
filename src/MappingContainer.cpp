@@ -20,8 +20,9 @@ int MappingContainer::getNamesCount() {
     return this->_names.size();
 }
 
-void MappingContainer::addName(std::string name) {
+int MappingContainer::addName(std::string name) {
     this->_names.push_back(name);
+    return (int) this->_names.size() - 1;
 }
 
 std::vector<std::string> &MappingContainer::getSourcesVector() {
@@ -32,8 +33,9 @@ int MappingContainer::getSourcesCount() {
     return this->_sources.size();
 }
 
-void MappingContainer::addSource(std::string source) {
+int MappingContainer::addSource(std::string source) {
     this->_sources.push_back(source);
+    return (int) this->_sources.size() - 1;
 }
 
 int MappingContainer::getGeneratedLines() {

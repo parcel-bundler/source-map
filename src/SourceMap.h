@@ -27,6 +27,10 @@ private:
 
     Napi::Value addStringMappings(const Napi::CallbackInfo &info);
 
+    std::vector<int> _addSources(Napi::Array &sourcesArray);
+
+    std::vector<int> _addNames(Napi::Array &namesArray);
+
     Napi::Value addSources(const Napi::CallbackInfo &info);
 
     Napi::Value addNames(const Napi::CallbackInfo &info);
