@@ -12,20 +12,28 @@ void MappingContainer::reserve(size_t size) {
     _mappings.reserve(size);
 }
 
-int MappingContainer::getNames() {
-    return _names;
+std::vector<std::string> &MappingContainer::getNamesVector() {
+    return this->_names;
 }
 
-void MappingContainer::addNames(int amount) {
-    _names += amount;
+int MappingContainer::getNamesCount() {
+    return this->_names.size();
 }
 
-int MappingContainer::getSources() {
-    return _sources;
+void MappingContainer::addName(std::string name) {
+    this->_names.push_back(name);
 }
 
-void MappingContainer::addSources(int amount) {
-    _sources += amount;
+std::vector<std::string> &MappingContainer::getSourcesVector() {
+    return this->_sources;
+}
+
+int MappingContainer::getSourcesCount() {
+    return this->_sources.size();
+}
+
+void MappingContainer::addSource(std::string source) {
+    this->_sources.push_back(source);
 }
 
 int MappingContainer::getGeneratedLines() {
@@ -34,6 +42,10 @@ int MappingContainer::getGeneratedLines() {
 
 int MappingContainer::getGeneratedColumns() {
     return _generated_columns;
+}
+
+std::vector<Mapping> &MappingContainer::getMappingsVector() {
+    return this->_mappings;
 }
 
 void MappingContainer::addMapping(Position generated, Position original, int source, int name) {
@@ -72,14 +84,15 @@ void MappingContainer::addMappingBySegment(int generatedLine, int *segment, int 
     this->addMapping(generated, original, hasSource ? segment[1] : -1, hasName ? segment[4] : -1);
 }
 
-void MappingContainer::addVLQMappings(const std::string &mappings_input, int line_offset, int column_offset) {
+void MappingContainer::addVLQMappings(const std::string &mappings_input, int line_offset, int column_offset,
+                                      int sources_offset, int names_offset) {
     // SourceMap information
     int generatedLine = line_offset;
 
     // VLQ Decoding
     int value = 0;
     int shift = 0;
-    int segment[5] = {column_offset, _sources, 0, 0, _names};
+    int segment[5] = {column_offset, sources_offset, 0, 0, names_offset};
     int segmentIndex = 0;
 
     // `input.len() / 2` is the upper bound on how many mappings the string
@@ -195,8 +208,4 @@ std::string MappingContainer::debugString() {
         out << "Name: " << mapping.name << std::endl;
     }
     return out.str();
-}
-
-std::vector<Mapping> &MappingContainer::getMappingsVector() {
-    return this->_mappings;
 }

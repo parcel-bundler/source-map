@@ -11,8 +11,8 @@ struct Mapping {
 }
 
 table Map {
-  names:int;
-  sources:int;
+  names:[string];
+  sources:[string];
   mappings:[Mapping];
 }
 

@@ -23,19 +23,23 @@ public:
 
     void addMapping(Position generated, Position original = {-1, -1}, int source = -1, int name = -1);
 
-    void addVLQMappings(const std::string &mappings_input, int line_offset = 0, int column_offset = 0);
+    void addVLQMappings(const std::string &mappings_input, int line_offset = 0, int column_offset = 0, int sources_offset = 0, int names_offset = 0);
 
     std::string toVLQMappings();
 
     void reserve(size_t size);
 
-    int getSources();
+    std::vector<std::string> &getSourcesVector();
 
-    void addSources(int amount);
+    int getSourcesCount();
 
-    int getNames();
+    void addSource(std::string source);
 
-    void addNames(int amount);
+    std::vector<std::string> &getNamesVector();
+
+    int getNamesCount();
+
+    void addName(std::string name);
 
     int getGeneratedColumns();
 
@@ -50,8 +54,8 @@ private:
 
     // Processed mappings, for all kinds of modifying within the sourcemap
     std::vector<Mapping> _mappings;
-    int _sources = 0;
-    int _names = 0;
+    std::vector<std::string> _sources;
+    std::vector<std::string> _names;
 
     int _generated_columns = 0;
     int _generated_lines = 0;

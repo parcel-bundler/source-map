@@ -19,6 +19,20 @@ private:
 
     void addBufferMappings(const Napi::CallbackInfo &info);
 
+    Napi::Value findByOriginal(const Napi::CallbackInfo &info);
+
+    Napi::Value findByGenerated(const Napi::CallbackInfo &info);
+
+    Napi::Value addIndexedMappings(const Napi::CallbackInfo &info);
+
+    Napi::Value addStringMappings(const Napi::CallbackInfo &info);
+
+    Napi::Value addSources(const Napi::CallbackInfo &info);
+
+    Napi::Value addNames(const Napi::CallbackInfo &info);
+
+    Napi::Value getMap(const Napi::CallbackInfo &info);
+
     Napi::Value toString(const Napi::CallbackInfo &info);
 
     Napi::Value toBuffer(const Napi::CallbackInfo &info);

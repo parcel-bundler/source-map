@@ -62,19 +62,23 @@ struct Map FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_SOURCES = 6,
     VT_MAPPINGS = 8
   };
-  int32_t names() const {
-    return GetField<int32_t>(VT_NAMES, 0);
+  const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *names() const {
+    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *>(VT_NAMES);
   }
-  int32_t sources() const {
-    return GetField<int32_t>(VT_SOURCES, 0);
+  const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *sources() const {
+    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *>(VT_SOURCES);
   }
   const flatbuffers::Vector<const SourceMapSchema::Mapping *> *mappings() const {
     return GetPointer<const flatbuffers::Vector<const SourceMapSchema::Mapping *> *>(VT_MAPPINGS);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<int32_t>(verifier, VT_NAMES) &&
-           VerifyField<int32_t>(verifier, VT_SOURCES) &&
+           VerifyOffset(verifier, VT_NAMES) &&
+           verifier.VerifyVector(names()) &&
+           verifier.VerifyVectorOfStrings(names()) &&
+           VerifyOffset(verifier, VT_SOURCES) &&
+           verifier.VerifyVector(sources()) &&
+           verifier.VerifyVectorOfStrings(sources()) &&
            VerifyOffset(verifier, VT_MAPPINGS) &&
            verifier.VerifyVector(mappings()) &&
            verifier.EndTable();
@@ -85,11 +89,11 @@ struct MapBuilder {
   typedef Map Table;
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_names(int32_t names) {
-    fbb_.AddElement<int32_t>(Map::VT_NAMES, names, 0);
+  void add_names(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> names) {
+    fbb_.AddOffset(Map::VT_NAMES, names);
   }
-  void add_sources(int32_t sources) {
-    fbb_.AddElement<int32_t>(Map::VT_SOURCES, sources, 0);
+  void add_sources(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> sources) {
+    fbb_.AddOffset(Map::VT_SOURCES, sources);
   }
   void add_mappings(flatbuffers::Offset<flatbuffers::Vector<const SourceMapSchema::Mapping *>> mappings) {
     fbb_.AddOffset(Map::VT_MAPPINGS, mappings);
@@ -108,8 +112,8 @@ struct MapBuilder {
 
 inline flatbuffers::Offset<Map> CreateMap(
     flatbuffers::FlatBufferBuilder &_fbb,
-    int32_t names = 0,
-    int32_t sources = 0,
+    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> names = 0,
+    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> sources = 0,
     flatbuffers::Offset<flatbuffers::Vector<const SourceMapSchema::Mapping *>> mappings = 0) {
   MapBuilder builder_(_fbb);
   builder_.add_mappings(mappings);
@@ -120,14 +124,16 @@ inline flatbuffers::Offset<Map> CreateMap(
 
 inline flatbuffers::Offset<Map> CreateMapDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
-    int32_t names = 0,
-    int32_t sources = 0,
+    const std::vector<flatbuffers::Offset<flatbuffers::String>> *names = nullptr,
+    const std::vector<flatbuffers::Offset<flatbuffers::String>> *sources = nullptr,
     const std::vector<SourceMapSchema::Mapping> *mappings = nullptr) {
+  auto names__ = names ? _fbb.CreateVector<flatbuffers::Offset<flatbuffers::String>>(*names) : 0;
+  auto sources__ = sources ? _fbb.CreateVector<flatbuffers::Offset<flatbuffers::String>>(*sources) : 0;
   auto mappings__ = mappings ? _fbb.CreateVectorOfStructs<SourceMapSchema::Mapping>(*mappings) : 0;
   return SourceMapSchema::CreateMap(
       _fbb,
-      names,
-      sources,
+      names__,
+      sources__,
       mappings__);
 }
 

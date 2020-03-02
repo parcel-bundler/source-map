@@ -43,27 +43,27 @@ suite.add(
 
 suite.add("cpp#consume", async () => {
   for (let map of test_maps) {
-    let sm = new SourceMap(map.mappings, map.sources.length, map.names.length);
+    let sm = new SourceMap(map.mappings, map.sources, map.names);
   }
 });
 
 suite.add("cpp#consume->toString", async () => {
   for (let map of test_maps) {
-    let sm = new SourceMap(map.mappings, map.sources.length, map.names.length);
+    let sm = new SourceMap(map.mappings, map.sources, map.names);
     let s = sm.toString();
   }
 });
 
 suite.add("cpp#consume->toBuffer", async () => {
   for (let map of test_maps) {
-    let sm = new SourceMap(map.mappings, map.sources.length, map.names.length);
+    let sm = new SourceMap(map.mappings, map.sources, map.names);
     let buff = sm.toBuffer();
   }
 });
 
 suite.add("cpp#consume->toBuffer->fromBuffer", async () => {
   for (let map of test_maps) {
-    let sm = new SourceMap(map.mappings, map.sources.length, map.names.length);
+    let sm = new SourceMap(map.mappings, map.sources, map.names);
     let buff = sm.toBuffer();
     sm = new SourceMap(buff);
   }
@@ -73,14 +73,16 @@ suite.run();
 
 let sm = new SourceMap(
   test_maps[0].mappings,
-  test_maps[0].sources.length,
-  test_maps[0].names.length
+  test_maps[0].sources,
+  test_maps[0].names
 );
 console.log(test_maps[0].mappings);
 let s = sm.toString();
 console.log(s);
+console.log("is equal?", test_maps[0].mappings === s);
 let buff = sm.toBuffer();
 console.log(buff);
 let resurrectedSourcemap = new SourceMap(buff);
-console.log(resurrectedSourcemap.toString());
-assert.equal(s, resurrectedSourcemap.toString());
+let resurrectedString = resurrectedSourcemap.toString();
+console.log(resurrectedString);
+console.log("is equal?", test_maps[0].mappings === resurrectedString);
