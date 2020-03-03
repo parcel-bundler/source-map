@@ -87,8 +87,7 @@ void MappingContainer::createLinesIfUndefined(int generatedLine) {
 
     // While our last line is not equal (or larger) to our generatedLine we need to add lines
     while (this->_generated_lines < generatedLine) {
-        this->_mapping_lines.push_back(new MappingLine(this->_generated_lines, generatedLine));
-        ++this->_generated_lines;
+        this->addLine();
     }
 }
 
@@ -238,4 +237,10 @@ std::vector<std::string> &MappingContainer::getSourcesVector() {
 
 std::vector<MappingLine *> &MappingContainer::getMappingLinesVector() {
     return this->_mapping_lines;
+}
+
+MappingLine *MappingContainer::addLine(int size) {
+    MappingLine *line = new MappingLine(++this->_generated_lines, size);
+    this->_mapping_lines.push_back(line);
+    return line;
 }

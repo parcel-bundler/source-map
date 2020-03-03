@@ -12,6 +12,8 @@ public:
 
     void addMapping(Position generated, Position original = {-1, -1}, int source = -1, int name = -1);
 
+    MappingLine* addLine(int size = 0);
+
     void createLinesIfUndefined(int generatedLine);
 
     void addVLQMappings(const std::string &mappings_input, int line_offset = 0, int column_offset = 0,
