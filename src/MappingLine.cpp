@@ -1,4 +1,11 @@
 #include "MappingLine.h"
+#include <iostream>
+
+struct MappingGeneratedColumnComparator {
+    bool operator()(const Mapping &m1, const Mapping &m2) {
+        return m1.generated.column < m2.generated.column;
+    }
+};
 
 MappingLine::MappingLine(int lineNumber, int upperbound) {
     this->_line_number = lineNumber;
@@ -19,7 +26,9 @@ void MappingLine::shrink_to_fit() {
 }
 
 void MappingLine::sort() {
-    // TODO: Write this...
+    if (!this->_is_sorted) {
+        std::sort(this->_segments.begin(), this->_segments.end(), MappingGeneratedColumnComparator());
+    }
 }
 
 void MappingLine::setIsSorted(bool value) {
