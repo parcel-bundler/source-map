@@ -10,10 +10,17 @@ struct Mapping {
   name:int;
 }
 
+table MappingLine {
+  lineNumber:int;
+  isSorted:bool;
+  segments:[Mapping];
+}
+
 table Map {
   names:[string];
   sources:[string];
-  mappings:[Mapping];
+  lineCount:int;
+  lines:[MappingLine];
 }
 
 root_type Map;

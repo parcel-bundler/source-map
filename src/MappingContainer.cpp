@@ -1,4 +1,5 @@
 #include <sstream>
+#include <iostream>
 #include "MappingContainer.h"
 #include "vlq.h"
 
@@ -8,14 +9,6 @@ MappingContainer::~MappingContainer() {}
 
 void MappingContainer::Finalize() {}
 
-void MappingContainer::reserve(size_t size) {
-    _mappings.reserve(size);
-}
-
-std::vector<std::string> &MappingContainer::getNamesVector() {
-    return this->_names;
-}
-
 int MappingContainer::getNamesCount() {
     return this->_names.size();
 }
@@ -23,10 +16,6 @@ int MappingContainer::getNamesCount() {
 int MappingContainer::addName(std::string name) {
     this->_names.push_back(name);
     return (int) this->_names.size() - 1;
-}
-
-std::vector<std::string> &MappingContainer::getSourcesVector() {
-    return this->_sources;
 }
 
 int MappingContainer::getSourcesCount() {
@@ -46,15 +35,14 @@ int MappingContainer::getGeneratedColumns() {
     return _generated_columns;
 }
 
-std::vector<Mapping> &MappingContainer::getMappingsVector() {
-    return this->_mappings;
+void MappingContainer::sort() {
+    auto lineEnd = _mapping_lines.end();
+    for (auto lineIterator = _mapping_lines.begin(); lineIterator != lineEnd; ++lineIterator) {
+        (*lineIterator)->sort();
+    }
 }
 
 void MappingContainer::addMapping(Position generated, Position original, int source, int name) {
-    if (generated.line > _generated_lines) {
-        _generated_lines = generated.line;
-    }
-
     if (generated.column > _generated_columns) {
         _generated_columns = generated.column;
     }
@@ -66,10 +54,15 @@ void MappingContainer::addMapping(Position generated, Position original, int sou
             .name = name
     };
 
-    _mappings.push_back(m);
+    this->_mapping_lines[generated.line]->addMapping(m);
+    ++this->_segment_count;
 }
 
-void MappingContainer::addMappingBySegment(int generatedLine, int *segment, int segmentIndex) {
+int MappingContainer::segments() {
+    return this->_segment_count;
+}
+
+void MappingContainer::_addMappingBySegment(int generatedLine, int *segment, int segmentIndex) {
     bool hasSource = segmentIndex > 3;
     bool hasName = segmentIndex > 4;
 
@@ -83,7 +76,20 @@ void MappingContainer::addMappingBySegment(int generatedLine, int *segment, int 
             .column = hasSource ? segment[3] : -1
     };
 
+    this->createLinesIfUndefined(generatedLine);
     this->addMapping(generated, original, hasSource ? segment[1] : -1, hasName ? segment[4] : -1);
+}
+
+void MappingContainer::createLinesIfUndefined(int generatedLine) {
+    if (this->_generated_lines < generatedLine) {
+        this->_mapping_lines.reserve(generatedLine - this->_generated_lines + 1);
+    }
+
+    // While our last line is not equal (or larger) to our generatedLine we need to add lines
+    while (this->_generated_lines < generatedLine) {
+        this->_mapping_lines.push_back(new MappingLine(this->_generated_lines, generatedLine));
+        ++this->_generated_lines;
+    }
 }
 
 void MappingContainer::addVLQMappings(const std::string &mappings_input, int line_offset, int column_offset,
@@ -91,25 +97,28 @@ void MappingContainer::addVLQMappings(const std::string &mappings_input, int lin
     // SourceMap information
     int generatedLine = line_offset;
 
+    this->createLinesIfUndefined(generatedLine);
+
     // VLQ Decoding
     int value = 0;
     int shift = 0;
     int segment[5] = {column_offset, sources_offset, 0, 0, names_offset};
     int segmentIndex = 0;
 
+    // TODO: Pre-allocating memory might speed up things...
     // `input.len() / 2` is the upper bound on how many mappings the string
     // might contain. There would be some sequence like `A,A,...` or `A;A...`
-    _mappings.reserve(mappings_input.length() / 2);
+    // int upperbound = mappings_input.length() / 2;
 
     auto end = mappings_input.end();
     for (auto it = mappings_input.begin(); it != end; ++it) {
         const char c = *it;
         if (c == ',' || c == ';') {
-            this->addMappingBySegment(generatedLine, segment, segmentIndex);
+            this->_addMappingBySegment(generatedLine, segment, segmentIndex);
 
             if (c == ';') {
                 segment[0] = 0;
-                generatedLine++;
+                ++generatedLine;
             }
 
             segmentIndex = 0;
@@ -135,58 +144,61 @@ void MappingContainer::addVLQMappings(const std::string &mappings_input, int lin
 
     // Process last mapping...
     if (segmentIndex > 0) {
-        this->addMappingBySegment(generatedLine, segment, segmentIndex);
+        this->_addMappingBySegment(generatedLine, segment, segmentIndex);
     }
 }
 
 std::string MappingContainer::toVLQMappings() {
     std::stringstream out;
-    int previousGeneratedLine = 0;
-    int previousGeneratedColumn = 0;
+
     int previousSource = 0;
     int previousOriginalLine = 0;
     int previousOriginalColumn = 0;
     int previousName = 0;
-    bool isFirst = true;
+    bool isFirstLine = true;
 
-    auto end = _mappings.end();
-    for (auto it = _mappings.begin(); it != end; ++it) {
-        Mapping mapping = *it;
+    auto lineEnd = _mapping_lines.end();
+    for (auto lineIterator = _mapping_lines.begin(); lineIterator != lineEnd; ++lineIterator) {
+        auto line = (*lineIterator);
+        int previousGeneratedColumn = 0;
 
-        if (previousGeneratedLine < mapping.generated.line) {
-            previousGeneratedColumn = 0;
-            isFirst = true;
+        if (!isFirstLine) {
+            out << ";";
+        }
 
-            while (previousGeneratedLine < mapping.generated.line) {
-                out << ";";
-                previousGeneratedLine++;
+        bool isFirstSegment = true;
+        auto segments = line->_segments;
+        auto segmentsEnd = segments.end();
+        for (auto segmentIterator = segments.begin(); segmentIterator != segmentsEnd; ++segmentIterator) {
+            Mapping mapping = *segmentIterator;
+
+            if (!isFirstSegment) {
+                out << ",";
             }
+
+            encodeVlq(mapping.generated.column - previousGeneratedColumn, out);
+            previousGeneratedColumn = mapping.generated.column;
+
+            if (mapping.source > -1) {
+                encodeVlq(mapping.source - previousSource, out);
+                previousSource = mapping.source;
+
+                encodeVlq(mapping.original.line - previousOriginalLine, out);
+                previousOriginalLine = mapping.original.line;
+
+                encodeVlq(mapping.original.column - previousOriginalColumn, out);
+                previousOriginalColumn = mapping.original.column;
+            }
+
+            if (mapping.name > -1) {
+                encodeVlq(mapping.name - previousName, out);
+                previousName = mapping.name;
+            }
+
+            isFirstSegment = false;
         }
 
-        if (!isFirst) {
-            out << ",";
-        }
-
-        encodeVlq(mapping.generated.column - previousGeneratedColumn, out);
-        previousGeneratedColumn = mapping.generated.column;
-
-        if (mapping.source > -1) {
-            encodeVlq(mapping.source - previousSource, out);
-            previousSource = mapping.source;
-
-            encodeVlq(mapping.original.line - previousOriginalLine, out);
-            previousOriginalLine = mapping.original.line;
-
-            encodeVlq(mapping.original.column - previousOriginalColumn, out);
-            previousOriginalColumn = mapping.original.column;
-        }
-
-        if (mapping.name > -1) {
-            encodeVlq(mapping.name - previousName, out);
-            previousName = mapping.name;
-        }
-
-        isFirst = false;
+        isFirstLine = false;
     }
 
     return out.str();
@@ -195,16 +207,35 @@ std::string MappingContainer::toVLQMappings() {
 std::string MappingContainer::debugString() {
     std::stringstream out;
 
-    auto end = this->_mappings.end();
-    for (auto it = this->_mappings.begin(); it != end; ++it) {
-        Mapping mapping = *it;
-        out << "==== Start Mapping ====" << std::endl;
-        out << "Generated line: " << mapping.generated.line << std::endl;
-        out << "Generated column: " << mapping.generated.column << std::endl;
-        out << "Source: " << mapping.source << std::endl;
-        out << "Original line: " << mapping.original.line << std::endl;
-        out << "Original column: " << mapping.original.column << std::endl;
-        out << "Name: " << mapping.name << std::endl;
+    auto end = this->_mapping_lines.end();
+    for (auto lineIterator = this->_mapping_lines.begin(); lineIterator != end; ++lineIterator) {
+        auto line = (*lineIterator);
+        out << "==== Start Line ====" << std::endl;
+        out << "Generated Line: " << line->lineNumber() << std::endl;
+
+        auto segments = line->_segments;
+        auto lineEnd = segments.end();
+        for (auto it = segments.begin(); it != lineEnd; ++it) {
+            Mapping mapping = *it;
+            out << "==== Start Mapping ====" << std::endl;
+            out << "Generated column: " << mapping.generated.column << std::endl;
+            out << "Source: " << mapping.source << std::endl;
+            out << "Original line: " << mapping.original.line << std::endl;
+            out << "Original column: " << mapping.original.column << std::endl;
+            out << "Name: " << mapping.name << std::endl;
+        }
     }
     return out.str();
+}
+
+std::vector<std::string> &MappingContainer::getNamesVector() {
+    return this->_names;
+}
+
+std::vector<std::string> &MappingContainer::getSourcesVector() {
+    return this->_sources;
+}
+
+std::vector<MappingLine *> &MappingContainer::getMappingLinesVector() {
+    return this->_mapping_lines;
 }
