@@ -103,15 +103,9 @@ void SourceMapBinding::addBufferMappings(const Napi::CallbackInfo &info) {
         bool isNewLine = mappingLine->_segments.empty();
 
         for (auto segmentIterator = segments->begin(); segmentIterator != segmentsEnd; ++segmentIterator) {
-            Position generated = {
-                    .line = segmentIterator->generatedLine() + lineOffset,
-                    .column = segmentIterator->generatedColumn() + columnOffset,
-            };
-
-            Position original = {
-                    .line = segmentIterator->originalLine(),
-                    .column = segmentIterator->originalColumn(),
-            };
+            Position generated = Position{segmentIterator->generatedLine() + lineOffset,
+                                          segmentIterator->generatedColumn() + columnOffset};
+            Position original = Position{segmentIterator->originalLine(), segmentIterator->originalColumn()};
 
             int source = segmentIterator->source() > -1 ? segmentIterator->source() + sources : -1;
             int name = segmentIterator->name() > -1 ? segmentIterator->name() + names : -1;

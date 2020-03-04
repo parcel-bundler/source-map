@@ -48,14 +48,7 @@ void MappingContainer::addMapping(Position generated, Position original, int sou
         _generated_columns = generated.column;
     }
 
-    Mapping m = {
-            .generated = generated,
-            .original = original,
-            .source = source,
-            .name = name
-    };
-
-    this->_mapping_lines[generated.line]->addMapping(m);
+    this->_mapping_lines[generated.line]->addMapping(Mapping{generated, original, source, name});
     ++this->_segment_count;
 }
 
@@ -67,15 +60,8 @@ void MappingContainer::_addMappingBySegment(int generatedLine, int *segment, int
     bool hasSource = segmentIndex > 3;
     bool hasName = segmentIndex > 4;
 
-    Position generated = {
-            .line = generatedLine,
-            .column = segment[0]
-    };
-
-    Position original = {
-            .line = hasSource ? segment[2] : -1,
-            .column = hasSource ? segment[3] : -1
-    };
+    Position generated = Position{generatedLine, segment[0]};
+    Position original = Position{hasSource ? segment[2] : -1, hasSource ? segment[3] : -1};
 
     this->createLinesIfUndefined(generatedLine);
     this->addMapping(generated, original, hasSource ? segment[1] : -1, hasName ? segment[4] : -1);

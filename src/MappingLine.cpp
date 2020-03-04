@@ -8,8 +8,7 @@ struct MappingGeneratedColumnComparator {
     }
 };
 
-MappingLine::MappingLine(int lineNumber, int upperbound) {
-    this->_line_number = lineNumber;
+MappingLine::MappingLine(int lineNumber, int upperbound) : _line_number{lineNumber} {
     this->reserve(upperbound);
 }
 
