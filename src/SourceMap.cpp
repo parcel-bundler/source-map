@@ -80,28 +80,32 @@ void SourceMapBinding::addBufferMappings(const Napi::CallbackInfo &info) {
         return;
     }
 
-    auto first = info[0].As<Napi::Buffer<uint8_t>>();
-    int second = info.Length() > 1 ? info[1].As<Napi::Number>().Int32Value() : 0;
-    int third = info.Length() > 2 ? info[2].As<Napi::Number>().Int32Value() : 0;
+    auto mapBuffer = info[0].As<Napi::Buffer<uint8_t>>();
+    int lineOffset = info.Length() > 1 ? info[1].As<Napi::Number>().Int32Value() : 0;
+    int columnOffset = info.Length() > 2 ? info[2].As<Napi::Number>().Int32Value() : 0;
 
-    auto map = SourceMapSchema::GetMap(first.Data());
+    auto map = SourceMapSchema::GetMap(mapBuffer.Data());
+
     int sources = this->_mapping_container.getSourcesCount();
     int names = this->_mapping_container.getNamesCount();
 
+    this->_mapping_container.createLinesIfUndefined(map->lineCount() + lineOffset);
+
     auto mappingLinesVector = this->_mapping_container.getMappingLinesVector();
     auto lines = map->lines();
-    mappingLinesVector.reserve(lines->size());
     auto linesEnd = lines->end();
     for (auto linesIterator = map->lines()->begin(); linesIterator != linesEnd; ++linesIterator) {
         auto line = (*linesIterator);
         auto segments = line->segments();
         auto segmentsEnd = segments->end();
-        auto addedLine = this->_mapping_container.addLine(segments->size());
+
+        auto mappingLine = mappingLinesVector[line->lineNumber()];
+        bool isNewLine = mappingLine->_segments.empty();
 
         for (auto segmentIterator = segments->begin(); segmentIterator != segmentsEnd; ++segmentIterator) {
             Position generated = {
-                    .line = segmentIterator->generatedLine() + second,
-                    .column = segmentIterator->generatedColumn() + third,
+                    .line = segmentIterator->generatedLine() + lineOffset,
+                    .column = segmentIterator->generatedColumn() + columnOffset,
             };
 
             Position original = {
@@ -114,7 +118,9 @@ void SourceMapBinding::addBufferMappings(const Napi::CallbackInfo &info) {
             this->_mapping_container.addMapping(generated, original, source, name);
         }
 
-        addedLine->setIsSorted(line->isSorted());
+        if (isNewLine) {
+            mappingLine->setIsSorted(line->isSorted());
+        }
     }
 
     auto sourcesEnd = map->sources()->end();
@@ -300,12 +306,6 @@ Napi::Value SourceMapBinding::addIndexedMappings(const Napi::CallbackInfo &info)
     return Napi::Value();
 }
 
-// TODO: Find better function name
-// addIndexedMappings(array<mapping>, lineOffset, columnOffset): adds mappings that have a string value for name and source. These should be mapped to an index in SourceMap instance. (And added to the index if not found)
-Napi::Value SourceMapBinding::addStringMappings(const Napi::CallbackInfo &info) {
-    return Napi::Value();
-}
-
 std::vector<int> SourceMapBinding::_addNames(Napi::Array &namesArray) {
     std::vector<int> insertions;
     int length = namesArray.Length();
@@ -388,7 +388,6 @@ Napi::Object SourceMapBinding::Init(Napi::Env env, Napi::Object exports) {
             InstanceMethod("findByGenerated", &SourceMapBinding::findByGenerated),
             InstanceMethod("findByOriginal", &SourceMapBinding::findByOriginal),
             InstanceMethod("addIndexedMappings", &SourceMapBinding::addIndexedMappings),
-            InstanceMethod("addStringMappings", &SourceMapBinding::addStringMappings),
             InstanceMethod("addNames", &SourceMapBinding::addNames),
             InstanceMethod("addSources", &SourceMapBinding::addSources),
     });
