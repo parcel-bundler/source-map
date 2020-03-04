@@ -15,6 +15,7 @@ MappingLine::MappingLine(int lineNumber, int upperbound) {
 void MappingLine::addMapping(Mapping m) {
     this->_segments.push_back(m);
     ++this->_segment_count;
+    this->_is_sorted = false;
 }
 
 void MappingLine::reserve(size_t size) {
