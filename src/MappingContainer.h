@@ -37,6 +37,8 @@ public:
 
     int getGeneratedLines();
 
+    int getTotalSegments();
+
     std::vector<MappingLine *> &getMappingLinesVector();
 
     void sort();

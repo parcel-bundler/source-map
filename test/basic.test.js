@@ -20,6 +20,76 @@ describe("SourceMap - Basics", () => {
     assert.equal(s.mappings, SIMPLE_SOURCE_MAP.mappings);
   });
 
+  it("Should be able to output the processed mappings as JS Objects", () => {
+    let sm = new SourceMap(
+      SIMPLE_SOURCE_MAP.mappings,
+      SIMPLE_SOURCE_MAP.sources,
+      SIMPLE_SOURCE_MAP.names
+    );
+
+    assert.deepEqual(sm.getMap(), {
+      sources: ["helloworld.coffee"],
+      names: [],
+      mappings: [
+        {
+          generated: { line: 0, column: 0 },
+          original: { line: 0, column: 0 },
+          source: 0
+        },
+        {
+          generated: { line: 1, column: 0 },
+          original: { line: 0, column: 0 },
+          source: 0
+        },
+        {
+          generated: { line: 1, column: 2 },
+          original: { line: 0, column: 0 },
+          source: 0
+        },
+        {
+          generated: { line: 1, column: 9 },
+          original: { line: 7, column: 7 },
+          source: 0
+        },
+        {
+          generated: { line: 1, column: 10 },
+          original: { line: 8, column: 8 },
+          source: 0
+        },
+        {
+          generated: { line: 1, column: 13 },
+          original: { line: 0, column: 0 },
+          source: 0
+        },
+        {
+          generated: { line: 1, column: 14 },
+          original: { line: 12, column: 12 },
+          source: 0
+        },
+        {
+          generated: { line: 1, column: 27 },
+          original: { line: 0, column: 0 },
+          source: 0
+        },
+        {
+          generated: { line: 1, column: 28 },
+          original: { line: 0, column: 0 },
+          source: 0
+        },
+        {
+          generated: { line: 1, column: 29 },
+          original: { line: 0, column: 0 },
+          source: 0
+        },
+        {
+          generated: { line: 2, column: 0 },
+          original: { line: 0, column: 0 },
+          source: 0
+        }
+      ]
+    });
+  });
+
   it.skip("Should be able to instantiate a SourceMap with processed mappings", () => {
     // TODO: Write this functionality...
   });

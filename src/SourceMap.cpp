@@ -160,6 +160,9 @@ Napi::Value SourceMapBinding::toBuffer(const Napi::CallbackInfo &info) {
 
     flatbuffers::FlatBufferBuilder builder;
 
+    // Sort mappings
+    this->_mapping_container.sort();
+
     std::vector<flatbuffers::Offset<flatbuffers::String>> names_vector;
     auto namesVector = this->_mapping_container.getNamesVector();
     names_vector.reserve(namesVector.size());
@@ -175,9 +178,6 @@ Napi::Value SourceMapBinding::toBuffer(const Napi::CallbackInfo &info) {
     for (auto it = sourcesVector.begin(); it != sourcesEnd; ++it) {
         sources_vector.push_back(builder.CreateString(*it));
     }
-
-    // Sort mappings
-    this->_mapping_container.sort();
 
     std::vector<flatbuffers::Offset<SourceMapSchema::MappingLine>> lines_vector;
     auto mappingLinesVector = this->_mapping_container.getMappingLinesVector();
@@ -216,7 +216,67 @@ Napi::Value SourceMapBinding::getMap(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
 
-    return Napi::Value();
+    Napi::Object obj = Napi::Object::New(env);
+
+    // Sort mappings
+    this->_mapping_container.sort();
+
+    auto sourcesVector = this->_mapping_container.getSourcesVector();
+    int len = sourcesVector.size();
+    Napi::Array sourcesArray = Napi::Array::New(env, len);
+    for (int i = 0; i < len; ++i) {
+        sourcesArray.Set(i, sourcesVector[i]);
+    }
+    obj.Set("sources", sourcesArray);
+
+    auto namesVector = this->_mapping_container.getNamesVector();
+    len = namesVector.size();
+    Napi::Array namesArray = Napi::Array::New(env, len);
+    for (int i = 0; i < len; ++i) {
+        namesArray.Set(i, namesVector[i]);
+    }
+    obj.Set("names", namesArray);
+
+    auto mappingLinesVector = this->_mapping_container.getMappingLinesVector();
+    Napi::Array mappingsArray = Napi::Array::New(env, this->_mapping_container.getTotalSegments());
+    auto lineEnd = mappingLinesVector.end();
+    int currentMapping = 0;
+    for (auto lineIterator = mappingLinesVector.begin(); lineIterator != lineEnd; ++lineIterator) {
+        auto line = (*lineIterator);
+        auto segments = line->_segments;
+        auto segmentsEnd = segments.end();
+
+        for (auto segmentIterator = segments.begin(); segmentIterator != segmentsEnd; ++segmentIterator) {
+            Mapping mapping = *segmentIterator;
+            Napi::Object mappingObject = Napi::Object::New(env);
+            Napi::Object generatedPositionObject = Napi::Object::New(env);
+
+            generatedPositionObject.Set("line", mapping.generated.line);
+            generatedPositionObject.Set("column", mapping.generated.column);
+            mappingObject.Set("generated", generatedPositionObject);
+
+            if (mapping.source > -1) {
+                Napi::Object originalPositionObject = Napi::Object::New(env);
+
+                originalPositionObject.Set("line", mapping.original.column);
+                originalPositionObject.Set("column", mapping.original.column);
+                mappingObject.Set("original", originalPositionObject);
+
+                mappingObject.Set("source", mapping.source);
+            }
+
+            if (mapping.name > -1) {
+                mappingObject.Set("name", mapping.name);
+            }
+
+            mappingsArray.Set(currentMapping, mappingObject);
+
+            ++currentMapping;
+        }
+    }
+    obj.Set("mappings", mappingsArray);
+
+    return obj;
 }
 
 // Gets called when object gets destroyed, use this instead of destructor...

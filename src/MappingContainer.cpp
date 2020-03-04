@@ -207,6 +207,10 @@ std::string MappingContainer::toVLQMappings() {
     return out.str();
 }
 
+int MappingContainer::getTotalSegments() {
+    return this->_segment_count;
+}
+
 std::string MappingContainer::debugString() {
     std::stringstream out;
 
