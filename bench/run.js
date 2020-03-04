@@ -70,23 +70,3 @@ suite.add("cpp#consume->toBuffer->fromBuffer", async () => {
 });
 
 suite.run();
-
-let sm = new SourceMap(
-  test_maps[0].mappings,
-  test_maps[0].sources,
-  test_maps[0].names
-);
-console.log(test_maps[0].mappings);
-let s = sm.stringify();
-console.log(JSON.stringify(s));
-console.log("is equal?", test_maps[0].mappings === s.mappings);
-let buff = sm.toBuffer();
-console.log(buff);
-let resurrectedSourcemap = new SourceMap(buff);
-let resurrectedString = resurrectedSourcemap.stringify();
-console.log(JSON.stringify(resurrectedString));
-console.log("is equal?", test_maps[0].mappings === resurrectedString.mappings);
-console.log(resurrectedSourcemap.addSources(test_maps[0].sources));
-console.log(resurrectedSourcemap.addSources(test_maps[0].sources));
-console.log(resurrectedSourcemap.addNames(['test']));
-console.log(resurrectedSourcemap.addNames(['test']));
