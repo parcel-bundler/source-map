@@ -1,5 +1,6 @@
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include "MappingLine.h"
 
 class MappingContainer {
@@ -27,11 +28,15 @@ public:
 
     int addSource(std::string source);
 
+    int getSourceIndex(std::string source);
+
     std::vector<std::string> &getNamesVector();
 
     int getNamesCount();
 
     int addName(std::string name);
+
+    int getNameIndex(std::string name);
 
     int getGeneratedColumns();
 
@@ -54,6 +59,8 @@ private:
     std::vector<std::string> _sources;
     std::vector<std::string> _names;
     std::vector<MappingLine *> _mapping_lines;
+    std::unordered_map<std::string, int> _sources_index;
+    std::unordered_map<std::string, int> _names_index;
 
     int _generated_columns = 0;
     int _generated_lines = -1;

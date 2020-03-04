@@ -127,4 +127,29 @@ describe("SourceMap - Basics", () => {
     assert.deepEqual(sm.addNames(["run"]), [0]);
     assert.deepEqual(sm.addNames(["processQueue", "processNode"]), [1, 2]);
   });
+
+  it("Should be able to return source index", () => {
+    let sm = new SourceMap(
+      SIMPLE_SOURCE_MAP.mappings,
+      SIMPLE_SOURCE_MAP.sources,
+      SIMPLE_SOURCE_MAP.names
+    );
+
+    sm.addSources(["test.ts"]);
+    assert.equal(sm.getSourceIndex("helloworld.coffee"), 0);
+    assert.equal(sm.getSourceIndex("e.coffee"), -1);
+    assert.equal(sm.getSourceIndex("test.ts"), 1);
+  });
+
+  it("Should be able to return name index", () => {
+    let sm = new SourceMap(
+      SIMPLE_SOURCE_MAP.mappings,
+      SIMPLE_SOURCE_MAP.sources,
+      SIMPLE_SOURCE_MAP.names
+    );
+
+    sm.addNames(["test"]);
+    assert.equal(sm.getNameIndex("test"), 0);
+    assert.equal(sm.getNameIndex("something"), -1);
+  });
 });

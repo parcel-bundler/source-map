@@ -315,6 +315,34 @@ Napi::Value SourceMapBinding::findByOriginal(const Napi::CallbackInfo &info) {
     return Napi::Value();
 }
 
+Napi::Value SourceMapBinding::getSourceIndex(const Napi::CallbackInfo &info) {
+    Napi::Env env = info.Env();
+    Napi::HandleScope scope(env);
+
+    if (info.Length() < 1 || !info[0].IsString()) {
+        Napi::TypeError::New(env, "Expected a single string parameter").ThrowAsJavaScriptException();
+    }
+
+    std::string source = info[0].As<Napi::String>().Utf8Value();
+    int index = this->_mapping_container.getSourceIndex(source);
+
+    return Napi::Number::New(env, index);
+}
+
+Napi::Value SourceMapBinding::getNameIndex(const Napi::CallbackInfo &info) {
+    Napi::Env env = info.Env();
+    Napi::HandleScope scope(env);
+
+    if (info.Length() < 1 || !info[0].IsString()) {
+        Napi::TypeError::New(env, "Expected a single string parameter").ThrowAsJavaScriptException();
+    }
+
+    std::string name = info[0].As<Napi::String>().Utf8Value();
+    int index = this->_mapping_container.getNameIndex(name);
+
+    return Napi::Number::New(env, index);
+}
+
 std::vector<int> SourceMapBinding::_addNames(Napi::Array &namesArray) {
     std::vector<int> insertions;
     int length = namesArray.Length();
@@ -399,6 +427,8 @@ Napi::Object SourceMapBinding::Init(Napi::Env env, Napi::Object exports) {
             InstanceMethod("addIndexedMappings", &SourceMapBinding::addIndexedMappings),
             InstanceMethod("addNames", &SourceMapBinding::addNames),
             InstanceMethod("addSources", &SourceMapBinding::addSources),
+            InstanceMethod("getSourceIndex", &SourceMapBinding::getSourceIndex),
+            InstanceMethod("getNameIndex", &SourceMapBinding::getNameIndex),
     });
 
     constructor = Napi::Persistent(func);

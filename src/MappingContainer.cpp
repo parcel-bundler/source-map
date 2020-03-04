@@ -15,7 +15,9 @@ int MappingContainer::getNamesCount() {
 
 int MappingContainer::addName(std::string name) {
     this->_names.push_back(name);
-    return (int) this->_names.size() - 1;
+    int index = (int) this->_names.size() - 1;
+    this->_names_index[name] = index;
+    return index;
 }
 
 int MappingContainer::getSourcesCount() {
@@ -24,7 +26,9 @@ int MappingContainer::getSourcesCount() {
 
 int MappingContainer::addSource(std::string source) {
     this->_sources.push_back(source);
-    return (int) this->_sources.size() - 1;
+    int index = (int) this->_sources.size() - 1;
+    this->_sources_index[source] = index;
+    return index;
 }
 
 int MappingContainer::getGeneratedLines() {
@@ -237,4 +241,20 @@ MappingLine *MappingContainer::addLine(int size) {
     MappingLine *line = new MappingLine(++this->_generated_lines, size);
     this->_mapping_lines.push_back(line);
     return line;
+}
+
+int MappingContainer::getSourceIndex(std::string source) {
+    auto foundValue = _sources_index.find(source);
+    if (foundValue == _sources_index.end()) {
+        return -1;
+    }
+    return foundValue->second;
+}
+
+int MappingContainer::getNameIndex(std::string name) {
+    auto foundValue = _names_index.find(name);
+    if (foundValue == _names_index.end()) {
+        return -1;
+    }
+    return foundValue->second;
 }

@@ -41,5 +41,9 @@ private:
 
     Napi::Value toBuffer(const Napi::CallbackInfo &info);
 
+    Napi::Value getSourceIndex(const Napi::CallbackInfo &info);
+
+    Napi::Value getNameIndex(const Napi::CallbackInfo &info);
+
     MappingContainer _mapping_container;
 };
