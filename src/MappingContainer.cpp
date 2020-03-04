@@ -117,7 +117,7 @@ void MappingContainer::addVLQMappings(const std::string &mappings_input, int lin
             this->_addMappingBySegment(generatedLine, segment, segmentIndex);
 
             if (c == ';') {
-                segment[0] = 0;
+                segment[0] = column_offset;
                 ++generatedLine;
             }
 
