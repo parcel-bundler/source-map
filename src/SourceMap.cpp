@@ -291,18 +291,33 @@ void SourceMapBinding::Finalize(Napi::Env env) {
     this->_mapping_container.Finalize();
 }
 
+// addIndexedMappings(array<mapping>, lineOffset, columnOffset): uses numbers for source and name with the index specified in the sources/names map/array in SourceMap instance
+Napi::Value SourceMapBinding::addIndexedMappings(const Napi::CallbackInfo &info) {
+    Napi::Env env = info.Env();
+    Napi::HandleScope scope(env);
+
+    Napi::TypeError::New(env, "This function has not been implemented yet!").ThrowAsJavaScriptException();
+
+    return Napi::Value();
+}
+
 // Finds a mapping based on generated location
 Napi::Value SourceMapBinding::findByGenerated(const Napi::CallbackInfo &info) {
+    Napi::Env env = info.Env();
+    Napi::HandleScope scope(env);
+
+    Napi::TypeError::New(env, "This function has not been implemented yet!").ThrowAsJavaScriptException();
+
     return Napi::Value();
 }
 
 // Finds a mapping based on original location
 Napi::Value SourceMapBinding::findByOriginal(const Napi::CallbackInfo &info) {
-    return Napi::Value();
-}
+    Napi::Env env = info.Env();
+    Napi::HandleScope scope(env);
 
-// addIndexedMappings(array<mapping>, lineOffset, columnOffset): uses numbers for source and name with the index specified in the sources/names map/array in SourceMap instance
-Napi::Value SourceMapBinding::addIndexedMappings(const Napi::CallbackInfo &info) {
+    Napi::TypeError::New(env, "This function has not been implemented yet!").ThrowAsJavaScriptException();
+
     return Napi::Value();
 }
 
