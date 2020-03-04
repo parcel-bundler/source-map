@@ -1,4 +1,5 @@
 #include "MappingLine.h"
+#include <algorithm>
 #include <iostream>
 
 struct MappingGeneratedColumnComparator {
