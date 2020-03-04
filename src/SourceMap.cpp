@@ -126,9 +126,6 @@ void SourceMapBinding::addBufferMappings(const Napi::CallbackInfo &info) {
     for (auto it = map->names()->begin(); it != namesEnd; ++it) {
         this->_mapping_container.addName(it->str());
     }
-
-    // In the unlikely scenario a buffermapping is unsorted, sort it
-    this->_mapping_container.sort();
 }
 
 Napi::Value SourceMapBinding::stringify(const Napi::CallbackInfo &info) {
@@ -179,7 +176,7 @@ Napi::Value SourceMapBinding::toBuffer(const Napi::CallbackInfo &info) {
         sources_vector.push_back(builder.CreateString(*it));
     }
 
-    // Finish sorting before writing to buffer
+    // Sort mappings
     this->_mapping_container.sort();
 
     std::vector<flatbuffers::Offset<SourceMapSchema::MappingLine>> lines_vector;

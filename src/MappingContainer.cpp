@@ -146,8 +146,6 @@ void MappingContainer::addVLQMappings(const std::string &mappings_input, int lin
     if (segmentIndex > 0) {
         this->_addMappingBySegment(generatedLine, segment, segmentIndex);
     }
-
-    this->sort();
 }
 
 std::string MappingContainer::toVLQMappings() {
@@ -159,7 +157,7 @@ std::string MappingContainer::toVLQMappings() {
     int previousName = 0;
     bool isFirstLine = true;
 
-    // Sort mappings, in case any edits have occured
+    // Sort mappings
     this->sort();
 
     auto lineEnd = _mapping_lines.end();
