@@ -28,6 +28,7 @@ void MappingLine::shrink_to_fit() {
 void MappingLine::sort() {
     if (!this->_is_sorted) {
         std::sort(this->_segments.begin(), this->_segments.end(), MappingGeneratedColumnComparator());
+        this->_is_sorted = true;
     }
 }
 
