@@ -43,13 +43,13 @@ public:
 
     int getTotalSegments();
 
+    Position originalPositionFor(Position generated);
+
     std::vector<MappingLine *> &getMappingLinesVector();
 
     void sort();
 
-    int segments();
-
-    std::string debugString();
+    int getSegmentsCount();
 
 private:
     // Processed mappings, for all kinds of modifying within the sourcemap

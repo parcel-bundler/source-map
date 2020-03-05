@@ -63,7 +63,7 @@ void MappingContainer::addMapping(Position generated, Position original, int sou
     ++this->_segment_count;
 }
 
-int MappingContainer::segments() {
+int MappingContainer::getSegmentsCount() {
     return this->_segment_count;
 }
 
@@ -206,30 +206,6 @@ int MappingContainer::getTotalSegments() {
     return this->_segment_count;
 }
 
-std::string MappingContainer::debugString() {
-    std::stringstream out;
-
-    auto end = this->_mapping_lines.end();
-    for (auto lineIterator = this->_mapping_lines.begin(); lineIterator != end; ++lineIterator) {
-        auto line = (*lineIterator);
-        out << "==== Start Line ====" << std::endl;
-        out << "Generated Line: " << line->lineNumber() << std::endl;
-
-        auto segments = line->_segments;
-        auto lineEnd = segments.end();
-        for (auto it = segments.begin(); it != lineEnd; ++it) {
-            Mapping mapping = *it;
-            out << "==== Start Mapping ====" << std::endl;
-            out << "Generated column: " << mapping.generated.column << std::endl;
-            out << "Source: " << mapping.source << std::endl;
-            out << "Original line: " << mapping.original.line << std::endl;
-            out << "Original column: " << mapping.original.column << std::endl;
-            out << "Name: " << mapping.name << std::endl;
-        }
-    }
-    return out.str();
-}
-
 std::vector<std::string> &MappingContainer::getNamesVector() {
     return this->_names;
 }
@@ -262,4 +238,8 @@ int MappingContainer::getNameIndex(std::string name) {
         return -1;
     }
     return foundValue->second;
+}
+
+Position MappingContainer::originalPositionFor(Position) {
+    return Position(0, 0);
 }

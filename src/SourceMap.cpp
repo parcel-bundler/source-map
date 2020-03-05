@@ -353,23 +353,29 @@ void SourceMapBinding::addIndexedMappings(const Napi::CallbackInfo &info) {
 }
 
 // Finds a mapping based on generated location
-Napi::Value SourceMapBinding::findByGenerated(const Napi::CallbackInfo &info) {
+Napi::Value SourceMapBinding::originalPositionFor(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
 
-    Napi::TypeError::New(env, "This function has not been implemented yet!").ThrowAsJavaScriptException();
+    if (info.Length() != 1 || !info[0].IsObject()) {
+        Napi::TypeError::New(env, "Expected one parameter of type Object{line, column}").ThrowAsJavaScriptException();
+    }
 
-    return Napi::Value();
-}
+    Napi::Object generatedPositionObject = info[0].As<Napi::Object>();
+    int line = generatedPositionObject.Get("line").As<Napi::Number>().Int32Value();
+    int column = generatedPositionObject.Get("column").As<Napi::Number>().Int32Value();
 
-// Finds a mapping based on original location
-Napi::Value SourceMapBinding::findByOriginal(const Napi::CallbackInfo &info) {
-    Napi::Env env = info.Env();
-    Napi::HandleScope scope(env);
+    Position generatedPosition = Position(line, column);
+    Position originalPosition = this->_mapping_container.originalPositionFor(generatedPosition);
 
-    Napi::TypeError::New(env, "This function has not been implemented yet!").ThrowAsJavaScriptException();
-
-    return Napi::Value();
+    if (originalPosition.line > -1 && originalPosition.column > -1) {
+        Napi::Object originalPositionObject = Napi::Object::New(env);
+        originalPositionObject.Set("line", originalPosition.line);
+        originalPositionObject.Set("column", originalPosition.column);
+        return originalPositionObject;
+    } else {
+        return env.Null();
+    }
 }
 
 Napi::Value SourceMapBinding::getSourceIndex(const Napi::CallbackInfo &info) {
@@ -471,8 +477,7 @@ Napi::Object SourceMapBinding::Init(Napi::Env env, Napi::Object exports) {
             InstanceMethod("stringify", &SourceMapBinding::stringify),
             InstanceMethod("toBuffer", &SourceMapBinding::toBuffer),
             InstanceMethod("getMap", &SourceMapBinding::getMap),
-            InstanceMethod("findByGenerated", &SourceMapBinding::findByGenerated),
-            InstanceMethod("findByOriginal", &SourceMapBinding::findByOriginal),
+            InstanceMethod("originalPositionFor", &SourceMapBinding::originalPositionFor),
             InstanceMethod("addIndexedMappings", &SourceMapBinding::addIndexedMappings),
             InstanceMethod("addNames", &SourceMapBinding::addNames),
             InstanceMethod("addSources", &SourceMapBinding::addSources),
