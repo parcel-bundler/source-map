@@ -3,7 +3,7 @@ const Benchmark = require("tiny-benchy");
 const assert = require("assert");
 const SourceMap = require("../");
 
-const ITERATIONS = 50;
+const ITERATIONS = 25;
 
 const test_maps = [
   {
@@ -16,6 +16,24 @@ const test_maps = [
   require("./maps/angular")
 ];
 const suite = new Benchmark(ITERATIONS);
+
+let mappings = new Array(1000).fill("").map((item, index) => {
+  return {
+    source: "index.js",
+    name: "A",
+    original: {
+      line: index,
+      column: 0 + 10 * index
+    },
+    generated: {
+      line: 1,
+      column: 15 + 10 * index
+    }
+  };
+});
+
+let sourcemapBuffer = new SourceMap(mappings).toBuffer();
+let parcelSourceMap = new ParcelSourceMap(mappings).serialize();
 
 suite.add("@parcel/source-map#consume", async () => {
   for (let map of test_maps) {
@@ -40,6 +58,13 @@ suite.add(
     }
   }
 );
+
+suite.add("@parcel/source-map#combine 100 maps", async () => {
+  let map = new ParcelSourceMap([...mappings]);
+  for (let i = 0; i < 100; i++) {
+    map.addMap(ParcelSourceMap.deserialize(parcelSourceMap), i + 1);
+  }
+});
 
 suite.add("cpp#consume", async () => {
   for (let map of test_maps) {
@@ -66,6 +91,13 @@ suite.add("cpp#consume->toBuffer->fromBuffer", async () => {
     let sm = new SourceMap(map.mappings, map.sources, map.names);
     let buff = sm.toBuffer();
     sm = new SourceMap(buff);
+  }
+});
+
+suite.add("cpp#combine 100 maps", async () => {
+  let map = new SourceMap(sourcemapBuffer);
+  for (let i = 0; i < 100; i++) {
+    map.addBufferMappings(sourcemapBuffer, i + 1);
   }
 });
 
