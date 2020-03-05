@@ -45,7 +45,6 @@ int MappingContainer::getGeneratedColumns() {
     return _generated_columns;
 }
 
-// TODO: Use a background thread for sorting?
 void MappingContainer::sort() {
     auto lineEnd = _mapping_lines.end();
     for (auto lineIterator = _mapping_lines.begin(); lineIterator != lineEnd; ++lineIterator) {
@@ -88,7 +87,6 @@ void MappingContainer::addVLQMappings(const std::string &mappings_input, std::ve
     int segment[5] = {column_offset, 0, 0, 0, 0};
     int segmentIndex = 0;
 
-    // TODO: Pre-allocating memory might speed up things...
     // `input.len() / 2` is the upper bound on how many mappings the string
     // might contain. There would be some sequence like `A,A,...` or `A;A...`
     // int upperbound = mappings_input.length() / 2;
@@ -241,5 +239,6 @@ int MappingContainer::getNameIndex(std::string name) {
 }
 
 Position MappingContainer::originalPositionFor(Position) {
+
     return Position(0, 0);
 }

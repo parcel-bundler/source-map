@@ -21,7 +21,6 @@ SourceMapBinding::SourceMapBinding(const Napi::CallbackInfo &info) : Napi::Objec
 
 SourceMapBinding::~SourceMapBinding() {}
 
-// TODO: Use proper source indexes
 void SourceMapBinding::addRawMappings(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
@@ -59,7 +58,6 @@ void SourceMapBinding::addRawMappings(const Napi::CallbackInfo &info) {
     this->_mapping_container.addVLQMappings(rawMappings, sourcesIndex, namesIndex, lineOffset, columnOffset);
 }
 
-// TODO: Use proper source indexes
 void SourceMapBinding::addBufferMappings(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
@@ -412,7 +410,6 @@ std::vector<int> SourceMapBinding::_addNames(Napi::Array &namesArray) {
     for (int i = 0; i < length; ++i) {
         Napi::Value name = namesArray.Get(i);
 
-        // TODO: Check if string and throw error?
         insertions.push_back(this->_mapping_container.addName(name.As<Napi::String>().Utf8Value()));
     }
     return insertions;
@@ -442,7 +439,6 @@ std::vector<int> SourceMapBinding::_addSources(Napi::Array &sourcesArray) {
     for (unsigned int i = 0; i < length; ++i) {
         Napi::Value source = sourcesArray.Get(i);
 
-        // TODO: Check if string and throw error if not
         insertions.push_back(this->_mapping_container.addSource(source.As<Napi::String>().Utf8Value()));
     }
     return insertions;
