@@ -43,8 +43,6 @@ public:
 
     int getTotalSegments();
 
-    Position originalPositionFor(Position generated);
-
     std::vector<MappingLine *> &getMappingLinesVector();
 
     void sort();

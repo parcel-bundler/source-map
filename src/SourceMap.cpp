@@ -350,32 +350,6 @@ void SourceMapBinding::addIndexedMappings(const Napi::CallbackInfo &info) {
     }
 }
 
-// Finds a mapping based on generated location
-Napi::Value SourceMapBinding::originalPositionFor(const Napi::CallbackInfo &info) {
-    Napi::Env env = info.Env();
-    Napi::HandleScope scope(env);
-
-    if (info.Length() != 1 || !info[0].IsObject()) {
-        Napi::TypeError::New(env, "Expected one parameter of type Object{line, column}").ThrowAsJavaScriptException();
-    }
-
-    Napi::Object generatedPositionObject = info[0].As<Napi::Object>();
-    int line = generatedPositionObject.Get("line").As<Napi::Number>().Int32Value();
-    int column = generatedPositionObject.Get("column").As<Napi::Number>().Int32Value();
-
-    Position generatedPosition = Position(line, column);
-    Position originalPosition = this->_mapping_container.originalPositionFor(generatedPosition);
-
-    if (originalPosition.line > -1 && originalPosition.column > -1) {
-        Napi::Object originalPositionObject = Napi::Object::New(env);
-        originalPositionObject.Set("line", originalPosition.line);
-        originalPositionObject.Set("column", originalPosition.column);
-        return originalPositionObject;
-    } else {
-        return env.Null();
-    }
-}
-
 Napi::Value SourceMapBinding::getSourceIndex(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
@@ -473,7 +447,6 @@ Napi::Object SourceMapBinding::Init(Napi::Env env, Napi::Object exports) {
             InstanceMethod("stringify", &SourceMapBinding::stringify),
             InstanceMethod("toBuffer", &SourceMapBinding::toBuffer),
             InstanceMethod("getMap", &SourceMapBinding::getMap),
-            InstanceMethod("originalPositionFor", &SourceMapBinding::originalPositionFor),
             InstanceMethod("addIndexedMappings", &SourceMapBinding::addIndexedMappings),
             InstanceMethod("addNames", &SourceMapBinding::addNames),
             InstanceMethod("addSources", &SourceMapBinding::addSources),

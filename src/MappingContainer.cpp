@@ -237,8 +237,3 @@ int MappingContainer::getNameIndex(std::string name) {
     }
     return foundValue->second;
 }
-
-Position MappingContainer::originalPositionFor(Position) {
-
-    return Position(0, 0);
-}
