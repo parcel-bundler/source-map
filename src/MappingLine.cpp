@@ -1,6 +1,5 @@
 #include "MappingLine.h"
 #include <algorithm>
-#include <iostream>
 
 struct MappingGeneratedColumnComparator {
     bool operator()(const Mapping &m1, const Mapping &m2) {
@@ -37,7 +36,7 @@ int MappingLine::lineNumber() {
     return this->_line_number;
 }
 
-int MappingLine::segments() {
+int MappingLine::getSegmentCount() {
     return this->_segment_count;
 }
 

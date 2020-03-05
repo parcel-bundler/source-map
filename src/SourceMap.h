@@ -21,6 +21,8 @@ private:
 
     void addIndexedMappings(const Napi::CallbackInfo &info);
 
+    void extends(const Napi::CallbackInfo &info);
+
     std::vector<int> _addSources(Napi::Array &sourcesArray);
 
     std::vector<int> _addNames(Napi::Array &namesArray);

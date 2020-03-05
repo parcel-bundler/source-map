@@ -15,7 +15,7 @@ public:
 
     int lineNumber();
 
-    int segments();
+    int getSegmentCount();
 
     std::vector<Mapping> _segments;
 

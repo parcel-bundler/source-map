@@ -90,8 +90,27 @@ describe("SourceMap - Basics", () => {
     });
   });
 
-  it.skip("Should be able to instantiate a SourceMap with processed mappings", () => {
-    // TODO: Write this functionality...
+  it("Should be able to instantiate a SourceMap with processed mappings", () => {
+    let map = new SourceMap([
+      {
+        source: "index.js",
+        name: "A",
+        original: {
+          line: 1,
+          column: 0
+        },
+        generated: {
+          line: 6,
+          column: 15
+        }
+      }
+    ]);
+
+    assert.deepEqual(map.stringify(), {
+      mappings: ";;;;;;eACAA",
+      sources: ["index.js"],
+      names: ["A"]
+    });
   });
 
   it("Should be able to create a SourceMap buffer and construct a new SourceMap from it", () => {
