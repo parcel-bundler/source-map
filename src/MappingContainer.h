@@ -17,8 +17,7 @@ public:
 
     void createLinesIfUndefined(int generatedLine);
 
-    void addVLQMappings(const std::string &mappings_input, int line_offset = 0, int column_offset = 0,
-                        int sources_offset = 0, int names_offset = 0);
+    void addVLQMappings(const std::string &mappings_input, std::vector<int> &sources, std::vector<int> &names, int line_offset = 0, int column_offset = 0);
 
     std::string toVLQMappings();
 
@@ -53,8 +52,6 @@ public:
     std::string debugString();
 
 private:
-    void _addMappingBySegment(int generatedLine, int *segment, int segmentIndex);
-
     // Processed mappings, for all kinds of modifying within the sourcemap
     std::vector<std::string> _sources;
     std::vector<std::string> _names;

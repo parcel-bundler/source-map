@@ -14,9 +14,12 @@ int MappingContainer::getNamesCount() {
 }
 
 int MappingContainer::addName(std::string name) {
-    this->_names.push_back(name);
-    int index = (int) this->_names.size() - 1;
-    this->_names_index[name] = index;
+    int index = this->getNameIndex(name);
+    if (index < 0) {
+        this->_names.push_back(name);
+        index = (int) this->_names.size() - 1;
+        this->_names_index[name] = index;
+    }
     return index;
 }
 
@@ -25,9 +28,12 @@ int MappingContainer::getSourcesCount() {
 }
 
 int MappingContainer::addSource(std::string source) {
-    this->_sources.push_back(source);
-    int index = (int) this->_sources.size() - 1;
-    this->_sources_index[source] = index;
+    int index = this->getSourceIndex(source);
+    if (index < 0) {
+        this->_sources.push_back(source);
+        index = (int) this->_sources.size() - 1;
+        this->_sources_index[source] = index;
+    }
     return index;
 }
 
@@ -60,17 +66,6 @@ int MappingContainer::segments() {
     return this->_segment_count;
 }
 
-void MappingContainer::_addMappingBySegment(int generatedLine, int *segment, int segmentIndex) {
-    bool hasSource = segmentIndex > 3;
-    bool hasName = segmentIndex > 4;
-
-    Position generated = Position{generatedLine, segment[0]};
-    Position original = Position{hasSource ? segment[2] : -1, hasSource ? segment[3] : -1};
-
-    this->createLinesIfUndefined(generatedLine);
-    this->addMapping(generated, original, hasSource ? segment[1] : -1, hasName ? segment[4] : -1);
-}
-
 void MappingContainer::createLinesIfUndefined(int generatedLine) {
     if (this->_generated_lines < generatedLine) {
         this->_mapping_lines.reserve(generatedLine - this->_generated_lines + 1);
@@ -82,8 +77,7 @@ void MappingContainer::createLinesIfUndefined(int generatedLine) {
     }
 }
 
-void MappingContainer::addVLQMappings(const std::string &mappings_input, int line_offset, int column_offset,
-                                      int sources_offset, int names_offset) {
+void MappingContainer::addVLQMappings(const std::string &mappings_input, std::vector<int> &sources, std::vector<int> &names, int line_offset, int column_offset) {
     // SourceMap information
     int generatedLine = line_offset;
 
@@ -92,7 +86,7 @@ void MappingContainer::addVLQMappings(const std::string &mappings_input, int lin
     // VLQ Decoding
     int value = 0;
     int shift = 0;
-    int segment[5] = {column_offset, sources_offset, 0, 0, names_offset};
+    int segment[5] = {column_offset, 0, 0, 0, 0};
     int segmentIndex = 0;
 
     // TODO: Pre-allocating memory might speed up things...
@@ -104,7 +98,14 @@ void MappingContainer::addVLQMappings(const std::string &mappings_input, int lin
     for (auto it = mappings_input.begin(); it != end; ++it) {
         const char c = *it;
         if (c == ',' || c == ';') {
-            this->_addMappingBySegment(generatedLine, segment, segmentIndex);
+            bool hasSource = segmentIndex > 3;
+            bool hasName = segmentIndex > 4;
+
+            Position generated = Position{generatedLine, segment[0]};
+            Position original = Position{hasSource ? segment[2] : -1, hasSource ? segment[3] : -1};
+
+            this->createLinesIfUndefined(generatedLine);
+            this->addMapping(generated, original, hasSource ? sources[segment[1]] : -1, hasName ? names[segment[4]] : -1);
 
             if (c == ';') {
                 segment[0] = column_offset;
@@ -134,7 +135,14 @@ void MappingContainer::addVLQMappings(const std::string &mappings_input, int lin
 
     // Process last mapping...
     if (segmentIndex > 0) {
-        this->_addMappingBySegment(generatedLine, segment, segmentIndex);
+        bool hasSource = segmentIndex > 3;
+        bool hasName = segmentIndex > 4;
+
+        Position generated = Position{generatedLine, segment[0]};
+        Position original = Position{hasSource ? segment[2] : -1, hasSource ? segment[3] : -1};
+
+        this->createLinesIfUndefined(generatedLine);
+        this->addMapping(generated, original, hasSource ? sources[segment[1]] : -1, hasName ? names[segment[4]] : -1);
     }
 }
 

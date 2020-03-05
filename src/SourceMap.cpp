@@ -19,6 +19,7 @@ SourceMapBinding::SourceMapBinding(const Napi::CallbackInfo &info) : Napi::Objec
 
 SourceMapBinding::~SourceMapBinding() {}
 
+// TODO: Use proper source indexes
 void SourceMapBinding::addRawMappings(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
@@ -50,13 +51,13 @@ void SourceMapBinding::addRawMappings(const Napi::CallbackInfo &info) {
     int lineOffset = info.Length() > 3 ? info[3].As<Napi::Number>().Int32Value() : 0;
     int columnOffset = info.Length() > 4 ? info[4].As<Napi::Number>().Int32Value() : 0;
 
-    this->_mapping_container.addVLQMappings(rawMappings, lineOffset, columnOffset,
-                                            this->_mapping_container.getSourcesCount(),
-                                            this->_mapping_container.getNamesCount());
-    this->_addNames(names);
-    this->_addSources(sources);
+    std::vector<int> namesIndex = this->_addNames(names);
+    std::vector<int> sourcesIndex = this->_addSources(sources);
+
+    this->_mapping_container.addVLQMappings(rawMappings, sourcesIndex, namesIndex, lineOffset, columnOffset);
 }
 
+// TODO: Use proper source indexes
 void SourceMapBinding::addBufferMappings(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
@@ -86,8 +87,17 @@ void SourceMapBinding::addBufferMappings(const Napi::CallbackInfo &info) {
 
     auto map = SourceMapSchema::GetMap(mapBuffer.Data());
 
-    int sources = this->_mapping_container.getSourcesCount();
-    int names = this->_mapping_container.getNamesCount();
+    std::vector<int> sources;
+    auto sourcesEnd = map->sources()->end();
+    for (auto it = map->sources()->begin(); it != sourcesEnd; ++it) {
+        sources.push_back(this->_mapping_container.addSource(it->str()));
+    }
+
+    std::vector<int> names;
+    auto namesEnd = map->names()->end();
+    for (auto it = map->names()->begin(); it != namesEnd; ++it) {
+        names.push_back(this->_mapping_container.addName(it->str()));
+    }
 
     this->_mapping_container.createLinesIfUndefined(map->lineCount() + lineOffset);
 
@@ -107,24 +117,14 @@ void SourceMapBinding::addBufferMappings(const Napi::CallbackInfo &info) {
                                           segmentIterator->generatedColumn() + columnOffset};
             Position original = Position{segmentIterator->originalLine(), segmentIterator->originalColumn()};
 
-            int source = segmentIterator->source() > -1 ? segmentIterator->source() + sources : -1;
-            int name = segmentIterator->name() > -1 ? segmentIterator->name() + names : -1;
+            int source = segmentIterator->source() > -1 ? sources[segmentIterator->source()] : -1;
+            int name = segmentIterator->name() > -1 ? names[segmentIterator->name()] : -1;
             this->_mapping_container.addMapping(generated, original, source, name);
         }
 
         if (isNewLine) {
             mappingLine->setIsSorted(line->isSorted());
         }
-    }
-
-    auto sourcesEnd = map->sources()->end();
-    for (auto it = map->sources()->begin(); it != sourcesEnd; ++it) {
-        this->_mapping_container.addSource(it->str());
-    }
-
-    auto namesEnd = map->names()->end();
-    for (auto it = map->names()->begin(); it != namesEnd; ++it) {
-        this->_mapping_container.addName(it->str());
     }
 }
 
@@ -286,13 +286,68 @@ void SourceMapBinding::Finalize(Napi::Env env) {
 }
 
 // addIndexedMappings(array<mapping>, lineOffset, columnOffset): uses numbers for source and name with the index specified in the sources/names map/array in SourceMap instance
-Napi::Value SourceMapBinding::addIndexedMappings(const Napi::CallbackInfo &info) {
+void SourceMapBinding::addIndexedMappings(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
 
-    Napi::TypeError::New(env, "This function has not been implemented yet!").ThrowAsJavaScriptException();
+    if (info.Length() < 1) {
+        Napi::TypeError::New(env, "Expected 1-3 parameters").ThrowAsJavaScriptException();
+    }
 
-    return Napi::Value();
+    if (!info[0].IsArray()) {
+        Napi::TypeError::New(env, "First parameter should be an array").ThrowAsJavaScriptException();
+    }
+
+    if (info.Length() > 1 && !info[1].IsNumber()) {
+        Napi::TypeError::New(env, "Second parameter should be an integer").ThrowAsJavaScriptException();
+    }
+
+    if (info.Length() > 2 && !info[2].IsNumber()) {
+        Napi::TypeError::New(env, "Third parameter should be an integer").ThrowAsJavaScriptException();
+    }
+
+    Napi::Array mappingsArray = info[0].As<Napi::Array>();
+    int lineOffset = info.Length() > 1 ? info[1].As<Napi::Number>().Int32Value() : 0;
+    int columnOffset = info.Length() > 2 ? info[2].As<Napi::Number>().Int32Value() : 0;
+
+    int length = mappingsArray.Length();
+    for (int i = 0; i < length; ++i) {
+        auto mapping = mappingsArray.Get(i);
+        if (!mapping.IsObject()) {
+            Napi::TypeError::New(env, "Each mapping should be an object").ThrowAsJavaScriptException();
+        }
+
+        Napi::Object mappingObject = mapping.As<Napi::Object>();
+        Napi::Object generated = mappingObject.Get("generated").As<Napi::Object>();
+        int generatedLine = generated.Get("line").As<Napi::Number>().Int32Value();
+        int generatedColumn = generated.Get("column").As<Napi::Number>().Int32Value();
+        Position generatedPosition = Position{generatedLine + lineOffset, generatedColumn + columnOffset};
+        if (!mappingObject.Has("original")) {
+            this->_mapping_container.addMapping(generatedPosition);
+        } else {
+            int originalLine = generated.Get("line").As<Napi::Number>().Int32Value();
+            int originalColumn = generated.Get("column").As<Napi::Number>().Int32Value();
+            Position originalPosition = Position{originalLine, originalColumn};
+            int source = -1;
+            if (generated.Get("source").IsString()) {
+                source = this->_mapping_container.addSource(generated.Get("source").As<Napi::String>().Utf8Value());
+            } else {
+                source = generated.Get("source").As<Napi::Number>().Int32Value();
+            }
+
+            if (!mappingObject.Has("name")) {
+                this->_mapping_container.addMapping(generatedPosition, originalPosition, source);
+            } else {
+                int name = -1;
+                if (generated.Get("name").IsString()) {
+                    name = this->_mapping_container.addName(generated.Get("name").As<Napi::String>().Utf8Value());
+                } else {
+                    name = generated.Get("name").As<Napi::Number>().Int32Value();
+                }
+                this->_mapping_container.addMapping(generatedPosition, originalPosition, name);
+            }
+        }
+    }
 }
 
 // Finds a mapping based on generated location
@@ -349,12 +404,8 @@ std::vector<int> SourceMapBinding::_addNames(Napi::Array &namesArray) {
     for (int i = 0; i < length; ++i) {
         auto name = namesArray.Get(i);
 
-        // Not sure if this should throw an error or not
-        if (!name.IsString()) {
-            insertions.push_back(this->_mapping_container.addName(""));
-        } else {
-            insertions.push_back(this->_mapping_container.addName(name.As<Napi::String>().Utf8Value()));
-        }
+        // TODO: Check if string and throw error?
+        insertions.push_back(this->_mapping_container.addName(name.As<Napi::String>().Utf8Value()));
     }
     return insertions;
 }
@@ -383,12 +434,8 @@ std::vector<int> SourceMapBinding::_addSources(Napi::Array &sourcesArray) {
     for (int i = 0; i < length; ++i) {
         auto source = sourcesArray.Get(i);
 
-        // Not sure if this should throw an error or not
-        if (!source.IsString()) {
-            insertions.push_back(this->_mapping_container.addName(""));
-        } else {
-            insertions.push_back(this->_mapping_container.addSource(source.As<Napi::String>().Utf8Value()));
-        }
+        // TODO: Check if string and throw error if not
+        insertions.push_back(this->_mapping_container.addSource(source.As<Napi::String>().Utf8Value()));
     }
     return insertions;
 }
