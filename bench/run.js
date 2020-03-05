@@ -3,7 +3,7 @@ const Benchmark = require("tiny-benchy");
 const assert = require("assert");
 const SourceMap = require("../");
 
-const ITERATIONS = 25;
+const ITERATIONS = 10;
 
 const test_maps = [
   {
@@ -17,7 +17,7 @@ const test_maps = [
 ];
 const suite = new Benchmark(ITERATIONS);
 
-let mappings = new Array(1000).fill("").map((item, index) => {
+let mappings = new Array(10000).fill("").map((item, index) => {
   return {
     source: "index.js",
     name: "A",
@@ -59,9 +59,9 @@ suite.add(
   }
 );
 
-suite.add("@parcel/source-map#combine 100 maps", async () => {
+suite.add("@parcel/source-map#combine 1000 maps", async () => {
   let map = new ParcelSourceMap([...mappings]);
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 1000; i++) {
     map.addMap(ParcelSourceMap.deserialize(parcelSourceMap), i + 1);
   }
 });
@@ -94,9 +94,9 @@ suite.add("cpp#consume->toBuffer->fromBuffer", async () => {
   }
 });
 
-suite.add("cpp#combine 100 maps", async () => {
+suite.add("cpp#combine 1000 maps", async () => {
   let map = new SourceMap(sourcemapBuffer);
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 1000; i++) {
     map.addBufferMappings(sourcemapBuffer, i + 1);
   }
 });
