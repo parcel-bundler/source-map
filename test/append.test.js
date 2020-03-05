@@ -30,12 +30,12 @@ let expectedResultOne = {
     },
     {
       generated: { line: 1, column: 9 },
-      original: { line: 7, column: 7 },
+      original: { line: 0, column: 7 },
       source: 0
     },
     {
       generated: { line: 1, column: 10 },
-      original: { line: 8, column: 8 },
+      original: { line: 0, column: 8 },
       source: 0
     },
     {
@@ -45,7 +45,7 @@ let expectedResultOne = {
     },
     {
       generated: { line: 1, column: 14 },
-      original: { line: 12, column: 12 },
+      original: { line: 0, column: 12 },
       source: 0
     },
     {
@@ -85,12 +85,12 @@ let expectedResultOne = {
     },
     {
       generated: { line: 11, column: 9 },
-      original: { line: 7, column: 7 },
+      original: { line: 0, column: 7 },
       source: 0
     },
     {
       generated: { line: 11, column: 10 },
-      original: { line: 8, column: 8 },
+      original: { line: 0, column: 8 },
       source: 0
     },
     {
@@ -100,7 +100,7 @@ let expectedResultOne = {
     },
     {
       generated: { line: 11, column: 14 },
-      original: { line: 12, column: 12 },
+      original: { line: 0, column: 12 },
       source: 0
     },
     {
@@ -147,12 +147,12 @@ let expectedResultTwo = {
     },
     {
       generated: { line: 1, column: 9 },
-      original: { line: 7, column: 7 },
+      original: { line: 0, column: 7 },
       source: 0
     },
     {
       generated: { line: 1, column: 10 },
-      original: { line: 8, column: 8 },
+      original: { line: 0, column: 8 },
       source: 0
     },
     {
@@ -162,7 +162,7 @@ let expectedResultTwo = {
     },
     {
       generated: { line: 1, column: 14 },
-      original: { line: 12, column: 12 },
+      original: { line: 0, column: 12 },
       source: 0
     },
     {
@@ -202,12 +202,12 @@ let expectedResultTwo = {
     },
     {
       generated: { line: 11, column: 55 },
-      original: { line: 7, column: 7 },
+      original: { line: 0, column: 7 },
       source: 0
     },
     {
       generated: { line: 11, column: 56 },
-      original: { line: 8, column: 8 },
+      original: { line: 0, column: 8 },
       source: 0
     },
     {
@@ -217,7 +217,7 @@ let expectedResultTwo = {
     },
     {
       generated: { line: 11, column: 60 },
-      original: { line: 12, column: 12 },
+      original: { line: 0, column: 12 },
       source: 0
     },
     {
@@ -295,5 +295,143 @@ describe("SourceMap - Append Mappings", () => {
       46
     );
     assert.deepEqual(sm.getMap(), expectedResultTwo);
+  });
+
+  it("Merge map with null mappings", () => {
+    const MAP_OFFSET = 24;
+    let map = new SourceMap([
+      {
+        source: "index.js",
+        name: "A",
+        original: {
+          line: 1,
+          column: 0
+        },
+        generated: {
+          line: 6,
+          column: 15
+        }
+      },
+      {
+        source: "index.js",
+        name: "B",
+        original: {
+          line: 3,
+          column: 0
+        },
+        generated: {
+          line: 12,
+          column: 6
+        }
+      }
+    ]);
+
+    map.addIndexedMappings(
+      [
+        {
+          source: "local.js",
+          name: "T",
+          original: {
+            line: 1,
+            column: 0
+          },
+          generated: {
+            line: 12,
+            column: 6
+          }
+        },
+        {
+          source: "local.js",
+          name: "Q",
+          original: {
+            line: 1,
+            column: 0
+          },
+          generated: {
+            line: 111,
+            column: 65
+          }
+        },
+        {
+          generated: {
+            line: 152,
+            column: 23
+          }
+        }
+      ],
+      MAP_OFFSET
+    );
+
+    let mappings = map.getMap().mappings;
+
+    assert.equal(mappings.length, 5);
+
+    // Map One
+    assert.deepEqual(mappings[0], {
+      source: 0,
+      name: 0,
+      original: {
+        line: 1,
+        column: 0
+      },
+      generated: {
+        line: 6,
+        column: 15
+      }
+    });
+
+    assert.deepEqual(mappings[1], {
+      source: 0,
+      name: 1,
+      original: {
+        line: 3,
+        column: 0
+      },
+      generated: {
+        line: 12,
+        column: 6
+      }
+    });
+
+    // Map Two
+    assert.deepEqual(mappings[2], {
+      source: 1,
+      name: 2,
+      original: {
+        line: 1,
+        column: 0
+      },
+      generated: {
+        line: 12 + MAP_OFFSET,
+        column: 6
+      }
+    });
+
+    assert.deepEqual(mappings[3], {
+      source: 1,
+      name: 3,
+      original: {
+        line: 1,
+        column: 0
+      },
+      generated: {
+        line: 111 + MAP_OFFSET,
+        column: 65
+      }
+    });
+
+    assert.deepEqual(mappings[4], {
+      generated: {
+        line: 152 + MAP_OFFSET,
+        column: 23
+      }
+    });
+
+    assert.deepEqual(map.stringify(), {
+      sources: ["index.js", "local.js"],
+      names: ["A", "B", "T", "Q"],
+      mappings:
+        ";;;;;;eACAA;;;;;;MAEAC;;;;;;;;;;;;;;;;;;;;;;;;MCFAC;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;iEAAAC;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;uB"
+    });
   });
 });

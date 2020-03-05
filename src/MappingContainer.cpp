@@ -58,6 +58,7 @@ void MappingContainer::addMapping(Position generated, Position original, int sou
         _generated_columns = generated.column;
     }
 
+    this->createLinesIfUndefined(generated.line);
     this->_mapping_lines[generated.line]->addMapping(Mapping{generated, original, source, name});
     ++this->_segment_count;
 }
@@ -69,19 +70,17 @@ int MappingContainer::segments() {
 void MappingContainer::createLinesIfUndefined(int generatedLine) {
     if (this->_generated_lines < generatedLine) {
         this->_mapping_lines.reserve(generatedLine - this->_generated_lines + 1);
-    }
 
-    // While our last line is not equal (or larger) to our generatedLine we need to add lines
-    while (this->_generated_lines < generatedLine) {
-        this->addLine();
+        // While our last line is not equal (or larger) to our generatedLine we need to add lines
+        while (this->_generated_lines < generatedLine) {
+            this->addLine();
+        }
     }
 }
 
 void MappingContainer::addVLQMappings(const std::string &mappings_input, std::vector<int> &sources, std::vector<int> &names, int line_offset, int column_offset) {
     // SourceMap information
     int generatedLine = line_offset;
-
-    this->createLinesIfUndefined(generatedLine);
 
     // VLQ Decoding
     int value = 0;
@@ -104,7 +103,6 @@ void MappingContainer::addVLQMappings(const std::string &mappings_input, std::ve
             Position generated = Position{generatedLine, segment[0]};
             Position original = Position{hasSource ? segment[2] : -1, hasSource ? segment[3] : -1};
 
-            this->createLinesIfUndefined(generatedLine);
             this->addMapping(generated, original, hasSource ? sources[segment[1]] : -1, hasName ? names[segment[4]] : -1);
 
             if (c == ';') {
@@ -141,7 +139,6 @@ void MappingContainer::addVLQMappings(const std::string &mappings_input, std::ve
         Position generated = Position{generatedLine, segment[0]};
         Position original = Position{hasSource ? segment[2] : -1, hasSource ? segment[3] : -1};
 
-        this->createLinesIfUndefined(generatedLine);
         this->addMapping(generated, original, hasSource ? sources[segment[1]] : -1, hasName ? names[segment[4]] : -1);
     }
 }

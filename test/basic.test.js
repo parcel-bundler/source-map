@@ -48,12 +48,12 @@ describe("SourceMap - Basics", () => {
         },
         {
           generated: { line: 1, column: 9 },
-          original: { line: 7, column: 7 },
+          original: { line: 0, column: 7 },
           source: 0
         },
         {
           generated: { line: 1, column: 10 },
-          original: { line: 8, column: 8 },
+          original: { line: 0, column: 8 },
           source: 0
         },
         {
@@ -63,7 +63,7 @@ describe("SourceMap - Basics", () => {
         },
         {
           generated: { line: 1, column: 14 },
-          original: { line: 12, column: 12 },
+          original: { line: 0, column: 12 },
           source: 0
         },
         {
