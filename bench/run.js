@@ -59,7 +59,7 @@ suite.add(
   }
 );
 
-suite.add("@parcel/source-map#combine 1000 maps", async () => {
+suite.add("@parcel/source-map#combine 1000 maps->serialize", async () => {
   let map = new ParcelSourceMap([...mappings]);
   for (let i = 0; i < 1000; i++) {
     map.addMap(ParcelSourceMap.deserialize(parcelSourceMap), i + 1);
@@ -99,6 +99,22 @@ suite.add("cpp#combine 1000 maps", async () => {
   for (let i = 0; i < 1000; i++) {
     map.addBufferMappings(sourcemapBuffer, i + 1);
   }
+});
+
+suite.add("cpp#combine 1000 maps->toBuffer", async () => {
+  let map = new SourceMap(sourcemapBuffer);
+  for (let i = 0; i < 1000; i++) {
+    map.addBufferMappings(sourcemapBuffer, i + 1);
+  }
+  map.toBuffer();
+});
+
+suite.add("cpp#combine 1000 maps->stringify", async () => {
+  let map = new SourceMap(sourcemapBuffer);
+  for (let i = 0; i < 1000; i++) {
+    map.addBufferMappings(sourcemapBuffer, i + 1);
+  }
+  map.stringify();
 });
 
 suite.run();
