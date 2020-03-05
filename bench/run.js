@@ -59,10 +59,10 @@ suite.add(
   }
 );
 
-suite.add("@parcel/source-map#combine 1000 maps->serialize", async () => {
+suite.add("@parcel/source-map#combine 1000 maps", async () => {
   let map = new ParcelSourceMap([...mappings]);
   for (let i = 0; i < 1000; i++) {
-    map.addMap(ParcelSourceMap.deserialize(parcelSourceMap), i + 1);
+    map.addMap(ParcelSourceMap.deserialize(parcelSourceMap), i * 4);
   }
 });
 
@@ -97,14 +97,14 @@ suite.add("cpp#consume->toBuffer->fromBuffer", async () => {
 suite.add("cpp#combine 1000 maps", async () => {
   let map = new SourceMap(sourcemapBuffer);
   for (let i = 0; i < 1000; i++) {
-    map.addBufferMappings(sourcemapBuffer, i + 1);
+    map.addBufferMappings(sourcemapBuffer, i * 4);
   }
 });
 
 suite.add("cpp#combine 1000 maps->toBuffer", async () => {
   let map = new SourceMap(sourcemapBuffer);
   for (let i = 0; i < 1000; i++) {
-    map.addBufferMappings(sourcemapBuffer, i + 1);
+    map.addBufferMappings(sourcemapBuffer, i * 4);
   }
   map.toBuffer();
 });
@@ -112,7 +112,7 @@ suite.add("cpp#combine 1000 maps->toBuffer", async () => {
 suite.add("cpp#combine 1000 maps->stringify", async () => {
   let map = new SourceMap(sourcemapBuffer);
   for (let i = 0; i < 1000; i++) {
-    map.addBufferMappings(sourcemapBuffer, i + 1);
+    map.addBufferMappings(sourcemapBuffer, i * 4);
   }
   map.stringify();
 });

@@ -104,7 +104,7 @@ void SourceMapBinding::addBufferMappings(const Napi::CallbackInfo &info) {
 
     this->_mapping_container.createLinesIfUndefined(map->lineCount() + lineOffset);
 
-    auto mappingLinesVector = this->_mapping_container.getMappingLinesVector();
+    auto &mappingLinesVector = this->_mapping_container.getMappingLinesVector();
     auto lines = map->lines();
     auto linesEnd = lines->end();
     for (auto linesIterator = map->lines()->begin(); linesIterator != linesEnd; ++linesIterator) {
@@ -112,7 +112,7 @@ void SourceMapBinding::addBufferMappings(const Napi::CallbackInfo &info) {
         auto segments = line->segments();
         auto segmentsEnd = segments->end();
 
-        auto mappingLine = mappingLinesVector[line->lineNumber()];
+        auto &mappingLine = mappingLinesVector[line->lineNumber() + lineOffset];
         bool isNewLine = mappingLine->_segments.empty();
 
         for (auto segmentIterator = segments->begin(); segmentIterator != segmentsEnd; ++segmentIterator) {
