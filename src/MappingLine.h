@@ -7,10 +7,6 @@ public:
 
     void addMapping(Mapping m);
 
-    void reserve(size_t size);
-
-    void shrink_to_fit();
-
     void setIsSorted(bool value);
 
     void sort();
