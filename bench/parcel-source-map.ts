@@ -345,48 +345,6 @@ export default class SourceMap {
     return middleIndex;
   }
 
-  originalPositionFor(
-    generatedPosition: Position
-  ): OriginalPosition | NullOriginalPosition {
-    let index = this.findClosest(
-      generatedPosition.line,
-      generatedPosition.column
-    );
-
-    if (index === null) {
-      return {
-        source: null,
-        name: null,
-        line: null,
-        column: null
-      };
-    }
-
-    let mapping = this.mappings[index];
-    if (mapping.original) {
-      let result: {
-        source: string;
-        name: string | null;
-        line: number;
-        column: number;
-      } = {
-        source: mapping.source,
-        name: typeof mapping.name === "string" ? mapping.name : null,
-        line: mapping.original.line,
-        column: mapping.original.column
-      };
-
-      return result;
-    } else {
-      return {
-        source: null,
-        name: null,
-        line: null,
-        column: null
-      };
-    }
-  }
-
   sourceContentFor(fileName: string): string | null {
     return this.sources[fileName];
   }
