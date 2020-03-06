@@ -1,2 +1,3 @@
-const { SourceMap } = require("bindings")("sourcemap.node");
+const { SourceMap } = require("node-gyp-build")(__dirname);
+
 module.exports = SourceMap;

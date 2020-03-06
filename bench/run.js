@@ -34,6 +34,7 @@ let mappings = new Array(10000).fill("").map((item, index) => {
 
 let sourcemapBuffer = new SourceMap(mappings).toBuffer();
 let parcelSourceMap = new ParcelSourceMap(mappings).serialize();
+let jsonStringParcelSourceMap = JSON.stringify(new ParcelSourceMap(mappings).serialize());
 
 suite.add("@parcel/source-map#consume", async () => {
   for (let map of test_maps) {
@@ -63,6 +64,13 @@ suite.add("@parcel/source-map#combine 1000 maps", async () => {
   let map = new ParcelSourceMap([...mappings]);
   for (let i = 0; i < 1000; i++) {
     map.addMap(ParcelSourceMap.deserialize(parcelSourceMap), i * 4);
+  }
+});
+
+suite.add("@parcel/source-map#combine 1000 maps from JSON", async () => {
+  let map = new ParcelSourceMap([...mappings]);
+  for (let i = 0; i < 1000; i++) {
+    map.addMap(ParcelSourceMap.deserialize(JSON.parse(jsonStringParcelSourceMap)), i * 4);
   }
 });
 
