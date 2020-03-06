@@ -421,37 +421,43 @@ void SourceMapBinding::addIndexedMappings(const Napi::CallbackInfo &info) {
         int generatedLine = generated.Get("line").As<Napi::Number>().Int32Value();
         int generatedColumn = generated.Get("column").As<Napi::Number>().Int32Value();
         Position generatedPosition = Position{generatedLine + lineOffset, generatedColumn + columnOffset};
-        if (!mappingObject.Has("original")) {
-            this->_mapping_container.addMapping(generatedPosition);
-        } else {
-            Napi::Object original = mappingObject.Get("original").As<Napi::Object>();
-            int originalLine = original.Get("line").As<Napi::Number>().Int32Value();
-            int originalColumn = original.Get("column").As<Napi::Number>().Int32Value();
-            Position originalPosition = Position{originalLine, originalColumn};
+        if (mappingObject.Has("original")) {
+            Napi::Value originalPositionValue = mappingObject.Get("original");
+            if (originalPositionValue.IsObject()) {
+                Napi::Object original = originalPositionValue.As<Napi::Object>();
+                int originalLine = original.Get("line").As<Napi::Number>().Int32Value();
+                int originalColumn = original.Get("column").As<Napi::Number>().Int32Value();
+                Position originalPosition = Position{originalLine, originalColumn};
 
-            int source;
-            if (mappingObject.Get("source").IsString()) {
-                source = this->_mapping_container.addSource(mappingObject.Get("source").As<Napi::String>().Utf8Value());
-            } else {
-                source = mappingObject.Get("source").As<Napi::Number>().Int32Value();
-            }
-
-            if (!mappingObject.Has("name")) {
-                this->_mapping_container.addMapping(generatedPosition, originalPosition, source);
-            } else {
-                int name = -1;
-                if (mappingObject.Get("name").IsString()) {
-                    std::string nameString = mappingObject.Get("name").As<Napi::String>().Utf8Value();
-                    if (nameString.size() > 0) {
-                        name = this->_mapping_container.addName(nameString);
-                    }
+                int source;
+                if (mappingObject.Get("source").IsString()) {
+                    source = this->_mapping_container.addSource(mappingObject.Get("source").As<Napi::String>().Utf8Value());
                 } else {
-                    name = mappingObject.Get("name").As<Napi::Number>().Int32Value();
+                    source = mappingObject.Get("source").As<Napi::Number>().Int32Value();
                 }
 
-                this->_mapping_container.addMapping(generatedPosition, originalPosition, source, name);
+                if (!mappingObject.Has("name")) {
+                    this->_mapping_container.addMapping(generatedPosition, originalPosition, source);
+                } else {
+                    int name = -1;
+                    Napi::Value mappingName = mappingObject.Get("name");
+                    if (mappingName.IsString()) {
+                        std::string nameString = mappingObject.Get("name").As<Napi::String>().Utf8Value();
+                        if (nameString.size() > 0) {
+                            name = this->_mapping_container.addName(nameString);
+                        }
+                    } else if (mappingName.IsNumber()) {
+                        name = mappingObject.Get("name").As<Napi::Number>().Int32Value();
+                    }
+
+                    this->_mapping_container.addMapping(generatedPosition, originalPosition, source, name);
+                }
+
+                continue;
             }
         }
+
+        this->_mapping_container.addMapping(generatedPosition);
     }
 }
 

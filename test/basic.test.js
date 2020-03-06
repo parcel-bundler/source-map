@@ -127,6 +127,67 @@ describe("SourceMap - Basics", () => {
     });
   });
 
+  it("Should be able to handle undefined name field using addIndexedMappings", async () => {
+    let map = new SourceMap([
+      {
+        source: "index.js",
+        name: undefined,
+        original: {
+          line: 1,
+          column: 0
+        },
+        generated: {
+          line: 6,
+          column: 15
+        }
+      }
+    ]);
+
+    let stringifiedMap = JSON.parse(
+      await map.stringify({
+        file: "index.js.map",
+        sourceRoot: "/"
+      })
+    );
+    assert.deepEqual(stringifiedMap, {
+      version: 3,
+      file: "index.js.map",
+      sourceRoot: "/",
+      mappings: ";;;;;;eACA",
+      sources: ["index.js"],
+      names: []
+    });
+  });
+
+  it("Should be able to handle undefined name and source field using addIndexedMappings", async () => {
+    let map = new SourceMap([
+      {
+        source: undefined,
+        name: undefined,
+        original: undefined,
+        generated: {
+          line: 6,
+          column: 15
+        }
+      }
+    ]);
+
+    let stringifiedMap = JSON.parse(
+      await map.stringify({
+        file: "index.js.map",
+        sourceRoot: "/"
+      })
+    );
+    assert.deepEqual(stringifiedMap, {
+      version: 3,
+      file: "index.js.map",
+      sourceRoot: "/",
+      mappings: ";;;;;;e",
+      sources: [],
+      names: []
+    });
+  });
+
   it("Should be able to create a SourceMap buffer and construct a new SourceMap from it", async () => {
     let sm = new SourceMap(
       SIMPLE_SOURCE_MAP.mappings,
