@@ -43,5 +43,9 @@ private:
 
     Napi::Value getNameIndex(const Napi::CallbackInfo &info);
 
+    Napi::Value findClosestMapping(const Napi::CallbackInfo &info);
+
+    Napi::Object _mappingToObject(Napi::Env env, Mapping &mapping);
+
     MappingContainer _mapping_container;
 };

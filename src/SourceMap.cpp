@@ -26,23 +26,28 @@ void SourceMapBinding::addRawMappings(const Napi::CallbackInfo &info) {
 
     if (info.Length() < 3) {
         Napi::TypeError::New(env, "Expected 3-5 parameters").ThrowAsJavaScriptException();
+        return;
     }
 
     if (!info[0].IsString()) {
         Napi::TypeError::New(env, "First parameter should be a string").ThrowAsJavaScriptException();
+        return;
     }
 
     if (!info[1].IsArray() || !info[2].IsArray()) {
         Napi::TypeError::New(env,
                              "Second and third parameter should be an array of strings").ThrowAsJavaScriptException();
+        return;
     }
 
     if (info.Length() > 3 && !info[3].IsNumber()) {
         Napi::TypeError::New(env, "Fourth parameter should be a positive number").ThrowAsJavaScriptException();
+        return;
     }
 
     if (info.Length() > 4 && !info[4].IsNumber()) {
         Napi::TypeError::New(env, "Fifth parameter should be a positive number").ThrowAsJavaScriptException();
+        return;
     }
 
     std::string rawMappings = info[0].As<Napi::String>().Utf8Value();
@@ -63,6 +68,7 @@ void SourceMapBinding::addBufferMappings(const Napi::CallbackInfo &info) {
 
     if (info.Length() < 1) {
         Napi::TypeError::New(env, "Expected 1-3 parameters").ThrowAsJavaScriptException();
+        return;
     }
 
     if (!info[0].IsBuffer()) {
@@ -137,6 +143,7 @@ void SourceMapBinding::extends(const Napi::CallbackInfo &info) {
 
     if (info.Length() < 1) {
         Napi::TypeError::New(env, "Expected 1 parameter of type buffer").ThrowAsJavaScriptException();
+        return;
     }
 
     if (!info[0].IsBuffer()) {
@@ -223,7 +230,6 @@ void SourceMapBinding::extends(const Napi::CallbackInfo &info) {
             }
         }
     }
-
 }
 
 Napi::Value SourceMapBinding::stringify(const Napi::CallbackInfo &info) {
@@ -309,6 +315,33 @@ Napi::Value SourceMapBinding::toBuffer(const Napi::CallbackInfo &info) {
     return Napi::Buffer<uint8_t>::Copy(env, builder.GetBufferPointer(), builder.GetSize());
 }
 
+Napi::Object SourceMapBinding::_mappingToObject(Napi::Env env, Mapping &mapping) {
+    Napi::Object mappingObject = Napi::Object::New(env);
+    Napi::Object generatedPositionObject = Napi::Object::New(env);
+
+    generatedPositionObject.Set("line", mapping.generated.line);
+    generatedPositionObject.Set("column", mapping.generated.column);
+    mappingObject.Set("generated", generatedPositionObject);
+
+    int mappingSource = mapping.source;
+    if (mappingSource > -1) {
+        Napi::Object originalPositionObject = Napi::Object::New(env);
+
+        originalPositionObject.Set("line", mapping.original.line);
+        originalPositionObject.Set("column", mapping.original.column);
+        mappingObject.Set("original", originalPositionObject);
+
+        mappingObject.Set("source", mappingSource);
+    }
+
+    int mappingName = mapping.name;
+    if (mappingName > -1) {
+        mappingObject.Set("name", mappingName);
+    }
+
+    return mappingObject;
+}
+
 // returns the sorted and processed map with decoded vlqs and all other map data
 Napi::Value SourceMapBinding::getMap(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
@@ -346,31 +379,7 @@ Napi::Value SourceMapBinding::getMap(const Napi::CallbackInfo &info) {
 
         for (auto segmentIterator = segments.begin(); segmentIterator != segmentsEnd; ++segmentIterator) {
             Mapping &mapping = *segmentIterator;
-            Napi::Object mappingObject = Napi::Object::New(env);
-            Napi::Object generatedPositionObject = Napi::Object::New(env);
-
-            generatedPositionObject.Set("line", mapping.generated.line);
-            generatedPositionObject.Set("column", mapping.generated.column);
-            mappingObject.Set("generated", generatedPositionObject);
-
-            int mappingSource = mapping.source;
-            if (mappingSource > -1) {
-                Napi::Object originalPositionObject = Napi::Object::New(env);
-
-                originalPositionObject.Set("line", mapping.original.line);
-                originalPositionObject.Set("column", mapping.original.column);
-                mappingObject.Set("original", originalPositionObject);
-
-                mappingObject.Set("source", mappingSource);
-            }
-
-            int mappingName = mapping.name;
-            if (mappingName > -1) {
-                mappingObject.Set("name", mappingName);
-            }
-
-            mappingsArray.Set(currentMapping, mappingObject);
-
+            mappingsArray.Set(currentMapping, this->_mappingToObject(env, mapping));
             ++currentMapping;
         }
     }
@@ -392,20 +401,24 @@ void SourceMapBinding::addIndexedMappings(const Napi::CallbackInfo &info) {
 
     if (info.Length() < 1) {
         Napi::TypeError::New(env, "Expected 1-3 parameters").ThrowAsJavaScriptException();
+        return;
     }
 
     if (!info[0].IsArray()) {
         Napi::TypeError::New(env, "First parameter should be an array").ThrowAsJavaScriptException();
+        return;
     }
 
     if (info.Length() > 1 && !info[1].IsNumber()) {
         Napi::TypeError::New(env,
                              "Second parameter should be a lineOffset of type integer").ThrowAsJavaScriptException();
+        return;
     }
 
     if (info.Length() > 2 && !info[2].IsNumber()) {
         Napi::TypeError::New(env,
                              "Third parameter should be a lineOffset of type integer").ThrowAsJavaScriptException();
+        return;
     }
 
     const Napi::Array mappingsArray = info[0].As<Napi::Array>();
@@ -467,6 +480,7 @@ Napi::Value SourceMapBinding::getSourceIndex(const Napi::CallbackInfo &info) {
 
     if (info.Length() < 1 || !info[0].IsString()) {
         Napi::TypeError::New(env, "Expected a single string parameter").ThrowAsJavaScriptException();
+        return env.Null();
     }
 
     std::string source = info[0].As<Napi::String>().Utf8Value();
@@ -481,6 +495,7 @@ Napi::Value SourceMapBinding::getNameIndex(const Napi::CallbackInfo &info) {
 
     if (info.Length() < 1 || !info[0].IsString()) {
         Napi::TypeError::New(env, "Expected a single string parameter").ThrowAsJavaScriptException();
+        return env.Null();
     }
 
     std::string name = info[0].As<Napi::String>().Utf8Value();
@@ -506,6 +521,7 @@ Napi::Value SourceMapBinding::addNames(const Napi::CallbackInfo &info) {
 
     if (info.Length() != 1 || !info[0].IsArray()) {
         Napi::TypeError::New(env, "Expected one parameter of type Array<string>").ThrowAsJavaScriptException();
+        return env.Null();
     }
 
     Napi::Array arr = info[0].As<Napi::Array>();
@@ -535,6 +551,7 @@ Napi::Value SourceMapBinding::addSources(const Napi::CallbackInfo &info) {
 
     if (info.Length() != 1 || !info[0].IsArray()) {
         Napi::TypeError::New(env, "Expected one parameter of type Array<string>").ThrowAsJavaScriptException();
+        return env.Null();
     }
 
     Napi::Array arr = info[0].As<Napi::Array>();
@@ -554,10 +571,12 @@ void SourceMapBinding::generateEmptyMap(const Napi::CallbackInfo &info) {
     if (info.Length() < 2 || !info[0].IsString() || !info[1].IsString()) {
         Napi::TypeError::New(env,
                              "Expected 2-4 parameters of type String: (sourceName, sourceContent, lineOffset = 0)").ThrowAsJavaScriptException();
+        return;
     }
 
     if (info.Length() == 3 && !info[2].IsNumber()) {
         Napi::TypeError::New(env, "Expected third parameter to be a lineOffset of type Integer").ThrowAsJavaScriptException();
+        return;
     }
 
     std::string sourceName = info[0].As<Napi::String>().Utf8Value();
@@ -573,6 +592,50 @@ void SourceMapBinding::generateEmptyMap(const Napi::CallbackInfo &info) {
             ++lineOffset;
         }
     }
+}
+
+Napi::Value SourceMapBinding::findClosestMapping(const Napi::CallbackInfo &info) {
+    Napi::Env env = info.Env();
+    Napi::HandleScope scope(env);
+
+    if (info.Length() < 2 || !info[0].IsNumber() || !info[1].IsNumber()) {
+        Napi::TypeError::New(env, "Expected 1 parameter of type buffer").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    int lineIndex = info[0].As<Napi::Number>().Int32Value();
+    int columnIndex = info[1].As<Napi::Number>().Int32Value();
+
+    if (lineIndex <= this->_mapping_container.getGeneratedLines()) {
+        auto &mappingLinesVector = this->_mapping_container.getMappingLinesVector();
+        auto &line = mappingLinesVector.at(lineIndex);
+        auto &segments = line->_segments;
+        unsigned int segmentsCount = segments.size();
+
+        std::vector<SourceMapSchema::Mapping> mappings_vector;
+        mappings_vector.reserve(segments.size());
+        int startIndex = 0;
+        int stopIndex = segmentsCount - 1;
+        int middleIndex = ((stopIndex + startIndex) / 2);
+        while (startIndex < stopIndex) {
+            Mapping &mapping = segments[middleIndex];
+            int diff = mapping.generated.column - columnIndex;
+            if (diff > 0) {
+                --stopIndex;
+            } else if (diff < 0) {
+                ++startIndex;
+            } else {
+                // It's the same...
+                break;
+            }
+
+            middleIndex = ((stopIndex + startIndex) / 2);
+        }
+
+        return this->_mappingToObject(env, segments[middleIndex]);
+    }
+
+    return env.Null();
 }
 
 Napi::FunctionReference SourceMapBinding::constructor;
@@ -593,6 +656,7 @@ Napi::Object SourceMapBinding::Init(Napi::Env env, Napi::Object exports) {
             InstanceMethod("getNameIndex", &SourceMapBinding::getNameIndex),
             InstanceMethod("extends", &SourceMapBinding::extends),
             InstanceMethod("generateEmptyMap", &SourceMapBinding::generateEmptyMap),
+            InstanceMethod("findClosestMapping", &SourceMapBinding::findClosestMapping),
     });
 
     constructor = Napi::Persistent(func);

@@ -73,6 +73,11 @@ class SourceMap {
     return this.sourceMapInstance.getNameIndex(name);
   }
 
+  // findClosestMapping(line: number, column: number): {source: Position, original: Position, name: number, source: number}
+  findClosestMapping(line, column) {
+    return this.sourceMapInstance.findClosestMapping(line, column);
+  }
+
   // Remaps original positions from this map to the ones in the provided map
   // extends(buffer: Buffer): SourceMap
   extends(buffer) {
