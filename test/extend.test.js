@@ -51,7 +51,17 @@ describe("SourceMap - Extend Map", () => {
       }
     });
 
-    assert.deepEqual(newMap.stringify(), {
+    let stringifiedMap = JSON.parse(
+      await newMap.stringify({
+        file: "index.js.map",
+        sourceRoot: "/"
+      })
+    );
+
+    assert.deepEqual(stringifiedMap, {
+      version: 3,
+      file: "index.js.map",
+      sourceRoot: "/",
       sources: ["index.js"],
       names: ["A"],
       mappings: ";;;;;YACAA"
@@ -130,7 +140,17 @@ describe("SourceMap - Extend Map", () => {
       }
     });
 
-    assert.deepEqual(newMap.stringify(), {
+    let stringifiedMap = JSON.parse(
+      await newMap.stringify({
+        file: "index.js.map",
+        sourceRoot: "/"
+      })
+    );
+
+    assert.deepEqual(stringifiedMap, {
+      version: 3,
+      file: "index.js.map",
+      sourceRoot: "/",
       mappings: ";e,+FAMe",
       sources: ["index.js"],
       names: []

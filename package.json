@@ -7,7 +7,7 @@
     "test": "mocha ./test/*.test.js",
     "benchmark": "node ./bench/run",
     "prebuild": "prebuildify --napi --strip --target node@10.0.0 --tag-libc",
-    "rebuild": "rm -rf build && yarn",
+    "rebuild": "rm -rf build && yarn --build-from-source",
     "install": "node-gyp-build"
   },
   "files": [

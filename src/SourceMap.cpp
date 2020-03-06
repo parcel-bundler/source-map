@@ -29,7 +29,7 @@ void SourceMapBinding::addRawMappings(const Napi::CallbackInfo &info) {
     }
 
     if (!info[0].IsString()) {
-        Napi::TypeError::New(env, "First parameter should be a positive string").ThrowAsJavaScriptException();
+        Napi::TypeError::New(env, "First parameter should be a string").ThrowAsJavaScriptException();
     }
 
     if (!info[1].IsArray() || !info[2].IsArray()) {
@@ -136,21 +136,11 @@ void SourceMapBinding::extends(const Napi::CallbackInfo &info) {
     Napi::HandleScope scope(env);
 
     if (info.Length() < 1) {
-        Napi::TypeError::New(env, "Expected 1-3 parameters").ThrowAsJavaScriptException();
+        Napi::TypeError::New(env, "Expected 1 parameter of type buffer").ThrowAsJavaScriptException();
     }
 
     if (!info[0].IsBuffer()) {
-        Napi::TypeError::New(env, "Expected a string for the first parameter").ThrowAsJavaScriptException();
-        return;
-    }
-
-    if (info.Length() > 1 && !info[1].IsNumber()) {
-        Napi::TypeError::New(env, "Expected a number for the second parameter").ThrowAsJavaScriptException();
-        return;
-    }
-
-    if (info.Length() > 2 && !info[2].IsNumber()) {
-        Napi::TypeError::New(env, "Expected a number for the third parameter").ThrowAsJavaScriptException();
+        Napi::TypeError::New(env, "Expected a buffer for the first parameter").ThrowAsJavaScriptException();
         return;
     }
 
@@ -551,6 +541,34 @@ Napi::Value SourceMapBinding::addSources(const Napi::CallbackInfo &info) {
     return indexesArr;
 }
 
+void SourceMapBinding::generateEmptyMap(const Napi::CallbackInfo &info) {
+    Napi::Env env = info.Env();
+    Napi::HandleScope scope(env);
+
+    if (info.Length() < 2 || !info[0].IsString() || !info[1].IsString()) {
+        Napi::TypeError::New(env,
+                             "Expected 2-4 parameters of type String: (sourceName, sourceContent, lineOffset = 0)").ThrowAsJavaScriptException();
+    }
+
+    if (info.Length() > 2 || !info[2].IsNumber()) {
+        Napi::TypeError::New(env, "Expected third parameter to be a lineOffset of type Integer").ThrowAsJavaScriptException();
+    }
+
+    std::string sourceName = info[0].As<Napi::String>().Utf8Value();
+    std::string sourceContent = info[1].As<Napi::String>().Utf8Value();
+    int lineOffset = info.Length() > 2 ? info[2].As<Napi::Number>().Int32Value() : 0;
+
+    int sourceIndex = this->_mapping_container.addSource(sourceName);
+    auto end = sourceContent.end();
+    for (auto it = sourceContent.begin(); it != end; ++it) {
+        const char &c = *it;
+        if (c == '\n') {
+            this->_mapping_container.addMapping(Position{lineOffset, 0}, Position{lineOffset, 0}, sourceIndex);
+            ++lineOffset;
+        }
+    }
+}
+
 Napi::FunctionReference SourceMapBinding::constructor;
 
 Napi::Object SourceMapBinding::Init(Napi::Env env, Napi::Object exports) {
@@ -568,6 +586,7 @@ Napi::Object SourceMapBinding::Init(Napi::Env env, Napi::Object exports) {
             InstanceMethod("getSourceIndex", &SourceMapBinding::getSourceIndex),
             InstanceMethod("getNameIndex", &SourceMapBinding::getNameIndex),
             InstanceMethod("extends", &SourceMapBinding::extends),
+            InstanceMethod("generateEmptyMap", &SourceMapBinding::generateEmptyMap),
     });
 
     constructor = Napi::Persistent(func);

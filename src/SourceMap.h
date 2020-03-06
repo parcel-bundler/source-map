@@ -23,6 +23,8 @@ private:
 
     void extends(const Napi::CallbackInfo &info);
 
+    void generateEmptyMap(const Napi::CallbackInfo &info);
+
     std::vector<int> _addSources(Napi::Array &sourcesArray);
 
     std::vector<int> _addNames(Napi::Array &namesArray);

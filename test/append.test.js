@@ -297,7 +297,7 @@ describe("SourceMap - Append Mappings", () => {
     assert.deepEqual(sm.getMap(), expectedResultTwo);
   });
 
-  it("Merge map with null mappings", () => {
+  it("Merge map with null mappings", async () => {
     const MAP_OFFSET = 24;
     let map = new SourceMap([
       {
@@ -426,8 +426,15 @@ describe("SourceMap - Append Mappings", () => {
         column: 23
       }
     });
-
-    assert.deepEqual(map.stringify(), {
+    
+    let stringifiedMap = JSON.parse(await map.stringify({
+      file: "index.js.map",
+      sourceRoot: "/"
+    }));
+    assert.deepEqual(stringifiedMap, {
+      version: 3,
+      file: "index.js.map",
+      sourceRoot: "/",
       sources: ["index.js", "local.js"],
       names: ["A", "B", "T", "Q"],
       mappings:
