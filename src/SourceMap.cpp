@@ -550,7 +550,7 @@ void SourceMapBinding::generateEmptyMap(const Napi::CallbackInfo &info) {
                              "Expected 2-4 parameters of type String: (sourceName, sourceContent, lineOffset = 0)").ThrowAsJavaScriptException();
     }
 
-    if (info.Length() > 2 || !info[2].IsNumber()) {
+    if (info.Length() == 3 && !info[2].IsNumber()) {
         Napi::TypeError::New(env, "Expected third parameter to be a lineOffset of type Integer").ThrowAsJavaScriptException();
     }
 

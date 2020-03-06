@@ -16,10 +16,13 @@ class SourceMap {
   }
 
   // generateEmptyMap(sourceName: string, sourceContent: string, lineOffset: number = 0): SourceMap
-  static generateEmptyMap(sourceName, sourceContent, lineOffset = 0) {
-    let map = new SourceMap();
-    map.generateEmptyMap(sourceName, sourceContent, lineOffset);
-    return map;
+  generateEmptyMap(sourceName, sourceContent, lineOffset = 0) {
+    this.sourceMapInstance.generateEmptyMap(
+      sourceName,
+      sourceContent,
+      lineOffset
+    );
+    return this;
   }
 
   // addRawMappings(mappings: string, sources: Array<string>, names: Array<string>, lineOffset: number = 0, columnOffset: number = 0): SourceMap
@@ -42,7 +45,11 @@ class SourceMap {
 
   // addIndexedMappings(mappings: Array<{source: Position, original: Position, name: string | number, source: string | number}>, lineOffset: number = 0, columnOffset: number = 0): SourceMap
   addIndexedMappings(mappings, lineOffset = 0, columnOffset = 0) {
-    this.sourceMapInstance.addIndexedMappings(mappings, lineOffset, columnOffset);
+    this.sourceMapInstance.addIndexedMappings(
+      mappings,
+      lineOffset,
+      columnOffset
+    );
     return this;
   }
 
@@ -103,11 +110,19 @@ class SourceMap {
         })
       );
     }
-    
+
     let stringifiedMap = JSON.stringify(map);
     return inlineMap ? generateInlineMap(stringifiedMap) : stringifiedMap;
   }
 }
 
+// generateEmptyMap(sourceName: string, sourceContent: string, lineOffset: number = 0): SourceMap
+function generateEmptyMap(sourceName, sourceContent, lineOffset = 0) {
+  let map = new SourceMap();
+  map.generateEmptyMap(sourceName, sourceContent, lineOffset);
+  return map;
+}
+
+SourceMap.generateEmptyMap = generateEmptyMap;
 SourceMap.default = SourceMap;
 module.exports = SourceMap;
