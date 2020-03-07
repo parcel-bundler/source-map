@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [{
+     "type": "lldb",
+     "request": "launch",
+     "name": "Launch Program",
+     "preLaunchTask": "npm: build:dev",
+     "program": "/usr/local/bin/node",
+     "args": [
+        "/Users/jasperdemoor/Documents/open-source/parcel/node_modules/mocha/bin/mocha"
+     ],
+     "cwd": "/Users/jasperdemoor/Documents/open-source/parcel"
+  }]
+}
