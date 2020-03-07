@@ -8,11 +8,8 @@ function generateInlineMap(map) {
 }
 
 class SourceMap {
-  // constructor(mappings: string, sources: Array<string>, names: Array<string>, lineOffset: number = 0, columnOffset: number = 0): void
-  // constructor(mappings: Array<{source: Position, original: Position, name: string | number, source: string | number}>, lineOffset: number = 0, columnOffset: number = 0): void
-  // constructor(buffer: Buffer, lineOffset: number = 0, columnOffset: number = 0): void
-  constructor(...args) {
-    this.sourceMapInstance = new bindings.SourceMap(...args);
+  constructor() {
+    this.sourceMapInstance = new bindings.SourceMap();
   }
 
   // generateEmptyMap(sourceName: string, sourceContent: string, lineOffset: number = 0): SourceMap

@@ -6,8 +6,6 @@ MappingContainer::MappingContainer() {}
 
 MappingContainer::~MappingContainer() {}
 
-void MappingContainer::Finalize() {}
-
 int MappingContainer::getNamesCount() {
     return this->_names.size();
 }

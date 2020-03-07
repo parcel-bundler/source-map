@@ -8,7 +8,7 @@
     "benchmark": "node ./bench/run",
     "prebuild": "prebuildify --napi --strip --tag-libc",
     "rebuild": "rm -rf build && yarn --build-from-source",
-    "install": "node-gyp-build"
+    "postinstall": "node-gyp-build"
   },
   "files": [
     "src",
@@ -28,10 +28,8 @@
     "node-gyp-build": "^4.2.1"
   },
   "devDependencies": {
-    "@parcel/utils": "^2.0.0-nightly.133",
     "mocha": "^7.1.0",
     "prebuildify": "^3.0.4",
-    "source-map": "^0.7.3",
     "tiny-benchy": "^1.0.0"
   }
 }

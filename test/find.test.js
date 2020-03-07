@@ -3,7 +3,8 @@ const SourceMap = require("../");
 
 describe("SourceMap - Find", () => {
   it("Should be able to find closest mapping to a generated position", async () => {
-    let map = new SourceMap(
+    let map = new SourceMap();
+    map.addRawMappings(
       "AAAA;AAAA,EAAA,OAAO,CAAC,GAAR,CAAY,aAAZ,CAAA,CAAA;AAAA",
       ["helloworld.coffee"],
       []

@@ -9,8 +9,6 @@ public:
 
     ~MappingContainer();
 
-    void Finalize();
-
     void addMapping(Position generated, Position original = Position{-1, -1}, int source = -1, int name = -1);
 
     MappingLine* addLine(int size = 0);

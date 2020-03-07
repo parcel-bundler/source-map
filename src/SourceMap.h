@@ -10,8 +10,6 @@ public:
 
     ~SourceMapBinding();
 
-    void Finalize(Napi::Env env);
-
 private:
     static Napi::FunctionReference constructor;
 

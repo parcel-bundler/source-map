@@ -4,18 +4,7 @@
 #include "sourcemap-schema_generated.h"
 
 SourceMapBinding::SourceMapBinding(const Napi::CallbackInfo &info) : Napi::ObjectWrap<SourceMapBinding>(info) {
-    Napi::Env env = info.Env();
-    Napi::HandleScope scope(env);
-
-    if (info.Length() > 0) {
-        if (info[0].IsString()) {
-            this->addRawMappings(info);
-        } else if (info[0].IsBuffer()) {
-            this->addBufferMappings(info);
-        } else if (info[0].IsArray()) {
-            this->addIndexedMappings(info);
-        }
-    }
+    // Just create instance...
 }
 
 SourceMapBinding::~SourceMapBinding() {}
@@ -386,12 +375,6 @@ Napi::Value SourceMapBinding::getMap(const Napi::CallbackInfo &info) {
     obj.Set("mappings", mappingsArray);
 
     return obj;
-}
-
-// Gets called when object gets destroyed, use this instead of destructor...
-void SourceMapBinding::Finalize(Napi::Env env) {
-    Napi::HandleScope scope(env);
-    this->_mapping_container.Finalize();
 }
 
 // addIndexedMappings(array<mapping>, lineOffset, columnOffset): uses numbers for source and name with the index specified in the sources/names map/array in SourceMap instance

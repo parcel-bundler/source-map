@@ -3,7 +3,8 @@ const SourceMap = require("../");
 
 describe("SourceMap - Extend Map", () => {
   it("Basic extending", async function() {
-    let originalMap = new SourceMap([
+    let originalMap = new SourceMap();
+    originalMap.addIndexedMappings([
       {
         source: "index.js",
         name: "A",
@@ -18,7 +19,8 @@ describe("SourceMap - Extend Map", () => {
       }
     ]);
 
-    let newMap = new SourceMap([
+    let newMap = new SourceMap();
+    newMap.addIndexedMappings([
       {
         source: "index.js",
         name: "",
@@ -69,7 +71,9 @@ describe("SourceMap - Extend Map", () => {
   });
 
   it("Extending null mappings", async function() {
-    let originalMap = new SourceMap([
+    let originalMap = new SourceMap();
+
+    originalMap.addIndexedMappings([
       {
         source: "index.js",
         name: "",
@@ -90,7 +94,9 @@ describe("SourceMap - Extend Map", () => {
       }
     ]);
 
-    let newMap = new SourceMap([
+    let newMap = new SourceMap();
+
+    newMap.addIndexedMappings([
       {
         source: "index.js",
         name: "",

@@ -245,61 +245,67 @@ let expectedResultTwo = {
 
 describe("SourceMap - Append Mappings", () => {
   it("Append buffer mappings with line offset", () => {
-    let sm = new SourceMap(
+    let map = new SourceMap();
+    map.addRawMappings(
       SIMPLE_SOURCE_MAP.mappings,
       SIMPLE_SOURCE_MAP.sources,
       SIMPLE_SOURCE_MAP.names
     );
-    let buffer = sm.toBuffer();
-    sm.addBufferMappings(buffer, 10);
-    assert.deepEqual(sm.getMap(), expectedResultOne);
+    let buffer = map.toBuffer();
+    map.addBufferMappings(buffer, 10);
+    assert.deepEqual(map.getMap(), expectedResultOne);
   });
 
   it("Append buffer mappings with line and column offset", () => {
-    let sm = new SourceMap(
+    let map = new SourceMap();
+    map.addRawMappings(
       SIMPLE_SOURCE_MAP.mappings,
       SIMPLE_SOURCE_MAP.sources,
       SIMPLE_SOURCE_MAP.names
     );
-    let buffer = sm.toBuffer();
-    sm.addBufferMappings(buffer, 10, 46);
-    assert.deepEqual(sm.getMap(), expectedResultTwo);
+    let buffer = map.toBuffer();
+    map.addBufferMappings(buffer, 10, 46);
+    assert.deepEqual(map.getMap(), expectedResultTwo);
   });
 
   it("Append vlq mappings with line offset", () => {
-    let sm = new SourceMap(
+    let map = new SourceMap();
+    map.addRawMappings(
       SIMPLE_SOURCE_MAP.mappings,
       SIMPLE_SOURCE_MAP.sources,
       SIMPLE_SOURCE_MAP.names
     );
-    sm.addRawMappings(
+    map.addRawMappings(
       SIMPLE_SOURCE_MAP.mappings,
       SIMPLE_SOURCE_MAP.sources,
       SIMPLE_SOURCE_MAP.names,
       10
     );
-    assert.deepEqual(sm.getMap(), expectedResultOne);
+    assert.deepEqual(map.getMap(), expectedResultOne);
   });
 
   it("Append vlq mappings with line and column offset", () => {
-    let sm = new SourceMap(
+    let map = new SourceMap();
+    map.addRawMappings(
       SIMPLE_SOURCE_MAP.mappings,
       SIMPLE_SOURCE_MAP.sources,
       SIMPLE_SOURCE_MAP.names
     );
-    sm.addRawMappings(
+    map.addRawMappings(
       SIMPLE_SOURCE_MAP.mappings,
       SIMPLE_SOURCE_MAP.sources,
       SIMPLE_SOURCE_MAP.names,
       10,
       46
     );
-    assert.deepEqual(sm.getMap(), expectedResultTwo);
+    assert.deepEqual(map.getMap(), expectedResultTwo);
   });
 
   it("Merge map with null mappings", async () => {
     const MAP_OFFSET = 24;
-    let map = new SourceMap([
+    let map = new SourceMap();
+
+    map.addIndexedMappings([
       {
         source: "index.js",
         name: "A",
@@ -426,11 +432,13 @@ describe("SourceMap - Append Mappings", () => {
         column: 23
       }
     });
-    
-    let stringifiedMap = JSON.parse(await map.stringify({
-      file: "index.js.map",
-      sourceRoot: "/"
-    }));
+
+    let stringifiedMap = JSON.parse(
+      await map.stringify({
+        file: "index.js.map",
+        sourceRoot: "/"
+      })
+    );
     assert.deepEqual(stringifiedMap, {
       version: 3,
       file: "index.js.map",
