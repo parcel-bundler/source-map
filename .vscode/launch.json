@@ -5,10 +5,10 @@
      "request": "launch",
      "name": "Launch Program",
      "preLaunchTask": "npm: build:dev",
-     "program": "/usr/local/bin/node",
+     "program": "node",
      "args": [
-        "/Users/jasperdemoor/Documents/open-source/parcel/node_modules/mocha/bin/mocha"
+        "${workspaceFolder}/debug.js"
      ],
-     "cwd": "/Users/jasperdemoor/Documents/open-source/parcel"
+     "cwd": "${workspaceFolder}"
   }]
 }
