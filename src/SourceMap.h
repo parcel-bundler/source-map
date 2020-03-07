@@ -11,8 +11,6 @@ public:
     ~SourceMapBinding();
 
 private:
-    static Napi::FunctionReference constructor;
-
     void addRawMappings(const Napi::CallbackInfo &info);
 
     void addBufferMappings(const Napi::CallbackInfo &info);

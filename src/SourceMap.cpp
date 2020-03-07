@@ -621,8 +621,6 @@ Napi::Value SourceMapBinding::findClosestMapping(const Napi::CallbackInfo &info)
     return env.Null();
 }
 
-Napi::FunctionReference SourceMapBinding::constructor;
-
 Napi::Object SourceMapBinding::Init(Napi::Env env, Napi::Object exports) {
     Napi::HandleScope scope(env);
 
@@ -642,15 +640,10 @@ Napi::Object SourceMapBinding::Init(Napi::Env env, Napi::Object exports) {
             InstanceMethod("findClosestMapping", &SourceMapBinding::findClosestMapping),
     });
 
-    constructor = Napi::Persistent(func);
-    constructor.SuppressDestruct();
-
     exports.Set("SourceMap", func);
     return exports;
 }
 
-Napi::Object Init(Napi::Env env, Napi::Object exports) {
-    return SourceMapBinding::Init(env, exports);
+NAPI_MODULE_INIT(/* env, exports */) {
+    return SourceMapBinding::Init(env, Napi::Object(env, exports));
 }
-
-NODE_API_MODULE(NODE_GYP_MODULE_NAME, Init);
