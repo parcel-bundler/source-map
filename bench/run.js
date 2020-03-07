@@ -32,6 +32,16 @@ let mappings = new Array(10000).fill("").map((item, index) => {
 });
 
 let sourcemapBuffer = new SourceMap(mappings).toBuffer();
+let rawSourceMap;
+// This isn't actually a safe operation but by the time the benchmark needs this it'll be ready (I guess)
+(async () => {
+  rawSourceMap = JSON.parse(
+    await new SourceMap(mappings).stringify({
+      file: "index.js.map",
+      sourceRoot: "/"
+    })
+  );
+})();
 
 suite.add("cpp#consume", async () => {
   for (let testMap of test_maps) {
@@ -47,7 +57,7 @@ suite.add("cpp#consume->stringify", async () => {
     await map.stringify({
       file: "index.js.map",
       sourceRoot: "/"
-    })
+    });
   }
 });
 
@@ -69,7 +79,26 @@ suite.add("cpp#consume->toBuffer->fromBuffer", async () => {
   }
 });
 
-suite.add("cpp#combine 1000 maps", async () => {
+suite.add("cpp#consume->addIndexedMappings 10x", async () => {
+  let map = new SourceMap();
+  for (let i = 0; i < 10; i++) {
+    map.addIndexedMappings(mappings, i * 4);
+  }
+});
+
+suite.add("cpp#consume->addRawMappings 10x", async () => {
+  let map = new SourceMap();
+  for (let i = 0; i < 10; i++) {
+    map.addRawMappings(
+      rawSourceMap.mappings,
+      rawSourceMap.sources,
+      rawSourceMap.names,
+      i * 4
+    );
+  }
+});
+
+suite.add("cpp#consume->addBufferMappings 1000x", async () => {
   let map = new SourceMap();
   for (let i = 0; i < 1000; i++) {
     map.addBufferMappings(sourcemapBuffer, i * 4);
@@ -92,7 +121,7 @@ suite.add("cpp#combine 1000 maps->stringify", async () => {
   await map.stringify({
     file: "index.js.map",
     sourceRoot: "/"
-  })
+  });
 });
 
 suite.run();

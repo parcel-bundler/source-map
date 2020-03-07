@@ -18,7 +18,7 @@ void MappingLine::addMapping(Mapping m) {
 }
 
 void MappingLine::sort() {
-    if (!this->_is_sorted && this->_segments.size() > 0) {
+    if (!this->_is_sorted && this->_segments.size() > 1) {
         std::sort(this->_segments.begin(), this->_segments.end(), MappingGeneratedColumnComparator());
         this->_is_sorted = true;
     }
