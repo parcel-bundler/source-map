@@ -12,9 +12,9 @@ class SourceMap {
     this.sourceMapInstance = new bindings.SourceMap();
   }
 
-  // generateEmptyMap(sourceName: string, sourceContent: string, lineOffset: number = 0): SourceMap
-  generateEmptyMap(sourceName, sourceContent, lineOffset = 0) {
-    this.sourceMapInstance.generateEmptyMap(
+  // addEmptyMap(sourceName: string, sourceContent: string, lineOffset: number = 0): SourceMap
+  addEmptyMap(sourceName, sourceContent, lineOffset = 0) {
+    this.sourceMapInstance.addEmptyMap(
       sourceName,
       sourceContent,
       lineOffset
@@ -121,7 +121,7 @@ class SourceMap {
 // generateEmptyMap(sourceName: string, sourceContent: string, lineOffset: number = 0): SourceMap
 function generateEmptyMap(sourceName, sourceContent, lineOffset = 0) {
   let map = new SourceMap();
-  map.generateEmptyMap(sourceName, sourceContent, lineOffset);
+  map.addEmptyMap(sourceName, sourceContent, lineOffset);
   return map;
 }
 

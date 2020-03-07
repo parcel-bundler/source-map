@@ -547,7 +547,7 @@ Napi::Value SourceMapBinding::addSources(const Napi::CallbackInfo &info) {
     return indexesArr;
 }
 
-void SourceMapBinding::generateEmptyMap(const Napi::CallbackInfo &info) {
+void SourceMapBinding::addEmptyMap(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
 
@@ -636,7 +636,7 @@ Napi::Object SourceMapBinding::Init(Napi::Env env, Napi::Object exports) {
             InstanceMethod("getSourceIndex", &SourceMapBinding::getSourceIndex),
             InstanceMethod("getNameIndex", &SourceMapBinding::getNameIndex),
             InstanceMethod("extends", &SourceMapBinding::extends),
-            InstanceMethod("generateEmptyMap", &SourceMapBinding::generateEmptyMap),
+            InstanceMethod("generateEmptyMap", &SourceMapBinding::addEmptyMap),
             InstanceMethod("findClosestMapping", &SourceMapBinding::findClosestMapping),
     });
 
