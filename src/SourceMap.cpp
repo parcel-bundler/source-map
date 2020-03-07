@@ -636,7 +636,7 @@ Napi::Object SourceMapBinding::Init(Napi::Env env, Napi::Object exports) {
             InstanceMethod("getSourceIndex", &SourceMapBinding::getSourceIndex),
             InstanceMethod("getNameIndex", &SourceMapBinding::getNameIndex),
             InstanceMethod("extends", &SourceMapBinding::extends),
-            InstanceMethod("generateEmptyMap", &SourceMapBinding::addEmptyMap),
+            InstanceMethod("addEmptyMap", &SourceMapBinding::addEmptyMap),
             InstanceMethod("findClosestMapping", &SourceMapBinding::findClosestMapping),
     });
 
