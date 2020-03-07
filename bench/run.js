@@ -16,7 +16,7 @@ const test_maps = [
 ];
 const suite = new Benchmark(ITERATIONS);
 
-let mappings = new Array(10000).fill("").map((item, index) => {
+let mappings = new Array(100).fill("").map((item, index) => {
   return {
     source: "index.js",
     name: "A",
@@ -31,26 +31,27 @@ let mappings = new Array(10000).fill("").map((item, index) => {
   };
 });
 
-let sourcemapBuffer = new SourceMap(mappings).toBuffer();
+let sourcemapInstance = new SourceMap();
+let sourcemapBuffer = sourcemapInstance.toBuffer();
 let rawSourceMap;
 // This isn't actually a safe operation but by the time the benchmark needs this it'll be ready (I guess)
 (async () => {
   rawSourceMap = JSON.parse(
-    await new SourceMap(mappings).stringify({
+    await sourcemapInstance.stringify({
       file: "index.js.map",
       sourceRoot: "/"
     })
   );
 })();
 
-suite.add("cpp#consume", async () => {
+suite.add("consume vlq mappings", async () => {
   for (let testMap of test_maps) {
     let map = new SourceMap();
     map.addRawMappings(testMap.mappings, testMap.sources, testMap.names);
   }
 });
 
-suite.add("cpp#consume->stringify", async () => {
+suite.add("consume vlq mappings and stringify outputmap", async () => {
   for (let testMap of test_maps) {
     let map = new SourceMap();
     map.addRawMappings(testMap.mappings, testMap.sources, testMap.names);
@@ -61,7 +62,7 @@ suite.add("cpp#consume->stringify", async () => {
   }
 });
 
-suite.add("cpp#consume->toBuffer", async () => {
+suite.add("convert vlq mappings to buffer", async () => {
   for (let testMap of test_maps) {
     let map = new SourceMap();
     map.addRawMappings(testMap.mappings, testMap.sources, testMap.names);
@@ -69,26 +70,16 @@ suite.add("cpp#consume->toBuffer", async () => {
   }
 });
 
-suite.add("cpp#consume->toBuffer->fromBuffer", async () => {
-  for (let testMap of test_maps) {
-    let map = new SourceMap();
-    map.addRawMappings(testMap.mappings, testMap.sources, testMap.names);
-    let buff = map.toBuffer();
-    map = new SourceMap();
-    map.addBufferMappings(buff);
-  }
-});
-
-suite.add("cpp#consume->addIndexedMappings 10x", async () => {
+suite.add("combine 1000 maps using JS Mappings", async () => {
   let map = new SourceMap();
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 1000; i++) {
     map.addIndexedMappings(mappings, i * 4);
   }
 });
 
-suite.add("cpp#consume->addRawMappings 10x", async () => {
+suite.add("combine 1000 maps using vlq mappings", async () => {
   let map = new SourceMap();
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 1000; i++) {
     map.addRawMappings(
       rawSourceMap.mappings,
       rawSourceMap.sources,
@@ -98,14 +89,14 @@ suite.add("cpp#consume->addRawMappings 10x", async () => {
   }
 });
 
-suite.add("cpp#consume->addBufferMappings 1000x", async () => {
+suite.add("combine 1000 maps using flatbuffers", async () => {
   let map = new SourceMap();
   for (let i = 0; i < 1000; i++) {
     map.addBufferMappings(sourcemapBuffer, i * 4);
   }
 });
 
-suite.add("cpp#combine 1000 maps->toBuffer", async () => {
+suite.add("combine 1000 maps using flatbuffers and convert to buffer", async () => {
   let map = new SourceMap();
   for (let i = 0; i < 1000; i++) {
     map.addBufferMappings(sourcemapBuffer, i * 4);
@@ -113,7 +104,7 @@ suite.add("cpp#combine 1000 maps->toBuffer", async () => {
   map.toBuffer();
 });
 
-suite.add("cpp#combine 1000 maps->stringify", async () => {
+suite.add("combine 1000 maps using flatbuffers and stringify", async () => {
   let map = new SourceMap();
   for (let i = 0; i < 1000; i++) {
     map.addBufferMappings(sourcemapBuffer, i * 4);
