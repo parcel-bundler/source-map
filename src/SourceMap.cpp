@@ -61,17 +61,17 @@ void SourceMapBinding::addBufferMappings(const Napi::CallbackInfo &info) {
     }
 
     if (!info[0].IsBuffer()) {
-        Napi::TypeError::New(env, "Expected a string for the first parameter").ThrowAsJavaScriptException();
+        Napi::TypeError::New(env, "Expected a Buffer for the first parameter").ThrowAsJavaScriptException();
         return;
     }
 
     if (info.Length() > 1 && !info[1].IsNumber()) {
-        Napi::TypeError::New(env, "Expected a number for the second parameter").ThrowAsJavaScriptException();
+        Napi::TypeError::New(env, "Expected a lineOffset of type integer for the second parameter").ThrowAsJavaScriptException();
         return;
     }
 
     if (info.Length() > 2 && !info[2].IsNumber()) {
-        Napi::TypeError::New(env, "Expected a number for the third parameter").ThrowAsJavaScriptException();
+        Napi::TypeError::New(env, "Expected a columnOffset of type integer for the third parameter").ThrowAsJavaScriptException();
         return;
     }
 
