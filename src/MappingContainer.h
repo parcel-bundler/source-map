@@ -21,21 +21,15 @@ public:
 
     std::vector<std::string> &getSourcesVector();
 
-    int getSourcesCount();
-
     int addSource(std::string source);
 
     int getSourceIndex(std::string source);
 
     std::vector<std::string> &getNamesVector();
 
-    int getNamesCount();
-
     int addName(std::string name);
 
     int getNameIndex(std::string name);
-
-    int getGeneratedColumns();
 
     int getGeneratedLines();
 
@@ -45,8 +39,6 @@ public:
 
     void sort();
 
-    int getSegmentsCount();
-
 private:
     // Processed mappings, for all kinds of modifying within the sourcemap
     std::vector<std::string> _sources;
@@ -55,7 +47,6 @@ private:
     std::unordered_map<std::string, int> _sources_index;
     std::unordered_map<std::string, int> _names_index;
 
-    int _generated_columns = 0;
     int _generated_lines = -1;
     int _segment_count = 0;
 };

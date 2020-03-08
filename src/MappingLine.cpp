@@ -13,8 +13,12 @@ MappingLine::MappingLine(int lineNumber, int upperbound) : _line_number{lineNumb
 
 void MappingLine::addMapping(Mapping m) {
     this->_segments.push_back(m);
-    ++this->_segment_count;
-    this->_is_sorted = false;
+
+    if (this->_is_sorted && this->_last_column > m.generated.column) {
+        this->_is_sorted = false;
+    }
+
+    this->_last_column = m.generated.column;
 }
 
 void MappingLine::sort() {
@@ -24,19 +28,11 @@ void MappingLine::sort() {
     }
 }
 
-void MappingLine::setIsSorted(bool value) {
-    this->_is_sorted = value;
-}
-
 bool MappingLine::isSorted() {
     return this->_is_sorted;
 }
 
 int MappingLine::lineNumber() {
     return this->_line_number;
-}
-
-int MappingLine::getSegmentCount() {
-    return this->_segment_count;
 }
 

@@ -7,20 +7,16 @@ public:
 
     void addMapping(Mapping m);
 
-    void setIsSorted(bool value);
-
     void sort();
 
     bool isSorted();
 
     int lineNumber();
 
-    int getSegmentCount();
-
     std::vector<Mapping> _segments;
 
 private:
     bool _is_sorted = false;
     int _line_number = 0;
-    int _segment_count = 0;
+    int _last_column = 0;
 };

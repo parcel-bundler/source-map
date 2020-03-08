@@ -99,16 +99,12 @@ void SourceMapBinding::addBufferMappings(const Napi::CallbackInfo &info) {
 
     this->_mapping_container.createLinesIfUndefined(map->lineCount() + lineOffset);
 
-    auto &mappingLinesVector = this->_mapping_container.getMappingLinesVector();
     auto lines = map->lines();
     auto linesEnd = lines->end();
     for (auto linesIterator = map->lines()->begin(); linesIterator != linesEnd; ++linesIterator) {
         auto line = (*linesIterator);
         auto segments = line->segments();
         auto segmentsEnd = segments->end();
-
-        auto &mappingLine = mappingLinesVector[line->lineNumber() + lineOffset];
-        bool isNewLine = mappingLine->_segments.empty();
 
         for (auto segmentIterator = segments->begin(); segmentIterator != segmentsEnd; ++segmentIterator) {
             Position generated = Position{segmentIterator->generatedLine() + lineOffset,
@@ -118,10 +114,6 @@ void SourceMapBinding::addBufferMappings(const Napi::CallbackInfo &info) {
             int source = segmentIterator->source() > -1 ? sources[segmentIterator->source()] : -1;
             int name = segmentIterator->name() > -1 ? names[segmentIterator->name()] : -1;
             this->_mapping_container.addMapping(generated, original, source, name);
-        }
-
-        if (isNewLine) {
-            mappingLine->setIsSorted(line->isSorted());
         }
     }
 }

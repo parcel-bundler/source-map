@@ -49,6 +49,12 @@ suite.add("Save buffer", async () => {
   sourcemapInstance.toBuffer();
 });
 
+suite.add("extend map", async () => {
+  let map = new SourceMap();
+  map.addBufferMappings(sourcemapBuffer);
+  map.extends(sourcemapBuffer);
+});
+
 suite.add("stringify", async () => {
   await sourcemapInstance.stringify({
     file: "index.js.map",

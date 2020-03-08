@@ -6,10 +6,6 @@ MappingContainer::MappingContainer() {}
 
 MappingContainer::~MappingContainer() {}
 
-int MappingContainer::getNamesCount() {
-    return this->_names.size();
-}
-
 int MappingContainer::addName(std::string name) {
     int index = this->getNameIndex(name);
     if (index < 0) {
@@ -18,10 +14,6 @@ int MappingContainer::addName(std::string name) {
         this->_names_index[name] = index;
     }
     return index;
-}
-
-int MappingContainer::getSourcesCount() {
-    return this->_sources.size();
 }
 
 int MappingContainer::addSource(std::string source) {
@@ -38,10 +30,6 @@ int MappingContainer::getGeneratedLines() {
     return _generated_lines;
 }
 
-int MappingContainer::getGeneratedColumns() {
-    return _generated_columns;
-}
-
 void MappingContainer::sort() {
     auto lineEnd = _mapping_lines.end();
     for (auto lineIterator = _mapping_lines.begin(); lineIterator != lineEnd; ++lineIterator) {
@@ -50,17 +38,9 @@ void MappingContainer::sort() {
 }
 
 void MappingContainer::addMapping(Position generated, Position original, int source, int name) {
-    if (generated.column > _generated_columns) {
-        _generated_columns = generated.column;
-    }
-
     this->createLinesIfUndefined(generated.line);
     this->_mapping_lines[generated.line]->addMapping(Mapping{generated, original, source, name});
     ++this->_segment_count;
-}
-
-int MappingContainer::getSegmentsCount() {
-    return this->_segment_count;
 }
 
 void MappingContainer::createLinesIfUndefined(int generatedLine) {
