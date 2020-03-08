@@ -10,14 +10,14 @@ describe("SourceMap - Find", () => {
       []
     );
 
-    let mapping = map.findClosestMapping(1, 14);
+    let mapping = map.findClosestMapping(2, 14);
     assert.deepEqual(mapping, {
       generated: { line: 2, column: 14 },
       original: { line: 1, column: 12 },
       source: 0
     });
 
-    mapping = map.findClosestMapping(1, 12);
+    mapping = map.findClosestMapping(2, 12);
     assert.deepEqual(mapping, {
       generated: { line: 2, column: 13 },
       original: { line: 1, column: 0 },

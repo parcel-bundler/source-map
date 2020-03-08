@@ -564,7 +564,7 @@ Napi::Value SourceMapBinding::findClosestMapping(const Napi::CallbackInfo &info)
         return env.Null();
     }
 
-    int lineIndex = info[0].As<Napi::Number>().Int32Value();
+    int lineIndex = info[0].As<Napi::Number>().Int32Value() - 1;
     int columnIndex = info[1].As<Napi::Number>().Int32Value();
 
     if (lineIndex <= this->_mapping_container.getGeneratedLines()) {
