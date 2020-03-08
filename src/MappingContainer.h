@@ -21,15 +21,15 @@ public:
 
     std::vector<std::string> &getSourcesVector();
 
-    int addSource(std::string source);
+    int addSource(std::string &source);
 
-    int getSourceIndex(std::string source);
+    int getSourceIndex(std::string &source);
 
     std::vector<std::string> &getNamesVector();
 
-    int addName(std::string name);
+    int addName(std::string &name);
 
-    int getNameIndex(std::string name);
+    int getNameIndex(std::string &name);
 
     int getGeneratedLines();
 
