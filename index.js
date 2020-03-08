@@ -92,6 +92,11 @@ class SourceMap {
     return this.sourceMapInstance.toBuffer();
   }
 
+  // toVLQ(): {sources: Array<string>, names: Array<string>, mappings: string}
+  toVLQ() {
+    return this.sourceMapInstance.stringify();
+  }
+
   async stringify({ file, sourceRoot, rootDir, inlineSources, inlineMap, fs }) {
     let map = this.sourceMapInstance.stringify();
     map.version = 3;

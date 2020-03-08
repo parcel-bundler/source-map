@@ -4,16 +4,6 @@ const SourceMap = require("../");
 
 const ITERATIONS = 50;
 
-const test_maps = [
-  {
-    version: 3,
-    file: "helloworld.js",
-    sources: ["helloworld.coffee"],
-    names: [],
-    mappings: "AAAA;AAAA,EAAA,OAAO,CAAC,GAAR,CAAY,aAAZ,CAAA,CAAA;AAAA"
-  },
-  require("./maps/angular")
-];
 const suite = new Benchmark(ITERATIONS);
 
 let mappings = new Array(100).fill("").map((item, index) => {
@@ -32,42 +22,38 @@ let mappings = new Array(100).fill("").map((item, index) => {
 });
 
 let sourcemapInstance = new SourceMap();
+sourcemapInstance.addIndexedMappings(mappings);
 let sourcemapBuffer = sourcemapInstance.toBuffer();
-let rawSourceMap;
-// This isn't actually a safe operation but by the time the benchmark needs this it'll be ready (I guess)
-(async () => {
-  rawSourceMap = JSON.parse(
-    await sourcemapInstance.stringify({
-      file: "index.js.map",
-      sourceRoot: "/"
-    })
-  );
-})();
+let rawSourceMap = sourcemapInstance.toVLQ();
 
 suite.add("consume vlq mappings", async () => {
-  for (let testMap of test_maps) {
-    let map = new SourceMap();
-    map.addRawMappings(testMap.mappings, testMap.sources, testMap.names);
-  }
+  let map = new SourceMap();
+  map.addRawMappings(
+    rawSourceMap.mappings,
+    rawSourceMap.sources,
+    rawSourceMap.names
+  );
 });
 
-suite.add("consume vlq mappings and stringify outputmap", async () => {
-  for (let testMap of test_maps) {
-    let map = new SourceMap();
-    map.addRawMappings(testMap.mappings, testMap.sources, testMap.names);
-    await map.stringify({
-      file: "index.js.map",
-      sourceRoot: "/"
-    });
-  }
+suite.add("consume flatbuffer", async () => {
+  let map = new SourceMap();
+  map.addBufferMappings(sourcemapBuffer);
 });
 
-suite.add("convert vlq mappings to buffer", async () => {
-  for (let testMap of test_maps) {
-    let map = new SourceMap();
-    map.addRawMappings(testMap.mappings, testMap.sources, testMap.names);
-    let buff = map.toBuffer();
-  }
+suite.add("consume JS Mappings", async () => {
+  let map = new SourceMap();
+  map.addIndexedMappings(mappings);
+});
+
+suite.add("Save buffer", async () => {
+  sourcemapInstance.toBuffer();
+});
+
+suite.add("stringify", async () => {
+  await sourcemapInstance.stringify({
+    file: "index.js.map",
+    sourceRoot: "/"
+  });
 });
 
 suite.add("combine 1000 maps using JS Mappings", async () => {
@@ -96,13 +82,16 @@ suite.add("combine 1000 maps using flatbuffers", async () => {
   }
 });
 
-suite.add("combine 1000 maps using flatbuffers and convert to buffer", async () => {
-  let map = new SourceMap();
-  for (let i = 0; i < 1000; i++) {
-    map.addBufferMappings(sourcemapBuffer, i * 4);
+suite.add(
+  "combine 1000 maps using flatbuffers and convert to buffer",
+  async () => {
+    let map = new SourceMap();
+    for (let i = 0; i < 1000; i++) {
+      map.addBufferMappings(sourcemapBuffer, i * 4);
+    }
+    map.toBuffer();
   }
-  map.toBuffer();
-});
+);
 
 suite.add("combine 1000 maps using flatbuffers and stringify", async () => {
   let map = new SourceMap();
