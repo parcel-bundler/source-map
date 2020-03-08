@@ -11,7 +11,7 @@ let mappings = new Array(100).fill("").map((item, index) => {
     source: "index.js",
     name: "A",
     original: {
-      line: index,
+      line: index + 1,
       column: 0 + 10 * index
     },
     generated: {

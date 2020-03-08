@@ -33,63 +33,64 @@ describe("SourceMap - Basics", () => {
       SIMPLE_SOURCE_MAP.sources,
       SIMPLE_SOURCE_MAP.names
     );
+
     assert.deepEqual(map.getMap(), {
       sources: ["helloworld.coffee"],
       names: [],
       mappings: [
         {
-          generated: { line: 0, column: 0 },
-          original: { line: 0, column: 0 },
-          source: 0
-        },
-        {
           generated: { line: 1, column: 0 },
-          original: { line: 0, column: 0 },
-          source: 0
-        },
-        {
-          generated: { line: 1, column: 2 },
-          original: { line: 0, column: 0 },
-          source: 0
-        },
-        {
-          generated: { line: 1, column: 9 },
-          original: { line: 0, column: 7 },
-          source: 0
-        },
-        {
-          generated: { line: 1, column: 10 },
-          original: { line: 0, column: 8 },
-          source: 0
-        },
-        {
-          generated: { line: 1, column: 13 },
-          original: { line: 0, column: 0 },
-          source: 0
-        },
-        {
-          generated: { line: 1, column: 14 },
-          original: { line: 0, column: 12 },
-          source: 0
-        },
-        {
-          generated: { line: 1, column: 27 },
-          original: { line: 0, column: 0 },
-          source: 0
-        },
-        {
-          generated: { line: 1, column: 28 },
-          original: { line: 0, column: 0 },
-          source: 0
-        },
-        {
-          generated: { line: 1, column: 29 },
-          original: { line: 0, column: 0 },
+          original: { line: 1, column: 0 },
           source: 0
         },
         {
           generated: { line: 2, column: 0 },
-          original: { line: 0, column: 0 },
+          original: { line: 1, column: 0 },
+          source: 0
+        },
+        {
+          generated: { line: 2, column: 2 },
+          original: { line: 1, column: 0 },
+          source: 0
+        },
+        {
+          generated: { line: 2, column: 9 },
+          original: { line: 1, column: 7 },
+          source: 0
+        },
+        {
+          generated: { line: 2, column: 10 },
+          original: { line: 1, column: 8 },
+          source: 0
+        },
+        {
+          generated: { line: 2, column: 13 },
+          original: { line: 1, column: 0 },
+          source: 0
+        },
+        {
+          generated: { line: 2, column: 14 },
+          original: { line: 1, column: 12 },
+          source: 0
+        },
+        {
+          generated: { line: 2, column: 27 },
+          original: { line: 1, column: 0 },
+          source: 0
+        },
+        {
+          generated: { line: 2, column: 28 },
+          original: { line: 1, column: 0 },
+          source: 0
+        },
+        {
+          generated: { line: 2, column: 29 },
+          original: { line: 1, column: 0 },
+          source: 0
+        },
+        {
+          generated: { line: 3, column: 0 },
+          original: { line: 1, column: 0 },
           source: 0
         }
       ]
@@ -124,7 +125,7 @@ describe("SourceMap - Basics", () => {
       version: 3,
       file: "index.js.map",
       sourceRoot: "/",
-      mappings: ";;;;;;eACAA",
+      mappings: ";;;;;eAAAA",
       sources: ["index.js"],
       names: ["A"]
     });
@@ -158,7 +159,7 @@ describe("SourceMap - Basics", () => {
       version: 3,
       file: "index.js.map",
       sourceRoot: "/",
-      mappings: ";;;;;;eACA",
+      mappings: ";;;;;eAAA",
       sources: ["index.js"],
       names: []
     });
@@ -189,7 +190,7 @@ describe("SourceMap - Basics", () => {
       version: 3,
       file: "index.js.map",
       sourceRoot: "/",
-      mappings: ";;;;;;e",
+      mappings: ";;;;;e",
       sources: [],
       names: []
     });

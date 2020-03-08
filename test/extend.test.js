@@ -23,7 +23,7 @@ describe("SourceMap - Extend Map", () => {
     newMap.addIndexedMappings([
       {
         source: "index.js",
-        name: "",
+        name: "B",
         original: {
           line: 6,
           column: 15
@@ -42,7 +42,7 @@ describe("SourceMap - Extend Map", () => {
     assert.equal(mappings.length, 1);
     assert.deepEqual(mappings[0], {
       source: 0,
-      name: 0,
+      name: 1,
       original: {
         line: 1,
         column: 0
@@ -65,8 +65,8 @@ describe("SourceMap - Extend Map", () => {
       file: "index.js.map",
       sourceRoot: "/",
       sources: ["index.js"],
-      names: ["A"],
-      mappings: ";;;;;YACAA"
+      names: ["B", "A"],
+      mappings: ";;;;YAAAC"
     });
   });
 
@@ -76,7 +76,7 @@ describe("SourceMap - Extend Map", () => {
     originalMap.addIndexedMappings([
       {
         source: "index.js",
-        name: "",
+        name: "A",
         original: {
           line: 6,
           column: 15
@@ -99,7 +99,7 @@ describe("SourceMap - Extend Map", () => {
     newMap.addIndexedMappings([
       {
         source: "index.js",
-        name: "",
+        name: "B",
         original: {
           line: 14,
           column: 165
@@ -111,7 +111,7 @@ describe("SourceMap - Extend Map", () => {
       },
       {
         source: "index.js",
-        name: "",
+        name: "C",
         original: {
           line: 5,
           column: 12
@@ -136,6 +136,7 @@ describe("SourceMap - Extend Map", () => {
     });
     assert.deepEqual(mappings[1], {
       source: 0,
+      name: 2,
       original: {
         line: 6,
         column: 15
@@ -157,9 +158,9 @@ describe("SourceMap - Extend Map", () => {
       version: 3,
       file: "index.js.map",
       sourceRoot: "/",
-      mappings: ";e,+FAMe",
+      mappings: "e,+FAKeE",
       sources: ["index.js"],
-      names: []
+      names: ["B", "C", "A"]
     });
   });
 });

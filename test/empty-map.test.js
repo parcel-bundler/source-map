@@ -18,11 +18,6 @@ describe("SourceMap - Empty Map", () => {
       names: [],
       mappings: [
         {
-          generated: { line: 0, column: 0 },
-          original: { line: 0, column: 0 },
-          source: 0
-        },
-        {
           generated: { line: 1, column: 0 },
           original: { line: 1, column: 0 },
           source: 0
@@ -36,6 +31,11 @@ describe("SourceMap - Empty Map", () => {
           generated: { line: 3, column: 0 },
           original: { line: 3, column: 0 },
           source: 0
+        },
+        {
+          generated: { line: 4, column: 0 },
+          original: { line: 4, column: 0 },
+          source: 0
         }
       ]
     });
@@ -48,7 +48,8 @@ describe("SourceMap - Empty Map", () => {
       function test() {
         return "hello world!";
       }
-    `, 10
+    `,
+      10
     );
 
     let mapContent = map.getMap();
@@ -56,11 +57,6 @@ describe("SourceMap - Empty Map", () => {
       sources: ["index.js"],
       names: [],
       mappings: [
-        {
-          generated: { line: 10, column: 0 },
-          original: { line: 10, column: 0 },
-          source: 0
-        },
         {
           generated: { line: 11, column: 0 },
           original: { line: 11, column: 0 },
@@ -74,6 +70,11 @@ describe("SourceMap - Empty Map", () => {
         {
           generated: { line: 13, column: 0 },
           original: { line: 13, column: 0 },
+          source: 0
+        },
+        {
+          generated: { line: 14, column: 0 },
+          original: { line: 14, column: 0 },
           source: 0
         }
       ]

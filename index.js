@@ -40,6 +40,7 @@ class SourceMap {
     return this;
   }
 
+  // line numbers start at 1 so we have the same api as `source-map` by mozilla
   // addIndexedMappings(mappings: Array<{source: Position, original: Position, name: string | number, source: string | number}>, lineOffset: number = 0, columnOffset: number = 0): SourceMap
   addIndexedMappings(mappings, lineOffset = 0, columnOffset = 0) {
     this.sourceMapInstance.addIndexedMappings(
