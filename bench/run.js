@@ -62,6 +62,25 @@ suite.add("stringify", async () => {
   });
 });
 
+suite.add("combine 1000 maps using flatbuffers", async () => {
+  let map = new SourceMap();
+  for (let i = 0; i < 1000; i++) {
+    map.addBufferMappings(sourcemapBuffer, i * 4);
+  }
+});
+
+suite.add("combine 1000 maps using vlq mappings", async () => {
+  let map = new SourceMap();
+  for (let i = 0; i < 1000; i++) {
+    map.addRawMappings(
+      rawSourceMap.mappings,
+      rawSourceMap.sources,
+      rawSourceMap.names,
+      i * 4
+    );
+  }
+});
+
 suite.add("combine 1000 maps using flatbuffers and stringify", async () => {
   let map = new SourceMap();
   for (let i = 0; i < 1000; i++) {
