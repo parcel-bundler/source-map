@@ -45,10 +45,10 @@ void SourceMapBinding::addRawMappings(const Napi::CallbackInfo &info) {
     int lineOffset = info.Length() > 3 ? info[3].As<Napi::Number>().Int32Value() : 0;
     int columnOffset = info.Length() > 4 ? info[4].As<Napi::Number>().Int32Value() : 0;
 
-    std::vector<int> namesIndex = this->_addNames(names);
-    std::vector<int> sourcesIndex = this->_addSources(sources);
+    std::vector<int> namesIndex = _addNames(names);
+    std::vector<int> sourcesIndex = _addSources(sources);
 
-    this->_mapping_container.addVLQMappings(rawMappings, sourcesIndex, namesIndex, lineOffset, columnOffset);
+    _mapping_container.addVLQMappings(rawMappings, sourcesIndex, namesIndex, lineOffset, columnOffset);
 }
 
 void SourceMapBinding::addBufferMappings(const Napi::CallbackInfo &info) {
@@ -87,7 +87,7 @@ void SourceMapBinding::addBufferMappings(const Napi::CallbackInfo &info) {
     auto sourcesEnd = sourcesArray->end();
     for (auto it = sourcesArray->begin(); it != sourcesEnd; ++it) {
         std::string source = it->str();
-        sources.push_back(this->_mapping_container.addSource(source));
+        sources.push_back(_mapping_container.addSource(source));
     }
 
     std::vector<int> names;
@@ -96,10 +96,10 @@ void SourceMapBinding::addBufferMappings(const Napi::CallbackInfo &info) {
     auto namesEnd = namesArray->end();
     for (auto it = namesArray->begin(); it != namesEnd; ++it) {
         std::string name = it->str();
-        names.push_back(this->_mapping_container.addName(name));
+        names.push_back(_mapping_container.addName(name));
     }
 
-    this->_mapping_container.createLinesIfUndefined(map->lineCount() + lineOffset);
+    _mapping_container.createLinesIfUndefined(map->lineCount() + lineOffset);
 
     auto lines = map->lines();
     auto linesEnd = lines->end();
@@ -115,7 +115,7 @@ void SourceMapBinding::addBufferMappings(const Napi::CallbackInfo &info) {
 
             int source = segmentIterator->source() > -1 ? sources[segmentIterator->source()] : -1;
             int name = segmentIterator->name() > -1 ? names[segmentIterator->name()] : -1;
-            this->_mapping_container.addMapping(generated, original, source, name);
+            _mapping_container.addMapping(generated, original, source, name);
         }
     }
 }
@@ -143,7 +143,7 @@ void SourceMapBinding::extends(const Napi::CallbackInfo &info) {
     auto sourcesEnd = sourcesArray->end();
     for (auto it = sourcesArray->begin(); it != sourcesEnd; ++it) {
         std::string source = it->str();
-        sources.push_back(this->_mapping_container.addSource(source));
+        sources.push_back(_mapping_container.addSource(source));
     }
 
     std::vector<int> names;
@@ -152,14 +152,14 @@ void SourceMapBinding::extends(const Napi::CallbackInfo &info) {
     auto namesEnd = namesArray->end();
     for (auto it = namesArray->begin(); it != namesEnd; ++it) {
         std::string name = it->str();
-        names.push_back(this->_mapping_container.addName(name));
+        names.push_back(_mapping_container.addName(name));
     }
 
     auto originalLines = map->lines();
     auto originalLineCount = map->lineCount();
 
     std::vector<flatbuffers::Offset<SourceMapSchema::MappingLine>> lines_vector;
-    auto &mappingLinesVector = this->_mapping_container.getMappingLinesVector();
+    auto &mappingLinesVector = _mapping_container.getMappingLinesVector();
     lines_vector.reserve(mappingLinesVector.size());
 
     auto lineEnd = mappingLinesVector.end();
@@ -222,9 +222,9 @@ Napi::Value SourceMapBinding::stringify(const Napi::CallbackInfo &info) {
     Napi::HandleScope scope(env);
 
     Napi::Object obj = Napi::Object::New(env);
-    obj.Set("mappings", this->_mapping_container.toVLQMappings());
+    obj.Set("mappings", _mapping_container.toVLQMappings());
 
-    auto sourcesVector = this->_mapping_container.getSourcesVector();
+    auto sourcesVector = _mapping_container.getSourcesVector();
     int len = sourcesVector.size();
     Napi::Array sourcesArray = Napi::Array::New(env, len);
     for (int i = 0; i < len; ++i) {
@@ -232,7 +232,7 @@ Napi::Value SourceMapBinding::stringify(const Napi::CallbackInfo &info) {
     }
     obj.Set("sources", sourcesArray);
 
-    auto namesVector = this->_mapping_container.getNamesVector();
+    auto namesVector = _mapping_container.getNamesVector();
     len = namesVector.size();
     Napi::Array namesArray = Napi::Array::New(env, len);
     for (int i = 0; i < len; ++i) {
@@ -250,10 +250,10 @@ Napi::Value SourceMapBinding::toBuffer(const Napi::CallbackInfo &info) {
     flatbuffers::FlatBufferBuilder builder;
 
     // Sort mappings
-    this->_mapping_container.sort();
+    _mapping_container.sort();
 
     std::vector<flatbuffers::Offset<flatbuffers::String>> names_vector;
-    auto namesVector = this->_mapping_container.getNamesVector();
+    auto namesVector = _mapping_container.getNamesVector();
     names_vector.reserve(namesVector.size());
     auto namesEnd = namesVector.end();
     for (auto it = namesVector.begin(); it != namesEnd; ++it) {
@@ -261,7 +261,7 @@ Napi::Value SourceMapBinding::toBuffer(const Napi::CallbackInfo &info) {
     }
 
     std::vector<flatbuffers::Offset<flatbuffers::String>> sources_vector;
-    auto sourcesVector = this->_mapping_container.getSourcesVector();
+    auto sourcesVector = _mapping_container.getSourcesVector();
     sources_vector.reserve(sourcesVector.size());
     auto sourcesEnd = sourcesVector.end();
     for (auto it = sourcesVector.begin(); it != sourcesEnd; ++it) {
@@ -269,7 +269,7 @@ Napi::Value SourceMapBinding::toBuffer(const Napi::CallbackInfo &info) {
     }
 
     std::vector<flatbuffers::Offset<SourceMapSchema::MappingLine>> lines_vector;
-    auto mappingLinesVector = this->_mapping_container.getMappingLinesVector();
+    auto mappingLinesVector = _mapping_container.getMappingLinesVector();
     lines_vector.reserve(mappingLinesVector.size());
 
     auto lineEnd = mappingLinesVector.end();
@@ -293,7 +293,7 @@ Napi::Value SourceMapBinding::toBuffer(const Napi::CallbackInfo &info) {
     }
 
     auto map = SourceMapSchema::CreateMapDirect(builder, &names_vector, &sources_vector,
-                                                this->_mapping_container.getGeneratedLines(), &lines_vector);
+                                                _mapping_container.getGeneratedLines(), &lines_vector);
 
     builder.Finish(map);
 
@@ -335,9 +335,9 @@ Napi::Value SourceMapBinding::getMap(const Napi::CallbackInfo &info) {
     Napi::Object obj = Napi::Object::New(env);
 
     // Sort mappings
-    this->_mapping_container.sort();
+    _mapping_container.sort();
 
-    auto sourcesVector = this->_mapping_container.getSourcesVector();
+    auto sourcesVector = _mapping_container.getSourcesVector();
     int len = sourcesVector.size();
     Napi::Array sourcesArray = Napi::Array::New(env, len);
     for (int i = 0; i < len; ++i) {
@@ -345,7 +345,7 @@ Napi::Value SourceMapBinding::getMap(const Napi::CallbackInfo &info) {
     }
     obj.Set("sources", sourcesArray);
 
-    auto namesVector = this->_mapping_container.getNamesVector();
+    auto namesVector = _mapping_container.getNamesVector();
     len = namesVector.size();
     Napi::Array namesArray = Napi::Array::New(env, len);
     for (int i = 0; i < len; ++i) {
@@ -353,8 +353,8 @@ Napi::Value SourceMapBinding::getMap(const Napi::CallbackInfo &info) {
     }
     obj.Set("names", namesArray);
 
-    auto mappingLinesVector = this->_mapping_container.getMappingLinesVector();
-    Napi::Array mappingsArray = Napi::Array::New(env, this->_mapping_container.getTotalSegments());
+    auto mappingLinesVector = _mapping_container.getMappingLinesVector();
+    Napi::Array mappingsArray = Napi::Array::New(env, _mapping_container.getTotalSegments());
     auto lineEnd = mappingLinesVector.end();
     int currentMapping = 0;
     for (auto lineIterator = mappingLinesVector.begin(); lineIterator != lineEnd; ++lineIterator) {
@@ -364,7 +364,7 @@ Napi::Value SourceMapBinding::getMap(const Napi::CallbackInfo &info) {
 
         for (auto segmentIterator = segments.begin(); segmentIterator != segmentsEnd; ++segmentIterator) {
             Mapping &mapping = *segmentIterator;
-            mappingsArray.Set(currentMapping, this->_mappingToObject(env, mapping));
+            mappingsArray.Set(currentMapping, _mappingToObject(env, mapping));
             ++currentMapping;
         }
     }
@@ -422,17 +422,17 @@ void SourceMapBinding::addIndexedMappings(const Napi::CallbackInfo &info) {
             Position originalPosition = Position{originalLine, originalColumn};
 
             std::string sourceString = mappingObject.Get("source").As<Napi::String>().Utf8Value();
-            int source = this->_mapping_container.addSource(sourceString);
+            int source = _mapping_container.addSource(sourceString);
 
             Napi::Value nameValue = mappingObject.Get("name");
             if (nameValue.IsString()) {
                 std::string nameString = nameValue.As<Napi::String>().Utf8Value();
-                this->_mapping_container.addMapping(generatedPosition, originalPosition, source, this->_mapping_container.addName(nameString));
+                _mapping_container.addMapping(generatedPosition, originalPosition, source, _mapping_container.addName(nameString));
             } else {
-                this->_mapping_container.addMapping(generatedPosition, originalPosition, source);
+                _mapping_container.addMapping(generatedPosition, originalPosition, source);
             }
         } else {
-            this->_mapping_container.addMapping(generatedPosition);
+            _mapping_container.addMapping(generatedPosition);
         }
     }
 }
@@ -447,7 +447,7 @@ Napi::Value SourceMapBinding::getSourceIndex(const Napi::CallbackInfo &info) {
     }
 
     std::string source = info[0].As<Napi::String>().Utf8Value();
-    int index = this->_mapping_container.getSourceIndex(source);
+    int index = _mapping_container.getSourceIndex(source);
 
     return Napi::Number::New(env, index);
 }
@@ -462,7 +462,7 @@ Napi::Value SourceMapBinding::getNameIndex(const Napi::CallbackInfo &info) {
     }
 
     std::string name = info[0].As<Napi::String>().Utf8Value();
-    int index = this->_mapping_container.getNameIndex(name);
+    int index = _mapping_container.getNameIndex(name);
 
     return Napi::Number::New(env, index);
 }
@@ -472,7 +472,7 @@ std::vector<int> SourceMapBinding::_addNames(Napi::Array &namesArray) {
     int length = namesArray.Length();
     for (int i = 0; i < length; ++i) {
         std::string name = namesArray.Get(i).As<Napi::String>().Utf8Value();
-        insertions.push_back(this->_mapping_container.addName(name));
+        insertions.push_back(_mapping_container.addName(name));
     }
     return insertions;
 }
@@ -487,7 +487,7 @@ Napi::Value SourceMapBinding::addNames(const Napi::CallbackInfo &info) {
     }
 
     Napi::Array arr = info[0].As<Napi::Array>();
-    std::vector<int> indexes = this->_addNames(arr);
+    std::vector<int> indexes = _addNames(arr);
     int size = indexes.size();
     Napi::Array indexesArr = Napi::Array::New(env, size);
     for (int i = 0; i < size; ++i) {
@@ -501,7 +501,7 @@ std::vector<int> SourceMapBinding::_addSources(Napi::Array &sourcesArray) {
     unsigned int length = sourcesArray.Length();
     for (unsigned int i = 0; i < length; ++i) {
         std::string source = sourcesArray.Get(i).As<Napi::String>().Utf8Value();
-        insertions.push_back(this->_mapping_container.addSource(source));
+        insertions.push_back(_mapping_container.addSource(source));
     }
     return insertions;
 }
@@ -516,7 +516,7 @@ Napi::Value SourceMapBinding::addSources(const Napi::CallbackInfo &info) {
     }
 
     Napi::Array arr = info[0].As<Napi::Array>();
-    std::vector<int> indexes = this->_addSources(arr);
+    std::vector<int> indexes = _addSources(arr);
     int size = indexes.size();
     Napi::Array indexesArr = Napi::Array::New(env, size);
     for (int i = 0; i < size; ++i) {
@@ -544,12 +544,12 @@ void SourceMapBinding::addEmptyMap(const Napi::CallbackInfo &info) {
     std::string sourceContent = info[1].As<Napi::String>().Utf8Value();
     int lineOffset = info.Length() > 2 ? info[2].As<Napi::Number>().Int32Value() : 0;
 
-    int sourceIndex = this->_mapping_container.addSource(sourceName);
+    int sourceIndex = _mapping_container.addSource(sourceName);
     auto end = sourceContent.end();
     for (auto it = sourceContent.begin(); it != end; ++it) {
         const char &c = *it;
         if (c == '\n') {
-            this->_mapping_container.addMapping(Position{lineOffset, 0}, Position{lineOffset, 0}, sourceIndex);
+            _mapping_container.addMapping(Position{lineOffset, 0}, Position{lineOffset, 0}, sourceIndex);
             ++lineOffset;
         }
     }
@@ -567,8 +567,8 @@ Napi::Value SourceMapBinding::findClosestMapping(const Napi::CallbackInfo &info)
     int lineIndex = info[0].As<Napi::Number>().Int32Value() - 1;
     int columnIndex = info[1].As<Napi::Number>().Int32Value();
 
-    if (lineIndex <= this->_mapping_container.getGeneratedLines()) {
-        auto &mappingLinesVector = this->_mapping_container.getMappingLinesVector();
+    if (lineIndex <= _mapping_container.getGeneratedLines()) {
+        auto &mappingLinesVector = _mapping_container.getMappingLinesVector();
         auto &line = mappingLinesVector.at(lineIndex);
         auto &segments = line->_segments;
         unsigned int segmentsCount = segments.size();
@@ -593,7 +593,7 @@ Napi::Value SourceMapBinding::findClosestMapping(const Napi::CallbackInfo &info)
             middleIndex = ((stopIndex + startIndex) / 2);
         }
 
-        return this->_mappingToObject(env, segments[middleIndex]);
+        return _mappingToObject(env, segments[middleIndex]);
     }
 
     return env.Null();

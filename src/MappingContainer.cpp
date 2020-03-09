@@ -7,21 +7,21 @@ MappingContainer::MappingContainer() {}
 MappingContainer::~MappingContainer() {}
 
 int MappingContainer::addName(std::string &name) {
-    int index = this->getNameIndex(name);
+    int index = getNameIndex(name);
     if (index < 0) {
-        this->_names.push_back(name);
-        index = (int) this->_names.size() - 1;
-        this->_names_index[name] = index;
+        _names.push_back(name);
+        index = (int) _names.size() - 1;
+        _names_index[name] = index;
     }
     return index;
 }
 
 int MappingContainer::addSource(std::string &source) {
-    int index = this->getSourceIndex(source);
+    int index = getSourceIndex(source);
     if (index < 0) {
-        this->_sources.push_back(source);
-        index = (int) this->_sources.size() - 1;
-        this->_sources_index[source] = index;
+        _sources.push_back(source);
+        index = (int) _sources.size() - 1;
+        _sources_index[source] = index;
     }
     return index;
 }
@@ -38,18 +38,18 @@ void MappingContainer::sort() {
 }
 
 void MappingContainer::addMapping(Position generated, Position original, int source, int name) {
-    this->createLinesIfUndefined(generated.line);
-    this->_mapping_lines[generated.line]->addMapping(Mapping{generated, original, source, name});
-    ++this->_segment_count;
+    createLinesIfUndefined(generated.line);
+    _mapping_lines[generated.line]->addMapping(Mapping{generated, original, source, name});
+    ++_segment_count;
 }
 
 void MappingContainer::createLinesIfUndefined(int generatedLine) {
-    if (this->_generated_lines < generatedLine) {
-        this->_mapping_lines.reserve(generatedLine - this->_generated_lines + 1);
+    if (_generated_lines < generatedLine) {
+        _mapping_lines.reserve(generatedLine - _generated_lines + 1);
 
         // While our last line is not equal (or larger) to our generatedLine we need to add lines
-        while (this->_generated_lines < generatedLine) {
-            this->addLine();
+        while (_generated_lines < generatedLine) {
+            addLine();
         }
     }
 }
@@ -79,7 +79,7 @@ void MappingContainer::addVLQMappings(const std::string &mappings_input, std::ve
             Position generated = Position{generatedLine, segment[0]};
             Position original = Position{hasSource ? segment[2] : -1, hasSource ? segment[3] : -1};
 
-            this->addMapping(generated, original, hasSource ? sources[segment[1]] : -1,
+            addMapping(generated, original, hasSource ? sources[segment[1]] : -1,
                              hasName ? names[segment[4]] : -1);
 
             if (c == ';') {
@@ -116,7 +116,7 @@ void MappingContainer::addVLQMappings(const std::string &mappings_input, std::ve
         Position generated = Position{generatedLine, segment[0]};
         Position original = Position{hasSource ? segment[2] : -1, hasSource ? segment[3] : -1};
 
-        this->addMapping(generated, original, hasSource ? sources[segment[1]] : -1, hasName ? names[segment[4]] : -1);
+        addMapping(generated, original, hasSource ? sources[segment[1]] : -1, hasName ? names[segment[4]] : -1);
     }
 }
 
@@ -130,7 +130,7 @@ std::string MappingContainer::toVLQMappings() {
     bool isFirstLine = true;
 
     // Sort mappings
-    this->sort();
+    sort();
 
     auto lineEnd = _mapping_lines.end();
     for (auto lineIterator = _mapping_lines.begin(); lineIterator != lineEnd; ++lineIterator) {
@@ -182,24 +182,24 @@ std::string MappingContainer::toVLQMappings() {
 }
 
 int MappingContainer::getTotalSegments() {
-    return this->_segment_count;
+    return _segment_count;
 }
 
 std::vector<std::string> &MappingContainer::getNamesVector() {
-    return this->_names;
+    return _names;
 }
 
 std::vector<std::string> &MappingContainer::getSourcesVector() {
-    return this->_sources;
+    return _sources;
 }
 
 std::vector<MappingLine *> &MappingContainer::getMappingLinesVector() {
-    return this->_mapping_lines;
+    return _mapping_lines;
 }
 
 MappingLine *MappingContainer::addLine(int size) {
-    MappingLine *line = new MappingLine(++this->_generated_lines, size);
-    this->_mapping_lines.push_back(line);
+    MappingLine *line = new MappingLine(++_generated_lines, size);
+    _mapping_lines.push_back(line);
     return line;
 }
 

@@ -8,31 +8,31 @@ struct MappingGeneratedColumnComparator {
 };
 
 MappingLine::MappingLine(int lineNumber, int upperbound) : _line_number{lineNumber} {
-    this->_segments.reserve(upperbound);
+    _segments.reserve(upperbound);
 }
 
 void MappingLine::addMapping(Mapping m) {
-    this->_segments.push_back(m);
+    _segments.push_back(m);
 
-    if (this->_is_sorted && this->_last_column > m.generated.column) {
-        this->_is_sorted = false;
+    if (_is_sorted && _last_column > m.generated.column) {
+        _is_sorted = false;
     }
 
-    this->_last_column = m.generated.column;
+    _last_column = m.generated.column;
 }
 
 void MappingLine::sort() {
-    if (!this->_is_sorted && this->_segments.size() > 1) {
-        std::sort(this->_segments.begin(), this->_segments.end(), MappingGeneratedColumnComparator());
-        this->_is_sorted = true;
+    if (!_is_sorted && _segments.size() > 1) {
+        std::sort(_segments.begin(), _segments.end(), MappingGeneratedColumnComparator());
+        _is_sorted = true;
     }
 }
 
 bool MappingLine::isSorted() {
-    return this->_is_sorted;
+    return _is_sorted;
 }
 
 int MappingLine::lineNumber() {
-    return this->_line_number;
+    return _line_number;
 }
 
