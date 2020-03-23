@@ -45,7 +45,7 @@ jobs:
             inputs:
               artifactName: prebuilds
               downloadPath: "$(System.DefaultWorkingDirectory)/prebuilds"
-          - script: npm compile
+          - script: npm run compile
             displayName: Compile and Generate Typings
           - task: Npm@1
             displayName: NPM Release
