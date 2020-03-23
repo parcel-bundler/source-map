@@ -10,7 +10,8 @@
     "prebuild": "prebuildify --napi --strip --tag-libc",
     "build:dev": "node-gyp rebuild --debug",
     "rebuild": "rm -rf build && yarn build:dev",
-    "postinstall": "node-gyp-build"
+    "postinstall": "node-gyp-build",
+    "typecheck": "flow"
   },
   "files": [
     "src",
@@ -31,6 +32,7 @@
     "node-gyp-build": "^4.2.1"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.9.0",
     "@babel/cli": "^7.8.4",
     "@babel/core": "^7.9.0",
     "@babel/preset-flow": "^7.9.0",

@@ -1,4 +1,14 @@
-import path from "path";
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.generateEmptyMap = generateEmptyMap;
+exports.default = void 0;
+
+var _path = _interopRequireDefault(require("path"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const bindings = require("node-gyp-build")(__dirname);
 
@@ -6,7 +16,7 @@ function generateInlineMap(map) {
   return `data:application/json;charset=utf-8;base64,${Buffer.from(map).toString("base64")}`;
 }
 
-export default class SourceMap {
+class SourceMap {
   constructor() {
     this.sourceMapInstance = new bindings.SourceMap();
   } // addEmptyMap(sourceName: string, sourceContent: string, lineOffset: number = 0): SourceMap
@@ -87,7 +97,7 @@ export default class SourceMap {
     if (inlineSources && fs) {
       map.sourcesContent = await Promise.all(map.sources.map(async sourceName => {
         try {
-          return await fs.readFile(path.join(rootDir || "", sourceName), "utf-8");
+          return await fs.readFile(_path.default.join(rootDir || "", sourceName), "utf-8");
         } catch (e) {
           return null;
         }
@@ -99,7 +109,10 @@ export default class SourceMap {
   }
 
 }
-export function generateEmptyMap(sourceName, sourceContent, lineOffset = 0) {
+
+exports.default = SourceMap;
+
+function generateEmptyMap(sourceName, sourceContent, lineOffset = 0) {
   let map = new SourceMap();
   map.addEmptyMap(sourceName, sourceContent, lineOffset);
   return map;

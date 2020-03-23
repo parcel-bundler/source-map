@@ -1,9 +1,9 @@
 const assert = require("assert");
-const SourceMap = require("../");
+const {generateEmptyMap} = require("../");
 
 describe("SourceMap - Empty Map", () => {
   it("Should be able to create a 1 to 1 map from a sourcefile", async () => {
-    let map = SourceMap.generateEmptyMap(
+    let map = generateEmptyMap(
       "index.js",
       `
       function test() {
@@ -42,7 +42,7 @@ describe("SourceMap - Empty Map", () => {
   });
 
   it("Should be able to create a 1 to 1 map from a sourcefile with a lineOffset", async () => {
-    let map = SourceMap.generateEmptyMap(
+    let map = generateEmptyMap(
       "index.js",
       `
       function test() {

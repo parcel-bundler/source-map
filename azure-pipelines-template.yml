@@ -20,9 +20,11 @@ jobs:
 
       - script: npm install --build-from-source
         displayName: Install dependencies
-      - script: npm compile
+      - script: npm run typecheck
+        displayName: Check Typings
+      - script: npm run compile
         displayName: Compile and Generate Typings
-      - script: npm test
+      - script: npm run test
         displayName: Run tests
       - script: npm run prebuild
         displayName: Test prebuild

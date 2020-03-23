@@ -1,5 +1,5 @@
 const assert = require("assert");
-const SourceMap = require("../");
+const SourceMap = require("../").default;
 
 describe("SourceMap - Find", () => {
   it("Should be able to find closest mapping to a generated position", async () => {
