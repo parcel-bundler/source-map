@@ -15,6 +15,7 @@
     "src",
     "prebuilds",
     "index.js",
+    "index.js.flow",
     "package.json",
     "binding.gyp",
     "README.md"
