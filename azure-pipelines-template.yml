@@ -20,8 +20,6 @@ jobs:
 
       - script: npm install --build-from-source
         displayName: Install dependencies
-      - script: npm run typecheck
-        displayName: Check Typings
       - script: npm run compile
         displayName: Compile and Generate Typings
       - script: npm run test
