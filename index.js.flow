@@ -1,0 +1,76 @@
+// @flow
+declare type MappingPosition = {|
+  line: number,
+  column: number
+|};
+
+declare type IndexedMapping<T> = {
+  generated: MappingPosition,
+  original?: MappingPosition,
+  source?: T,
+  name?: T,
+  ...
+};
+
+declare type ParsedMap = {|
+  sources: Array<string>,
+  names: Array<string>,
+  mappings: Array<IndexedMapping<number>>
+|};
+
+declare type VLQMap = {
+  sources: Array<string>,
+  names: Array<string>,
+  mappings: string,
+  ...
+};
+
+type StringifyOptions = {
+  file?: string,
+  sourceRoot?: string,
+  rootDir?: string,
+  inlineSources?: boolean,
+  inlineMap?: boolean,
+  fs?: any,
+  ...
+};
+
+declare class SourceMap {
+  addEmptyMap(
+    sourceName: string,
+    sourceContent: string,
+    lineOffset?: number
+  ): SourceMap;
+  addRawMappings(
+    mappings: string,
+    sources: Array<string>,
+    names: Array<string>,
+    lineOffset?: number,
+    columnOffset?: number
+  ): SourceMap;
+  addBufferMappings(
+    buffer: Buffer,
+    lineOffset?: number,
+    columnOffset?: number
+  ): SourceMap;
+  addIndexedMappings(
+    mappings: Array<IndexedMapping<number | string>>,
+    lineOffset?: number,
+    columnOffset?: number
+  ): SourceMap;
+  addNames(names: Array<string>): Array<number>;
+  addSources(sources: Array<string>): Array<number>;
+  getSourceIndex(source: string): number;
+  getNameIndex(name: string): number;
+  findClosestMapping(line: number, column: number): IndexedMapping<number>;
+  extends(buffer: Buffer): SourceMap;
+  getMap(): ParsedMap;
+  toBuffer(): Buffer;
+  toVLQ(): VLQMap;
+  stringify(opts: StringifyOptions): Promise<string>;
+}
+
+declare module "@parcel/source-map" {
+  declare export function generateEmptyMap(): SourceMap;
+  declare export default SourceMap;
+}

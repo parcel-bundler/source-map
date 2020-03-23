@@ -1,6 +1,6 @@
 {
   "name": "@parcel/source-map",
-  "version": "2.0.0-alpha.4",
+  "version": "2.0.0-alpha.4.1",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
@@ -29,6 +29,7 @@
     "node-gyp-build": "^4.2.1"
   },
   "devDependencies": {
+    "flow-bin": "^0.121.0",
     "mocha": "^7.1.0",
     "prebuildify": "^3.0.4",
     "tiny-benchy": "^1.0.0"
