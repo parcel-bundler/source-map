@@ -1,6 +1,6 @@
 {
   "name": "@parcel/source-map",
-  "version": "2.0.0-alpha.4.2",
+  "version": "2.0.0-alpha.4.3",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
