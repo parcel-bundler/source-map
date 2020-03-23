@@ -35,10 +35,7 @@ export type SourceMapStringifyOptions = {
   rootDir?: string,
   inlineSources?: boolean,
   inlineMap?: boolean,
-  fs?: {
-    readFile: (filepath: string, encoding: string) => any,
-    ...
-  },
+  fs?: any,
   ...
 };
 
