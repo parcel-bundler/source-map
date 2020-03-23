@@ -6,6 +6,7 @@
   "scripts": {
     "test": "mocha ./test/*.test.js",
     "benchmark": "node ./bench/run",
+    "compile": "babel index.js.flow --out-file index.js",
     "prebuild": "prebuildify --napi --strip --tag-libc",
     "build:dev": "node-gyp rebuild --debug",
     "rebuild": "rm -rf build && yarn build:dev",
@@ -30,6 +31,9 @@
     "node-gyp-build": "^4.2.1"
   },
   "devDependencies": {
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.9.0",
+    "@babel/preset-flow": "^7.9.0",
     "flow-bin": "^0.121.0",
     "mocha": "^7.1.0",
     "prebuildify": "^3.0.4",
