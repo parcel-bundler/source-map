@@ -44,7 +44,7 @@ jobs:
             displayName: Download Artifacts
             inputs:
               artifactName: prebuilds
-              downloadPath: "$(System.DefaultWorkingDirectory)/prebuilds"
+              downloadPath: "$(System.DefaultWorkingDirectory)"
           - script: npm install --build-from-source
             displayName: Install Node Modules
           - script: npm run compile
