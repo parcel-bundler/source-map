@@ -1,12 +1,12 @@
 {
   "name": "@parcel/source-map",
   "version": "2.0.0-alpha.4.3",
-  "main": "index.js",
+  "main": "./dist/node.js",
   "license": "MIT",
   "scripts": {
     "test": "mocha ./test/*.test.js",
     "benchmark": "node ./bench/run",
-    "compile": "babel index.js.flow --out-file index.js",
+    "compile": "babel ./src/*.js --out-dir ./dist",
     "prebuild": "prebuildify --napi --strip --tag-libc",
     "build:dev": "node-gyp rebuild --debug",
     "rebuild": "rm -rf build && yarn build:dev",
@@ -15,9 +15,8 @@
   },
   "files": [
     "src",
+    "dist",
     "prebuilds",
-    "index.js",
-    "index.js.flow",
     "package.json",
     "binding.gyp",
     "README.md"
