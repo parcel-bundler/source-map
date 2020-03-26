@@ -1,55 +1,30 @@
 // @flow
+import type {
+  ParsedMap,
+  VLQMap,
+  SourceMapStringifyOptions,
+  IndexedMapping
+} from "./types";
+
 import path from "path";
+import { generateInlineMap, partialVlqMapToSourceMap } from "./utils";
 
-const bindings = require("node-gyp-build")(__dirname);
-
-export type MappingPosition = {|
-  line: number,
-  column: number
-|};
-
-export type IndexedMapping<T> = {
-  generated: MappingPosition,
-  original?: MappingPosition,
-  source?: T,
-  name?: T,
-  ...
-};
-
-export type ParsedMap = {|
-  sources: Array<string>,
-  names: Array<string>,
-  mappings: Array<IndexedMapping<number>>
-|};
-
-export type VLQMap = {
-  sources: Array<string>,
-  names: Array<string>,
-  mappings: string,
-  ...
-};
-
-export type SourceMapStringifyOptions = {
-  file?: string,
-  sourceRoot?: string,
-  rootDir?: string,
-  inlineSources?: boolean,
-  inlineMap?: boolean,
-  fs?: any,
-  ...
-};
-
-function generateInlineMap(map) {
-  return `data:application/json;charset=utf-8;base64,${Buffer.from(
-    map
-  ).toString("base64")}`;
-}
-
+const bindings = require("node-gyp-build")(path.join(__dirname, ".."));
 export default class SourceMap {
   sourceMapInstance: any;
 
   constructor() {
     this.sourceMapInstance = new bindings.SourceMap();
+  }
+
+  static generateEmptyMap(
+    sourceName: string,
+    sourceContent: string,
+    lineOffset: number = 0
+  ): SourceMap {
+    let map = new SourceMap();
+    map.addEmptyMap(sourceName, sourceContent, lineOffset);
+    return map;
   }
 
   // addEmptyMap(sourceName: string, sourceContent: string, lineOffset: number = 0): SourceMap
@@ -140,45 +115,7 @@ export default class SourceMap {
     return this.sourceMapInstance.stringify();
   }
 
-  async stringify({
-    file,
-    sourceRoot,
-    rootDir,
-    inlineSources,
-    inlineMap,
-    fs
-  }: SourceMapStringifyOptions) {
-    let map = this.sourceMapInstance.stringify();
-    map.version = 3;
-    map.file = file;
-    map.sourceRoot = sourceRoot;
-
-    if (inlineSources && fs) {
-      map.sourcesContent = await Promise.all(
-        map.sources.map(async sourceName => {
-          try {
-            return await fs.readFile(
-              path.join(rootDir || "", sourceName),
-              "utf-8"
-            );
-          } catch (e) {
-            return null;
-          }
-        })
-      );
-    }
-
-    let stringifiedMap = JSON.stringify(map);
-    return inlineMap ? generateInlineMap(stringifiedMap) : stringifiedMap;
+  async stringify(options: SourceMapStringifyOptions) {
+    return partialVlqMapToSourceMap(this.toVLQ(), options);
   }
-}
-
-export function generateEmptyMap(
-  sourceName: string,
-  sourceContent: string,
-  lineOffset: number = 0
-): SourceMap {
-  let map = new SourceMap();
-  map.addEmptyMap(sourceName, sourceContent, lineOffset);
-  return map;
 }
