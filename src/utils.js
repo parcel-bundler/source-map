@@ -47,7 +47,7 @@ export async function partialVlqMapToSourceMap(
 
   if (format === "inline" || format === "string") {
     let stringifiedMap = JSON.stringify(map);
-    return inlineMap ? generateInlineMap(stringifiedMap) : stringifiedMap;
+    return format === "inline" ? generateInlineMap(stringifiedMap) : stringifiedMap;
   }
 
   return map;
