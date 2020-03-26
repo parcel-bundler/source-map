@@ -26,8 +26,7 @@ export default class SourceMap {
     map.addEmptyMap(sourceName, sourceContent, lineOffset);
     return map;
   }
-
-  // addEmptyMap(sourceName: string, sourceContent: string, lineOffset: number = 0): SourceMap
+  
   addEmptyMap(
     sourceName: string,
     sourceContent: string,
