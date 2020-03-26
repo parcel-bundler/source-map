@@ -1,5 +1,5 @@
 const assert = require("assert");
-const SourceMap = require("../").default;
+const SourceMap = require(".").default;
 
 describe("SourceMap - Extend Map", () => {
   it("Basic extending", async function() {

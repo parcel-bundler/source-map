@@ -2,8 +2,11 @@
 node_modules
 .DS_Store
 .idea
+report.*.json
+
 build
 cmake-*
 prebuilds
-report.*.json
 dist
+wasm
+*.o

@@ -1,5 +1,5 @@
 const assert = require("assert");
-const { generateEmptyMap } = require("../").default;
+const { generateEmptyMap } = require(".").default;
 
 describe("SourceMap - Empty Map", () => {
   it("Should be able to create a 1 to 1 map from a sourcefile", async () => {

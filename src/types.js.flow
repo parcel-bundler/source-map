@@ -35,7 +35,7 @@ export type SourceMapStringifyOptions = {
   rootDir?: string,
   inlineSources?: boolean,
   fs?: any,
-  format?: 'inline' | 'string' | 'object',
+  format?: "inline" | "string" | "object",
 
   // !Deprecated
   inlineMap?: boolean,
