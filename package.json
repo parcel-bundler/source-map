@@ -1,16 +1,17 @@
 {
   "name": "@parcel/source-map",
-  "version": "2.0.0-alpha.4.3",
+  "version": "2.0.0-alpha.4.4",
   "main": "./dist/node.js",
   "license": "MIT",
   "scripts": {
     "test": "mocha ./test/*.test.js",
     "benchmark": "node ./bench/run",
-    "compile": "babel ./src/*.js --out-dir ./dist",
+    "compile": "babel ./src/*.js --out-dir ./dist && flow-copy-source -v src dist",
     "prebuild": "prebuildify --napi --strip --tag-libc",
     "build:dev": "node-gyp rebuild --debug",
     "rebuild": "rm -rf build && yarn build:dev",
     "postinstall": "node-gyp-build",
+    "prepublish": "npm run compile",
     "typecheck": "flow"
   },
   "files": [
@@ -31,11 +32,12 @@
     "node-gyp-build": "^4.2.1"
   },
   "devDependencies": {
-    "@babel/preset-env": "^7.9.0",
     "@babel/cli": "^7.8.4",
     "@babel/core": "^7.9.0",
+    "@babel/preset-env": "^7.9.0",
     "@babel/preset-flow": "^7.9.0",
     "flow-bin": "^0.121.0",
+    "flow-copy-source": "^2.0.9",
     "mocha": "^7.1.0",
     "prebuildify": "^3.0.4",
     "tiny-benchy": "^1.0.0"
