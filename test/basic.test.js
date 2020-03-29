@@ -1,5 +1,5 @@
 const assert = require("assert");
-const SourceMap = require("../").default;
+const SourceMap = require("../dist/browser").default;
 
 const SIMPLE_SOURCE_MAP = {
   version: 3,
@@ -9,8 +9,8 @@ const SIMPLE_SOURCE_MAP = {
   mappings: "AAAA;AAAA,EAAA,OAAO,CAAC,GAAR,CAAY,aAAZ,CAAA,CAAA;AAAA"
 };
 
-describe("SourceMap - Basics", () => {
-  it("Should be able to instantiate a SourceMap with vlq mappings", async () => {
+describe.only("SourceMap - Basics", () => {
+  it.only("Should be able to instantiate a SourceMap with vlq mappings", async () => {
     let map = new SourceMap();
     map.addRawMappings(
       SIMPLE_SOURCE_MAP.mappings,
@@ -26,7 +26,7 @@ describe("SourceMap - Basics", () => {
     assert.equal(stringifiedMap.mappings, SIMPLE_SOURCE_MAP.mappings);
   });
 
-  it("Should be able to output the processed mappings as JS Objects", () => {
+  it.only("Should be able to output the processed mappings as JS Objects", () => {
     let map = new SourceMap();
     map.addRawMappings(
       SIMPLE_SOURCE_MAP.mappings,

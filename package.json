@@ -29,7 +29,8 @@
   },
   "dependencies": {
     "node-addon-api": "^2.0.0",
-    "node-gyp-build": "^4.2.1"
+    "node-gyp-build": "^4.2.1",
+    "vlq": "^1.0.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.8.4",
