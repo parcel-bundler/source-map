@@ -78,7 +78,7 @@ export default class SourceMap {
     let generatedLine = lineOffset;
     let segments = [0, 0, 0, 0, 0];
     for (let line of vlqs) {
-      segments[0] = 0;
+      segments[0] = columnOffset;
 
       for (let vlqmapping of line) {
         let decoded = vlq.decode(vlqmapping);
@@ -122,6 +122,14 @@ export default class SourceMap {
     lineOffset: number = 0,
     columnOffset: number = 0
   ): SourceMap {
+    let bufferParts = buffer.toString("utf8").split("\n");
+    this.addRawMappings(
+      bufferParts[0],
+      bufferParts[1].length ? bufferParts[1].split(";") : [],
+      bufferParts[2].length ? bufferParts[2].split(";") : [],
+      lineOffset,
+      columnOffset
+    );
     return this;
   }
 
@@ -145,9 +153,14 @@ export default class SourceMap {
   ): SourceMap {
     for (let mapping of mappings) {
       this._addMapping({
-        original: mapping.original,
+        original: mapping.original
+          ? {
+              line: mapping.original.line - 1,
+              column: mapping.original.column
+            }
+          : undefined,
         generated: {
-          line: mapping.generated.line + lineOffset,
+          line: mapping.generated.line + lineOffset - 1,
           column: mapping.generated.column + columnOffset
         },
         source:
@@ -192,7 +205,7 @@ export default class SourceMap {
 
   getSourceIndex(source: string): number {
     let foundIndex = this.sourcesMap.get(source);
-    if (foundIndex) {
+    if (foundIndex != null) {
       return foundIndex;
     }
     return -1;
@@ -200,7 +213,7 @@ export default class SourceMap {
 
   getNameIndex(name: string): number {
     let foundIndex = this.namesMap.get(name);
-    if (foundIndex) {
+    if (foundIndex != null) {
       return foundIndex;
     }
     return -1;
@@ -216,15 +229,48 @@ export default class SourceMap {
   }
 
   getMap(): ParsedMap {
+    let flattenedMappings = [];
+    for (let line of this.mappingLines) {
+      for (let mapping of line.mappings) {
+        let newMapping: any = {
+          generated: {
+            line: mapping.generated.line + 1,
+            column: mapping.generated.column
+          }
+        };
+
+        if (mapping.source != null) {
+          newMapping.source = mapping.source;
+          newMapping.original = mapping.original && {
+            line: mapping.original.line + 1,
+            column: mapping.original.column
+          };
+        }
+
+        if (mapping.name != null) {
+          newMapping.name = mapping.name;
+        }
+
+        flattenedMappings.push(newMapping);
+      }
+    }
+
     return {
       sources: this.sources,
       names: this.names,
-      mappings: []
+      mappings: flattenedMappings
     };
   }
 
   toBuffer(): Buffer {
-    return new Buffer("");
+    let vlqMap = this.toVLQ();
+    return Buffer.from(
+      vlqMap.mappings +
+        "\n" +
+        vlqMap.sources.join(";") +
+        "\n" +
+        vlqMap.names.join(";")
+    );
   }
 
   toVLQ(): VLQMap {

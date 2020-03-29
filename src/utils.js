@@ -54,7 +54,7 @@ export async function partialVlqMapToSourceMap(
 }
 
 export function countLines(string: string): number {
-  let lines = 1;
+  let lines = 0;
   for (let i = 0; i < string.length; i++) {
     if (string.charAt(i) === '\n') {
       lines++;

@@ -9,8 +9,8 @@ const SIMPLE_SOURCE_MAP = {
   mappings: "AAAA;AAAA,EAAA,OAAO,CAAC,GAAR,CAAY,aAAZ,CAAA,CAAA;AAAA"
 };
 
-describe.only("SourceMap - Basics", () => {
-  it.only("Should be able to instantiate a SourceMap with vlq mappings", async () => {
+describe("SourceMap - Basics", () => {
+  it("Should be able to instantiate a SourceMap with vlq mappings", async () => {
     let map = new SourceMap();
     map.addRawMappings(
       SIMPLE_SOURCE_MAP.mappings,
@@ -26,7 +26,7 @@ describe.only("SourceMap - Basics", () => {
     assert.equal(stringifiedMap.mappings, SIMPLE_SOURCE_MAP.mappings);
   });
 
-  it.only("Should be able to output the processed mappings as JS Objects", () => {
+  it("Should be able to output the processed mappings as JS Objects", () => {
     let map = new SourceMap();
     map.addRawMappings(
       SIMPLE_SOURCE_MAP.mappings,

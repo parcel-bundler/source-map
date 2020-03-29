@@ -1,6 +1,6 @@
 const Benchmark = require("tiny-benchy");
 const assert = require("assert");
-const SourceMap = require("../");
+const SourceMap = require("../dist/browser").default;
 
 const ITERATIONS = 250;
 
