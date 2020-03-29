@@ -41,9 +41,14 @@ jobs:
           vmImage: ubuntu-16.04
         steps:
           - task: DownloadBuildArtifacts@0
-            displayName: Download Artifacts
+            displayName: Download Native Artifacts
             inputs:
               artifactName: prebuilds
+              downloadPath: "$(System.DefaultWorkingDirectory)"
+          - task: DownloadBuildArtifacts@0
+            displayName: Download Wasm Artifacts
+            inputs:
+              artifactName: wasm
               downloadPath: "$(System.DefaultWorkingDirectory)"
           - script: npm install --build-from-source
             displayName: Install Node Modules

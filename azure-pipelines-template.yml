@@ -62,8 +62,14 @@ jobs:
         displayName: Test prebuild
 
       - task: PublishBuildArtifacts@1
-        displayName: Publish Artifacts
+        displayName: Publish Native Artifacts
         condition: and(succeeded(), eq(variables['publish_artifacts'], 'true'))
         inputs:
           artifactName: prebuilds
           pathtoPublish: "$(System.DefaultWorkingDirectory)/prebuilds"
+      - task: PublishBuildArtifacts@1
+        displayName: Publish Wasm Artifacts
+        condition: and(succeeded(), eq(variables['publish_artifacts'], 'true'))
+        inputs:
+          artifactName: wasm
+          pathtoPublish: "$(System.DefaultWorkingDirectory)/wasm"
