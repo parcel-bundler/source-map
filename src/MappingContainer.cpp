@@ -396,3 +396,45 @@ void MappingContainer::extends(const void *buf) {
         }
     }
 }
+
+void addBufferMappings(const void *buf) {
+    auto map = SourceMapSchema::GetMap(buf);
+
+    std::vector<int> sources;
+    auto sourcesArray = map->sources();
+    sources.reserve(sourcesArray->size());
+    auto sourcesEnd = sourcesArray->end();
+    for (auto it = sourcesArray->begin(); it != sourcesEnd; ++it) {
+        std::string source = it->str();
+        sources.push_back(_mapping_container.addSource(source));
+    }
+
+    std::vector<int> names;
+    auto namesArray = map->names();
+    names.reserve(namesArray->size());
+    auto namesEnd = namesArray->end();
+    for (auto it = namesArray->begin(); it != namesEnd; ++it) {
+        std::string name = it->str();
+        names.push_back(_mapping_container.addName(name));
+    }
+
+    _mapping_container.createLinesIfUndefined(map->lineCount() + lineOffset);
+
+    auto lines = map->lines();
+    auto linesEnd = lines->end();
+    for (auto linesIterator = map->lines()->begin(); linesIterator != linesEnd; ++linesIterator) {
+        auto line = (*linesIterator);
+        auto segments = line->segments();
+        auto segmentsEnd = segments->end();
+
+        for (auto segmentIterator = segments->begin(); segmentIterator != segmentsEnd; ++segmentIterator) {
+            Position generated = Position{segmentIterator->generatedLine() + lineOffset,
+                                          segmentIterator->generatedColumn() + columnOffset};
+            Position original = Position{segmentIterator->originalLine(), segmentIterator->originalColumn()};
+
+            int source = segmentIterator->source() > -1 ? sources[segmentIterator->source()] : -1;
+            int name = segmentIterator->name() > -1 ? names[segmentIterator->name()] : -1;
+            _mapping_container.addMapping(generated, original, source, name);
+        }
+    }
+}

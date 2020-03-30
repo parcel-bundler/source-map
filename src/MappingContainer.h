@@ -48,6 +48,8 @@ public:
 
     void extends(const void *buf);
 
+    void addBufferMappings(const void *buf);
+
 private:
     // Processed mappings, for all kinds of modifying within the sourcemap
     std::vector<std::string> _sources;
