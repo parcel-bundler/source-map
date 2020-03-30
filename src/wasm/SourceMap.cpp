@@ -294,7 +294,7 @@ void SourceMap::addEmptyMap(std::string sourceName, std::string sourceContent, i
 }
 
 Mapping SourceMap::findClosestMapping(int line, int column) {
-    return _mapping_container(line - 1, column);
+    return _mapping_container.findClosestMapping(line - 1, column);
 }
 
 EMSCRIPTEN_BINDINGS(my_class_example) {
