@@ -246,3 +246,16 @@ int MappingContainer::getNameIndex(std::string &name) {
     }
     return foundValue->second;
 }
+
+void MappingContainer::addEmptyMap(std::string sourceName, std::string sourceContent, int lineOffset) {
+    int sourceIndex = addSource(sourceName);
+    int currLine = 0;
+    auto end = sourceContent.end();
+    for (auto it = sourceContent.begin(); it != end; ++it) {
+        const char &c = *it;
+        if (c == '\n') {
+            addMapping(Position{currLine + lineOffset, 0}, Position{currLine, 0}, sourceIndex);
+            ++currLine;
+        }
+    }
+}

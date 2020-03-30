@@ -41,6 +41,8 @@ public:
 
     Mapping findClosestMapping(int line, int column);
 
+    void addEmptyMap(std::string sourceName, std::string sourceContent, int lineOffset = 0);
+
 private:
     // Processed mappings, for all kinds of modifying within the sourcemap
     std::vector<std::string> _sources;

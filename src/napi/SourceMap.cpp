@@ -544,16 +544,7 @@ void SourceMapBinding::addEmptyMap(const Napi::CallbackInfo &info) {
     std::string sourceContent = info[1].As<Napi::String>().Utf8Value();
     int lineOffset = info.Length() > 2 ? info[2].As<Napi::Number>().Int32Value() : 0;
 
-    int sourceIndex = _mapping_container.addSource(sourceName);
-    int currLine = 0;
-    auto end = sourceContent.end();
-    for (auto it = sourceContent.begin(); it != end; ++it) {
-        const char &c = *it;
-        if (c == '\n') {
-            _mapping_container.addMapping(Position{currLine + lineOffset, 0}, Position{currLine, 0}, sourceIndex);
-            ++currLine;
-        }
-    }
+    _mapping_container.addEmptyMap(sourceName, sourceContent, lineOffset);
 }
 
 Napi::Value SourceMapBinding::findClosestMapping(const Napi::CallbackInfo &info) {
