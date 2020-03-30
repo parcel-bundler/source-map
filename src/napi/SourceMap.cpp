@@ -1,4 +1,3 @@
-#include <iostream>
 #include <sstream>
 #include "SourceMap.h"
 #include "sourcemap-schema_generated.h"

@@ -1,4 +1,3 @@
-#include <iostream>
 #include "MappingContainer.h"
 #include "vlq.h"
 
