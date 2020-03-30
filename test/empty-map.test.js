@@ -59,22 +59,22 @@ describe("SourceMap - Empty Map", () => {
       mappings: [
         {
           generated: { line: 11, column: 0 },
-          original: { line: 11, column: 0 },
+          original: { line: 1, column: 0 },
           source: 0
         },
         {
           generated: { line: 12, column: 0 },
-          original: { line: 12, column: 0 },
+          original: { line: 2, column: 0 },
           source: 0
         },
         {
           generated: { line: 13, column: 0 },
-          original: { line: 13, column: 0 },
+          original: { line: 3, column: 0 },
           source: 0
         },
         {
           generated: { line: 14, column: 0 },
-          original: { line: 14, column: 0 },
+          original: { line: 4, column: 0 },
           source: 0
         }
       ]

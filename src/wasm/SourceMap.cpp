@@ -282,12 +282,13 @@ std::vector<int> SourceMap::addSources(std::vector<std::string> &sources) {
 
 void SourceMap::addEmptyMap(std::string sourceName, std::string sourceContent, int lineOffset) {
     int sourceIndex = _mapping_container.addSource(sourceName);
+    int currLine = 0;
     auto end = sourceContent.end();
     for (auto it = sourceContent.begin(); it != end; ++it) {
         const char &c = *it;
         if (c == '\n') {
-            _mapping_container.addMapping(Position{lineOffset, 0}, Position{lineOffset, 0}, sourceIndex);
-            ++lineOffset;
+            _mapping_container.addMapping(Position{currLine + lineOffset, 0}, Position{currLine, 0}, sourceIndex);
+            ++currLine;
         }
     }
 }
