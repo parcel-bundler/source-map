@@ -564,40 +564,9 @@ Napi::Value SourceMapBinding::findClosestMapping(const Napi::CallbackInfo &info)
         Napi::TypeError::New(env, "Expected 1 parameter of type buffer").ThrowAsJavaScriptException();
         return env.Null();
     }
-
-    int lineIndex = info[0].As<Napi::Number>().Int32Value() - 1;
-    int columnIndex = info[1].As<Napi::Number>().Int32Value();
-
-    if (lineIndex <= _mapping_container.getGeneratedLines()) {
-        auto &mappingLinesVector = _mapping_container.getMappingLinesVector();
-        auto &line = mappingLinesVector.at(lineIndex);
-        auto &segments = line->_segments;
-        unsigned int segmentsCount = segments.size();
-
-        std::vector<SourceMapSchema::Mapping> mappings_vector;
-        mappings_vector.reserve(segments.size());
-        int startIndex = 0;
-        int stopIndex = segmentsCount - 1;
-        int middleIndex = ((stopIndex + startIndex) / 2);
-        while (startIndex < stopIndex) {
-            Mapping &mapping = segments[middleIndex];
-            int diff = mapping.generated.column - columnIndex;
-            if (diff > 0) {
-                --stopIndex;
-            } else if (diff < 0) {
-                ++startIndex;
-            } else {
-                // It's the same...
-                break;
-            }
-
-            middleIndex = ((stopIndex + startIndex) / 2);
-        }
-
-        return _mappingToObject(env, segments[middleIndex]);
-    }
-
-    return env.Null();
+    
+    Mapping m = _mapping_container.findClosestMapping(info[0].As<Napi::Number>().Int32Value() - 1, info[1].As<Napi::Number>().Int32Value());
+    return _mappingToObject(env, m);
 }
 
 Napi::Object SourceMapBinding::Init(Napi::Env env, Napi::Object exports) {

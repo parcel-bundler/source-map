@@ -39,6 +39,8 @@ public:
 
     void sort();
 
+    Mapping findClosestMapping(int line, int column);
+
 private:
     // Processed mappings, for all kinds of modifying within the sourcemap
     std::vector<std::string> _sources;

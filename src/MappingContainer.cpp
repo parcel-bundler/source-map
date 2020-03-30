@@ -1,3 +1,4 @@
+#include <iostream>
 #include "MappingContainer.h"
 #include "vlq.h"
 
@@ -177,6 +178,35 @@ std::string MappingContainer::toVLQMappings() {
     }
 
     return out.str();
+}
+
+Mapping MappingContainer::findClosestMapping(int lineIndex, int columnIndex) {
+    if (lineIndex <= _generated_lines) {
+        auto &line = _mapping_lines.at(lineIndex);
+        auto &segments = line->_segments;
+        unsigned int segmentsCount = segments.size();
+
+        int startIndex = 0;
+        int stopIndex = segmentsCount - 1;
+        int middleIndex = ((stopIndex + startIndex) / 2);
+        while (startIndex < stopIndex) {
+            Mapping &mapping = segments[middleIndex];
+            int diff = mapping.generated.column - columnIndex;
+            if (diff > 0) {
+                --stopIndex;
+            } else if (diff < 0) {
+                ++startIndex;
+            } else {
+                break;
+            }
+
+            middleIndex = ((stopIndex + startIndex) / 2);
+        }
+
+        return segments[middleIndex];
+    }
+
+    return Mapping{Position{-1, -1}, Position{-1, -1}, -1, -1};
 }
 
 int MappingContainer::getTotalSegments() {

@@ -294,39 +294,7 @@ void SourceMap::addEmptyMap(std::string sourceName, std::string sourceContent, i
 }
 
 Mapping SourceMap::findClosestMapping(int line, int column) {
-    int lineIndex = line - 1;
-    int columnIndex = column;
-
-    if (lineIndex <= _mapping_container.getGeneratedLines()) {
-        auto &mappingLinesVector = _mapping_container.getMappingLinesVector();
-        auto &line = mappingLinesVector.at(lineIndex);
-        auto &segments = line->_segments;
-        unsigned int segmentsCount = segments.size();
-
-        std::vector<SourceMapSchema::Mapping> mappings_vector;
-        mappings_vector.reserve(segments.size());
-        int startIndex = 0;
-        int stopIndex = segmentsCount - 1;
-        int middleIndex = ((stopIndex + startIndex) / 2);
-        while (startIndex < stopIndex) {
-            Mapping &mapping = segments[middleIndex];
-            int diff = mapping.generated.column - columnIndex;
-            if (diff > 0) {
-                --stopIndex;
-            } else if (diff < 0) {
-                ++startIndex;
-            } else {
-                // It's the same...
-                break;
-            }
-
-            middleIndex = ((stopIndex + startIndex) / 2);
-        }
-
-        return segments[middleIndex];
-    }
-
-    return Mapping{Position{-1, -1}, Position{-1, -1}, -1, -1};
+    return _mapping_container(line - 1, column);
 }
 
 EMSCRIPTEN_BINDINGS(my_class_example) {
