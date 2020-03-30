@@ -69,7 +69,7 @@ jobs:
           pathtoPublish: "$(System.DefaultWorkingDirectory)/prebuilds"
       - task: PublishBuildArtifacts@1
         displayName: Publish Wasm Artifacts
-        condition: and(succeeded(), eq(variables['publish_artifacts'], 'true'))
+        condition: and(succeeded(), eq(variables['publish_artifacts'], 'true'), eq('${{ parameters.name }}', 'macOS'))
         inputs:
           artifactName: wasm
           pathtoPublish: "$(System.DefaultWorkingDirectory)/wasm"
