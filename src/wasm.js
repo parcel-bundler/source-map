@@ -9,13 +9,43 @@ import type {
 import path from "path";
 import { generateInlineMap, partialVlqMapToSourceMap } from "./utils";
 
-const bindings = require("node-gyp-build")(path.join(__dirname, ".."));
+import RawModule from "../wasm/index.js";
+let Module;
+
+function arrayFromEmbind(from, mutate): any {
+  let arr = [];
+  for (let i = from.size() - 1; i >= 0; i--) {
+    arr[i] = from.get(i);
+    if (mutate) mutate(arr[i]);
+  }
+  from.delete();
+  return arr;
+}
+
+function patchMapping(mapping: any): any {
+  mapping.generated.line++;
+  if (mapping.name < 0) delete mapping.name;
+  if (mapping.source < 0) {
+    delete mapping.source;
+    delete mapping.original;
+  } else {
+    mapping.original.line++;
+  }
+}
+
+function arrayToEmbind(Type, from): any {
+  let arr = new Module.VectorString();
+  for (let v of from) {
+    arr.push_back(v);
+  }
+  return arr;
+}
 
 export default class SourceMap {
   sourceMapInstance: any;
 
   constructor() {
-    this.sourceMapInstance = new bindings.SourceMap();
+    this.sourceMapInstance = new Module.SourceMap();
   }
 
   static generateEmptyMap(
@@ -44,10 +74,12 @@ export default class SourceMap {
     lineOffset: number = 0,
     columnOffset: number = 0
   ) {
+    let sourcesVector = arrayToEmbind(Module.VectorString, sources);
+    let namesVector = arrayToEmbind(Module.VectorString, names);
     this.sourceMapInstance.addRawMappings(
       mappings,
-      sources,
-      names,
+      sourcesVector,
+      namesVector,
       lineOffset,
       columnOffset
     );
@@ -69,8 +101,18 @@ export default class SourceMap {
     lineOffset?: number = 0,
     columnOffset?: number = 0
   ) {
+    let mappingsVector = new Module.VectorIndexedMapping();
+    for (let m of mappings) {
+      let {
+        generated,
+        original = { line: -1, column: -1 },
+        source = "",
+        name = ""
+      } = m;
+      mappingsVector.push_back({ generated, original, source, name });
+    }
     this.sourceMapInstance.addIndexedMappings(
-      mappings,
+      mappingsVector,
       lineOffset,
       columnOffset
     );
@@ -78,11 +120,17 @@ export default class SourceMap {
   }
 
   addNames(names: Array<string>): Array<number> {
-    return this.sourceMapInstance.addNames(names);
+    return arrayFromEmbind(
+      this.sourceMapInstance.addNames(arrayToEmbind(Module.VectorInt, names))
+    );
   }
 
   addSources(sources: Array<string>): Array<number> {
-    return this.sourceMapInstance.addSources(sources);
+    return arrayFromEmbind(
+      this.sourceMapInstance.addSources(
+        arrayToEmbind(Module.VectorInt, sources)
+      )
+    );
   }
 
   getSourceIndex(source: string): number {
@@ -94,17 +142,30 @@ export default class SourceMap {
   }
 
   findClosestMapping(line: number, column: number): ?IndexedMapping<number> {
-    return this.sourceMapInstance.findClosestMapping(line, column);
+    let mapping = this.sourceMapInstance.findClosestMapping(line, column);
+    if (mapping.generated.line === -1) return null;
+    else {
+      patchMapping(mapping);
+      return mapping;
+    }
   }
 
-  // Remaps original positions from this map to the ones in the provided map
   extends(buffer: Buffer) {
     this.sourceMapInstance.extends(buffer);
     return this;
   }
 
   getMap(): ParsedMap {
-    return this.sourceMapInstance.getMap();
+    let mappings = arrayFromEmbind(
+      this.sourceMapInstance.getMappings(),
+      patchMapping
+    );
+
+    return {
+      mappings,
+      sources: arrayFromEmbind(this.sourceMapInstance.getSources()),
+      names: arrayFromEmbind(this.sourceMapInstance.getNames())
+    };
   }
 
   toBuffer(): Buffer {
@@ -112,7 +173,11 @@ export default class SourceMap {
   }
 
   toVLQ(): VLQMap {
-    return this.sourceMapInstance.stringify();
+    return {
+      mappings: this.sourceMapInstance.getVLQMappings(),
+      sources: arrayFromEmbind(this.sourceMapInstance.getSources()),
+      names: arrayFromEmbind(this.sourceMapInstance.getNames())
+    };
   }
 
   async stringify(options: SourceMapStringifyOptions) {
@@ -120,4 +185,9 @@ export default class SourceMap {
   }
 }
 
-export const init = Promise.resolve();
+export const init = new Promise<void>(res =>
+  RawModule().then(v => {
+    Module = v;
+    res();
+  })
+);

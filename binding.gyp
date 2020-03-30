@@ -3,8 +3,8 @@
     {
       "target_name": "sourcemap",
       "defines": [ "NAPI_DISABLE_CPP_EXCEPTIONS" ],
-      "sources": [ "src/SourceMap.cpp", "src/MappingContainer.cpp", "src/MappingLine.cpp", "src/Mapping.cpp" ],
-      "include_dirs" : ["<!@(node -p \"require('node-addon-api').include\")"],
+      "sources": [ "src/napi/SourceMap.cpp", "src/MappingContainer.cpp", "src/MappingLine.cpp", "src/Mapping.cpp" ],
+      "include_dirs" : ["src", "<!@(node -p \"require('node-addon-api').include\")"],
       "dependencies": ["<!(node -p \"require('node-addon-api').gyp\")"],
       'cflags!': [ '-fno-exceptions' ],
       'cflags_cc!': [ '-fno-exceptions' ],

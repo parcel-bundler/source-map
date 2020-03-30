@@ -1,4 +1,5 @@
 #include <vector>
+#include <sstream>
 
 #define VLQ_BASE_SHIFT 5
 #define VLQ_BASE (1 << VLQ_BASE_SHIFT)

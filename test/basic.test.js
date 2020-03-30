@@ -1,5 +1,5 @@
 const assert = require("assert");
-const SourceMap = require("../").default;
+const SourceMap = require(".").default;
 
 const SIMPLE_SOURCE_MAP = {
   version: 3,

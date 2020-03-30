@@ -1,9 +1,7 @@
-#include <sstream>
 #include "MappingContainer.h"
 #include "vlq.h"
 
 MappingContainer::MappingContainer() {}
-
 MappingContainer::~MappingContainer() {}
 
 int MappingContainer::addName(std::string &name) {
