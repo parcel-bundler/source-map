@@ -153,56 +153,7 @@ std::vector<std::string> SourceMap::getNames(){
 }
 
 emscripten::val SourceMap::toBuffer() {
-    flatbuffers::FlatBufferBuilder builder;
-
-    // Sort mappings
-    _mapping_container.sort();
-
-    std::vector<flatbuffers::Offset<flatbuffers::String>> names_vector;
-    auto namesVector = _mapping_container.getNamesVector();
-    names_vector.reserve(namesVector.size());
-    auto namesEnd = namesVector.end();
-    for (auto it = namesVector.begin(); it != namesEnd; ++it) {
-        names_vector.push_back(builder.CreateString(*it));
-    }
-
-    std::vector<flatbuffers::Offset<flatbuffers::String>> sources_vector;
-    auto sourcesVector = _mapping_container.getSourcesVector();
-    sources_vector.reserve(sourcesVector.size());
-    auto sourcesEnd = sourcesVector.end();
-    for (auto it = sourcesVector.begin(); it != sourcesEnd; ++it) {
-        sources_vector.push_back(builder.CreateString(*it));
-    }
-
-    std::vector<flatbuffers::Offset<SourceMapSchema::MappingLine>> lines_vector;
-    auto mappingLinesVector = _mapping_container.getMappingLinesVector();
-    lines_vector.reserve(mappingLinesVector.size());
-
-    auto lineEnd = mappingLinesVector.end();
-    for (auto lineIterator = mappingLinesVector.begin(); lineIterator != lineEnd; ++lineIterator) {
-        auto &line = (*lineIterator);
-        auto &segments = line->_segments;
-        auto segmentsEnd = segments.end();
-
-        std::vector<SourceMapSchema::Mapping> mappings_vector;
-        mappings_vector.reserve(segments.size());
-        for (auto segmentIterator = segments.begin(); segmentIterator != segmentsEnd; ++segmentIterator) {
-            Mapping &mapping = *segmentIterator;
-
-            mappings_vector.push_back(
-                    SourceMapSchema::Mapping(mapping.generated.line, mapping.generated.column, mapping.original.line,
-                                             mapping.original.column, mapping.source, mapping.name));
-        }
-
-        lines_vector.push_back(SourceMapSchema::CreateMappingLineDirect(builder, line->lineNumber(), line->isSorted(),
-                                                                        &mappings_vector));
-    }
-
-    auto map = SourceMapSchema::CreateMapDirect(builder, &names_vector, &sources_vector,
-                                                _mapping_container.getGeneratedLines(), &lines_vector);
-
-    builder.Finish(map);
-
+    auto builder = _mapping_container.toBuffer();
     return emscripten::val(emscripten::typed_memory_view(builder.GetSize(), builder.GetBufferPointer()));
 }
 

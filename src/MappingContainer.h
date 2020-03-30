@@ -2,6 +2,7 @@
 #include <vector>
 #include <unordered_map>
 #include "MappingLine.h"
+#include "sourcemap-schema_generated.h"
 
 class MappingContainer {
 public:
@@ -42,6 +43,8 @@ public:
     Mapping findClosestMapping(int line, int column);
 
     void addEmptyMap(std::string sourceName, std::string sourceContent, int lineOffset = 0);
+
+    flatbuffers::FlatBufferBuilder toBuffer();
 
 private:
     // Processed mappings, for all kinds of modifying within the sourcemap
