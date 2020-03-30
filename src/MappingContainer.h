@@ -46,6 +46,8 @@ public:
 
     flatbuffers::FlatBufferBuilder toBuffer();
 
+    void extends(const void *buf);
+
 private:
     // Processed mappings, for all kinds of modifying within the sourcemap
     std::vector<std::string> _sources;

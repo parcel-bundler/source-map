@@ -313,3 +313,86 @@ flatbuffers::FlatBufferBuilder MappingContainer::toBuffer() {
 
     return builder;
 }
+
+void MappingContainer::extends(const void *buf) {
+    auto map = SourceMapSchema::GetMap(buf);
+
+    std::vector<int> sources;
+    auto sourcesArray = map->sources();
+    sources.reserve(sourcesArray->size());
+    auto sourcesEnd = sourcesArray->end();
+    for (auto it = sourcesArray->begin(); it != sourcesEnd; ++it) {
+        std::string source = it->str();
+        sources.push_back(addSource(source));
+    }
+
+    std::vector<int> names;
+    auto namesArray = map->names();
+    names.reserve(namesArray->size());
+    auto namesEnd = namesArray->end();
+    for (auto it = namesArray->begin(); it != namesEnd; ++it) {
+        std::string name = it->str();
+        names.push_back(addName(name));
+    }
+
+    auto originalLines = map->lines();
+    auto originalLineCount = map->lineCount();
+
+    std::vector<flatbuffers::Offset<SourceMapSchema::MappingLine>> lines_vector;
+    auto &mappingLinesVector = getMappingLinesVector();
+    lines_vector.reserve(mappingLinesVector.size());
+
+    auto lineEnd = mappingLinesVector.end();
+    for (auto lineIterator = mappingLinesVector.begin(); lineIterator != lineEnd; ++lineIterator) {
+        auto &line = (*lineIterator);
+        auto &segments = line->_segments;
+        unsigned int segmentsCount = segments.size();
+
+        std::vector<SourceMapSchema::Mapping> mappings_vector;
+        mappings_vector.reserve(segments.size());
+        for (unsigned int i = 0; i < segmentsCount; ++i) {
+            Mapping &mapping = segments[i];
+
+            if (mapping.source > -1) {
+                int originalLineIndex = mapping.original.line;
+                if (originalLineCount >= originalLineIndex) {
+                    int originalColumnIndex = mapping.original.column;
+                    auto originalLine = originalLines->Get(originalLineIndex);
+                    auto originalSegments = originalLine->segments();
+                    int originalSegmentsSize = originalSegments->size();
+                    if (originalSegmentsSize > 0) {
+                        int startIndex = 0;
+                        int stopIndex = originalSegmentsSize - 1;
+                        int middleIndex = ((stopIndex + startIndex) / 2);
+                        while (startIndex < stopIndex) {
+                            int diff = originalSegments->Get(middleIndex)->generatedColumn() - originalColumnIndex;
+                            if (diff > 0) {
+                                --stopIndex;
+                            } else if (diff < 0) {
+                                ++startIndex;
+                            } else {
+                                // It's the same...
+                                break;
+                            }
+
+                            middleIndex = ((stopIndex + startIndex) / 2);
+                        }
+
+                        auto originalMapping = originalSegments->Get(middleIndex);
+                        int originalSource = originalMapping->source();
+                        mapping.source = originalSource > -1 ? sources[originalSource] : originalSource;
+                        mapping.original = Position(originalMapping->originalLine(),
+                                                    originalMapping->originalColumn());
+
+                        int originalName = originalMapping->name();
+                        if (originalName > -1) {
+                            mapping.name = names[originalName];
+                        } else {
+                            mapping.name = -1;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
