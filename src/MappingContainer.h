@@ -48,7 +48,7 @@ public:
 
     void extends(const void *buf);
 
-    void addBufferMappings(const void *buf);
+    void addBufferMappings(const void *buf, int lineOffset = 0, int columnOffset = 0);
 
 private:
     // Processed mappings, for all kinds of modifying within the sourcemap

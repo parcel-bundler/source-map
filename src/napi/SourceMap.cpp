@@ -79,7 +79,7 @@ void SourceMapBinding::addBufferMappings(const Napi::CallbackInfo &info) {
     int lineOffset = info.Length() > 1 ? info[1].As<Napi::Number>().Int32Value() : 0;
     int columnOffset = info.Length() > 2 ? info[2].As<Napi::Number>().Int32Value() : 0;
 
-    _mapping_container.addBufferMappings(mapBuffer.Data());
+    _mapping_container.addBufferMappings(mapBuffer.Data(), lineOffset, columnOffset);
 }
 
 void SourceMapBinding::extends(const Napi::CallbackInfo &info) {

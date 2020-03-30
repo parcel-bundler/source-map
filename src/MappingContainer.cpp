@@ -397,7 +397,7 @@ void MappingContainer::extends(const void *buf) {
     }
 }
 
-void addBufferMappings(const void *buf) {
+void MappingContainer::addBufferMappings(const void *buf, int lineOffset, int columnOffset) {
     auto map = SourceMapSchema::GetMap(buf);
 
     std::vector<int> sources;
@@ -406,7 +406,7 @@ void addBufferMappings(const void *buf) {
     auto sourcesEnd = sourcesArray->end();
     for (auto it = sourcesArray->begin(); it != sourcesEnd; ++it) {
         std::string source = it->str();
-        sources.push_back(_mapping_container.addSource(source));
+        sources.push_back(addSource(source));
     }
 
     std::vector<int> names;
@@ -415,10 +415,10 @@ void addBufferMappings(const void *buf) {
     auto namesEnd = namesArray->end();
     for (auto it = namesArray->begin(); it != namesEnd; ++it) {
         std::string name = it->str();
-        names.push_back(_mapping_container.addName(name));
+        names.push_back(addName(name));
     }
 
-    _mapping_container.createLinesIfUndefined(map->lineCount() + lineOffset);
+    createLinesIfUndefined(map->lineCount() + lineOffset);
 
     auto lines = map->lines();
     auto linesEnd = lines->end();
@@ -434,7 +434,7 @@ void addBufferMappings(const void *buf) {
 
             int source = segmentIterator->source() > -1 ? sources[segmentIterator->source()] : -1;
             int name = segmentIterator->name() > -1 ? names[segmentIterator->name()] : -1;
-            _mapping_container.addMapping(generated, original, source, name);
+            addMapping(generated, original, source, name);
         }
     }
 }

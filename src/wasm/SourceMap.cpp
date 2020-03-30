@@ -16,7 +16,7 @@ void SourceMap::addRawMappings(std::string rawMappings, std::vector<std::string>
 }
 
 void SourceMap::addBufferMappings(std::string mapBuffer, int lineOffset, int columnOffset) {
-    _mapping_container.addBufferMappings(mapBuffer.c_str());
+    _mapping_container.addBufferMappings(mapBuffer.c_str(), lineOffset, columnOffset);
 }
 
 void SourceMap::extends(std::string mapBuffer) {
