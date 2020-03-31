@@ -103,13 +103,12 @@ export default class SourceMap {
   ) {
     let mappingsVector = new Module.VectorIndexedMapping();
     for (let m of mappings) {
-      let {
-        generated,
-        original = { line: -1, column: -1 },
-        source = "",
-        name = ""
-      } = m;
-      mappingsVector.push_back({ generated, original, source, name });
+      mappingsVector.push_back({
+        generated: m.generated,
+        original: m.original || { line: -1, column: -1 },
+        source: m.source != null ? m.source : "",
+        name: m.name != null ? m.name : ""
+      });
     }
     this.sourceMapInstance.addIndexedMappings(
       mappingsVector,

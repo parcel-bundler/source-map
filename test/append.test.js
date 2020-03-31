@@ -319,12 +319,6 @@ describe("SourceMap - Append Mappings", () => {
         }
       },
       {
-        source: "index.js",
-        name: "B",
-        original: {
-          line: 3,
-          column: 0
-        },
         generated: {
           line: 12,
           column: 6
@@ -387,12 +381,6 @@ describe("SourceMap - Append Mappings", () => {
     });
 
     assert.deepEqual(mappings[1], {
-      source: 0,
-      name: 1,
-      original: {
-        line: 3,
-        column: 0
-      },
       generated: {
         line: 12,
         column: 6
@@ -402,7 +390,7 @@ describe("SourceMap - Append Mappings", () => {
     // Map Two
     assert.deepEqual(mappings[2], {
       source: 1,
-      name: 2,
+      name: 1,
       original: {
         line: 1,
         column: 0
@@ -415,7 +403,7 @@ describe("SourceMap - Append Mappings", () => {
 
     assert.deepEqual(mappings[3], {
       source: 1,
-      name: 3,
+      name: 2,
       original: {
         line: 1,
         column: 0
@@ -444,9 +432,117 @@ describe("SourceMap - Append Mappings", () => {
       file: "index.js.map",
       sourceRoot: "/",
       sources: ["index.js", "local.js"],
-      names: ["A", "B", "T", "Q"],
+      names: ["A", "T", "Q"],
       mappings:
-        ";;;;;eAAAA;;;;;;MAEAC;;;;;;;;;;;;;;;;;;;;;;;;MCFAC;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;iEAAAC;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;uB"
+        ";;;;;eAAAA;;;;;;M;;;;;;;;;;;;;;;;;;;;;;;;MCAAC;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;iEAAAC;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;uB"
+    });
+  });
+
+  it("Should be able to handle all variations of indexedmappings", async () => {
+    let map = new SourceMap();
+
+    map.addIndexedMappings([
+      {
+        source: 'test.js',
+        generated: {
+          line: 4,
+          column: 15
+        }
+      },
+      {
+        source: 'test.js',
+        original: {
+          line: 1,
+          column: 0
+        },
+        generated: {
+          line: 5,
+          column: 15
+        }
+      },
+      {
+        name: 'test',
+        source: 'test.js',
+        original: {
+          line: 2,
+          column: 0
+        },
+        generated: {
+          line: 6,
+          column: 15
+        }
+      },
+      {
+        name: null,
+        source: 'test.js',
+        original: {
+          line: 3,
+          column: 0
+        },
+        generated: {
+          line: 7,
+          column: 15
+        }
+      },
+      {
+        source: null,
+        original: null,
+        generated: {
+          line: 8,
+          column: 15
+        }
+      },
+    ]);
+
+    let mappings = map.getMap().mappings;
+    assert.equal(mappings.length, 5);
+
+    // Validate mappings
+    assert.deepEqual(mappings[0], {
+      generated: {
+        line: 4,
+        column: 15
+      }
+    });
+    assert.deepEqual(mappings[1], {
+      source: 0,
+      original: {
+        line: 1,
+        column: 0
+      },
+      generated: {
+        line: 5,
+        column: 15
+      }
+    });
+    assert.deepEqual(mappings[2], {
+      name: 0,
+      source: 0,
+      original: {
+        line: 2,
+        column: 0
+      },
+      generated: {
+        line: 6,
+        column: 15
+      }
+    });
+    assert.deepEqual(mappings[3], {
+      source: 0,
+      original: {
+        line: 3,
+        column: 0
+      },
+      generated: {
+        line: 7,
+        column: 15
+      }
+    });
+    assert.deepEqual(mappings[4], {
+      generated: {
+        line: 8,
+        column: 15
+      }
     });
   });
 });

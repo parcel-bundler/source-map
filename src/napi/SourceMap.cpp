@@ -1,4 +1,3 @@
-#include <iostream>
 #include <sstream>
 #include "SourceMap.h"
 #include "sourcemap-schema_generated.h"
@@ -79,45 +78,7 @@ void SourceMapBinding::addBufferMappings(const Napi::CallbackInfo &info) {
     int lineOffset = info.Length() > 1 ? info[1].As<Napi::Number>().Int32Value() : 0;
     int columnOffset = info.Length() > 2 ? info[2].As<Napi::Number>().Int32Value() : 0;
 
-    auto map = SourceMapSchema::GetMap(mapBuffer.Data());
-
-    std::vector<int> sources;
-    auto sourcesArray = map->sources();
-    sources.reserve(sourcesArray->size());
-    auto sourcesEnd = sourcesArray->end();
-    for (auto it = sourcesArray->begin(); it != sourcesEnd; ++it) {
-        std::string source = it->str();
-        sources.push_back(_mapping_container.addSource(source));
-    }
-
-    std::vector<int> names;
-    auto namesArray = map->names();
-    names.reserve(namesArray->size());
-    auto namesEnd = namesArray->end();
-    for (auto it = namesArray->begin(); it != namesEnd; ++it) {
-        std::string name = it->str();
-        names.push_back(_mapping_container.addName(name));
-    }
-
-    _mapping_container.createLinesIfUndefined(map->lineCount() + lineOffset);
-
-    auto lines = map->lines();
-    auto linesEnd = lines->end();
-    for (auto linesIterator = map->lines()->begin(); linesIterator != linesEnd; ++linesIterator) {
-        auto line = (*linesIterator);
-        auto segments = line->segments();
-        auto segmentsEnd = segments->end();
-
-        for (auto segmentIterator = segments->begin(); segmentIterator != segmentsEnd; ++segmentIterator) {
-            Position generated = Position{segmentIterator->generatedLine() + lineOffset,
-                                          segmentIterator->generatedColumn() + columnOffset};
-            Position original = Position{segmentIterator->originalLine(), segmentIterator->originalColumn()};
-
-            int source = segmentIterator->source() > -1 ? sources[segmentIterator->source()] : -1;
-            int name = segmentIterator->name() > -1 ? names[segmentIterator->name()] : -1;
-            _mapping_container.addMapping(generated, original, source, name);
-        }
-    }
+    _mapping_container.addBufferMappings(mapBuffer.Data(), lineOffset, columnOffset);
 }
 
 void SourceMapBinding::extends(const Napi::CallbackInfo &info) {
@@ -135,86 +96,7 @@ void SourceMapBinding::extends(const Napi::CallbackInfo &info) {
     }
 
     auto mapBuffer = info[0].As<Napi::Buffer<uint8_t>>();
-    auto map = SourceMapSchema::GetMap(mapBuffer.Data());
-
-    std::vector<int> sources;
-    auto sourcesArray = map->sources();
-    sources.reserve(sourcesArray->size());
-    auto sourcesEnd = sourcesArray->end();
-    for (auto it = sourcesArray->begin(); it != sourcesEnd; ++it) {
-        std::string source = it->str();
-        sources.push_back(_mapping_container.addSource(source));
-    }
-
-    std::vector<int> names;
-    auto namesArray = map->names();
-    names.reserve(namesArray->size());
-    auto namesEnd = namesArray->end();
-    for (auto it = namesArray->begin(); it != namesEnd; ++it) {
-        std::string name = it->str();
-        names.push_back(_mapping_container.addName(name));
-    }
-
-    auto originalLines = map->lines();
-    auto originalLineCount = map->lineCount();
-
-    std::vector<flatbuffers::Offset<SourceMapSchema::MappingLine>> lines_vector;
-    auto &mappingLinesVector = _mapping_container.getMappingLinesVector();
-    lines_vector.reserve(mappingLinesVector.size());
-
-    auto lineEnd = mappingLinesVector.end();
-    for (auto lineIterator = mappingLinesVector.begin(); lineIterator != lineEnd; ++lineIterator) {
-        auto &line = (*lineIterator);
-        auto &segments = line->_segments;
-        unsigned int segmentsCount = segments.size();
-
-        std::vector<SourceMapSchema::Mapping> mappings_vector;
-        mappings_vector.reserve(segments.size());
-        for (unsigned int i = 0; i < segmentsCount; ++i) {
-            Mapping &mapping = segments[i];
-
-            if (mapping.source > -1) {
-                int originalLineIndex = mapping.original.line;
-                if (originalLineCount >= originalLineIndex) {
-                    int originalColumnIndex = mapping.original.column;
-                    auto originalLine = originalLines->Get(originalLineIndex);
-                    auto originalSegments = originalLine->segments();
-                    int originalSegmentsSize = originalSegments->size();
-                    if (originalSegmentsSize > 0) {
-                        int startIndex = 0;
-                        int stopIndex = originalSegmentsSize - 1;
-                        int middleIndex = ((stopIndex + startIndex) / 2);
-                        while (startIndex < stopIndex) {
-                            int diff = originalSegments->Get(middleIndex)->generatedColumn() - originalColumnIndex;
-                            if (diff > 0) {
-                                --stopIndex;
-                            } else if (diff < 0) {
-                                ++startIndex;
-                            } else {
-                                // It's the same...
-                                break;
-                            }
-
-                            middleIndex = ((stopIndex + startIndex) / 2);
-                        }
-
-                        auto originalMapping = originalSegments->Get(middleIndex);
-                        int originalSource = originalMapping->source();
-                        mapping.source = originalSource > -1 ? sources[originalSource] : originalSource;
-                        mapping.original = Position(originalMapping->originalLine(),
-                                                    originalMapping->originalColumn());
-
-                        int originalName = originalMapping->name();
-                        if (originalName > -1) {
-                            mapping.name = names[originalName];
-                        } else {
-                            mapping.name = -1;
-                        }
-                    }
-                }
-            }
-        }
-    }
+    _mapping_container.extends(mapBuffer.Data());
 }
 
 Napi::Value SourceMapBinding::stringify(const Napi::CallbackInfo &info) {
@@ -246,57 +128,7 @@ Napi::Value SourceMapBinding::stringify(const Napi::CallbackInfo &info) {
 Napi::Value SourceMapBinding::toBuffer(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
-
-    flatbuffers::FlatBufferBuilder builder;
-
-    // Sort mappings
-    _mapping_container.sort();
-
-    std::vector<flatbuffers::Offset<flatbuffers::String>> names_vector;
-    auto namesVector = _mapping_container.getNamesVector();
-    names_vector.reserve(namesVector.size());
-    auto namesEnd = namesVector.end();
-    for (auto it = namesVector.begin(); it != namesEnd; ++it) {
-        names_vector.push_back(builder.CreateString(*it));
-    }
-
-    std::vector<flatbuffers::Offset<flatbuffers::String>> sources_vector;
-    auto sourcesVector = _mapping_container.getSourcesVector();
-    sources_vector.reserve(sourcesVector.size());
-    auto sourcesEnd = sourcesVector.end();
-    for (auto it = sourcesVector.begin(); it != sourcesEnd; ++it) {
-        sources_vector.push_back(builder.CreateString(*it));
-    }
-
-    std::vector<flatbuffers::Offset<SourceMapSchema::MappingLine>> lines_vector;
-    auto mappingLinesVector = _mapping_container.getMappingLinesVector();
-    lines_vector.reserve(mappingLinesVector.size());
-
-    auto lineEnd = mappingLinesVector.end();
-    for (auto lineIterator = mappingLinesVector.begin(); lineIterator != lineEnd; ++lineIterator) {
-        auto &line = (*lineIterator);
-        auto &segments = line->_segments;
-        auto segmentsEnd = segments.end();
-
-        std::vector<SourceMapSchema::Mapping> mappings_vector;
-        mappings_vector.reserve(segments.size());
-        for (auto segmentIterator = segments.begin(); segmentIterator != segmentsEnd; ++segmentIterator) {
-            Mapping &mapping = *segmentIterator;
-
-            mappings_vector.push_back(
-                    SourceMapSchema::Mapping(mapping.generated.line, mapping.generated.column, mapping.original.line,
-                                             mapping.original.column, mapping.source, mapping.name));
-        }
-
-        lines_vector.push_back(SourceMapSchema::CreateMappingLineDirect(builder, line->lineNumber(), line->isSorted(),
-                                                                        &mappings_vector));
-    }
-
-    auto map = SourceMapSchema::CreateMapDirect(builder, &names_vector, &sources_vector,
-                                                _mapping_container.getGeneratedLines(), &lines_vector);
-
-    builder.Finish(map);
-
+    auto builder = _mapping_container.toBuffer();
     return Napi::Buffer<uint8_t>::Copy(env, builder.GetBufferPointer(), builder.GetSize());
 }
 
@@ -544,16 +376,7 @@ void SourceMapBinding::addEmptyMap(const Napi::CallbackInfo &info) {
     std::string sourceContent = info[1].As<Napi::String>().Utf8Value();
     int lineOffset = info.Length() > 2 ? info[2].As<Napi::Number>().Int32Value() : 0;
 
-    int sourceIndex = _mapping_container.addSource(sourceName);
-    int currLine = 0;
-    auto end = sourceContent.end();
-    for (auto it = sourceContent.begin(); it != end; ++it) {
-        const char &c = *it;
-        if (c == '\n') {
-            _mapping_container.addMapping(Position{currLine + lineOffset, 0}, Position{currLine, 0}, sourceIndex);
-            ++currLine;
-        }
-    }
+    _mapping_container.addEmptyMap(sourceName, sourceContent, lineOffset);
 }
 
 Napi::Value SourceMapBinding::findClosestMapping(const Napi::CallbackInfo &info) {
@@ -564,40 +387,9 @@ Napi::Value SourceMapBinding::findClosestMapping(const Napi::CallbackInfo &info)
         Napi::TypeError::New(env, "Expected 1 parameter of type buffer").ThrowAsJavaScriptException();
         return env.Null();
     }
-
-    int lineIndex = info[0].As<Napi::Number>().Int32Value() - 1;
-    int columnIndex = info[1].As<Napi::Number>().Int32Value();
-
-    if (lineIndex <= _mapping_container.getGeneratedLines()) {
-        auto &mappingLinesVector = _mapping_container.getMappingLinesVector();
-        auto &line = mappingLinesVector.at(lineIndex);
-        auto &segments = line->_segments;
-        unsigned int segmentsCount = segments.size();
-
-        std::vector<SourceMapSchema::Mapping> mappings_vector;
-        mappings_vector.reserve(segments.size());
-        int startIndex = 0;
-        int stopIndex = segmentsCount - 1;
-        int middleIndex = ((stopIndex + startIndex) / 2);
-        while (startIndex < stopIndex) {
-            Mapping &mapping = segments[middleIndex];
-            int diff = mapping.generated.column - columnIndex;
-            if (diff > 0) {
-                --stopIndex;
-            } else if (diff < 0) {
-                ++startIndex;
-            } else {
-                // It's the same...
-                break;
-            }
-
-            middleIndex = ((stopIndex + startIndex) / 2);
-        }
-
-        return _mappingToObject(env, segments[middleIndex]);
-    }
-
-    return env.Null();
+    
+    Mapping m = _mapping_container.findClosestMapping(info[0].As<Napi::Number>().Int32Value() - 1, info[1].As<Napi::Number>().Int32Value());
+    return _mappingToObject(env, m);
 }
 
 Napi::Object SourceMapBinding::Init(Napi::Env env, Napi::Object exports) {
