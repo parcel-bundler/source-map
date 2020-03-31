@@ -1,6 +1,6 @@
 {
   "name": "@parcel/source-map",
-  "version": "2.0.0-alpha.4.4",
+  "version": "2.0.0-alpha.4.5",
   "main": "./dist/node.js",
   "browser": "./dist/wasm.js",
   "license": "MIT",
@@ -22,7 +22,7 @@
   },
   "files": [
     "binding.gyp",
-    "build-wasm",
+    "wasm",
     "dist",
     "package.json",
     "prebuilds",
