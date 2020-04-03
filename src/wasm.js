@@ -104,8 +104,16 @@ export default class SourceMap {
     let mappingsVector = new Module.VectorIndexedMapping();
     for (let m of mappings) {
       mappingsVector.push_back({
-        generated: m.generated,
-        original: m.original || { line: -1, column: -1 },
+        generated: {
+          line: m.generated.line || 0,
+          column: m.generated.column || 0
+        },
+        original: m.original
+          ? {
+              line: m.original.line || 0,
+              column: m.original.column || 0
+            }
+          : { line: -1, column: -1 },
         source: m.source != null ? m.source : "",
         name: m.name != null ? m.name : ""
       });

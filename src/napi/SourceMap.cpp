@@ -1,3 +1,4 @@
+#include <iostream>
 #include <sstream>
 #include "SourceMap.h"
 #include "sourcemap-schema_generated.h"
@@ -65,12 +66,14 @@ void SourceMapBinding::addBufferMappings(const Napi::CallbackInfo &info) {
     }
 
     if (info.Length() > 1 && !info[1].IsNumber()) {
-        Napi::TypeError::New(env, "Expected a lineOffset of type integer for the second parameter").ThrowAsJavaScriptException();
+        Napi::TypeError::New(env,
+                             "Expected a lineOffset of type integer for the second parameter").ThrowAsJavaScriptException();
         return;
     }
 
     if (info.Length() > 2 && !info[2].IsNumber()) {
-        Napi::TypeError::New(env, "Expected a columnOffset of type integer for the third parameter").ThrowAsJavaScriptException();
+        Napi::TypeError::New(env,
+                             "Expected a columnOffset of type integer for the third parameter").ThrowAsJavaScriptException();
         return;
     }
 
@@ -238,34 +241,60 @@ void SourceMapBinding::addIndexedMappings(const Napi::CallbackInfo &info) {
 
     unsigned int length = mappingsArray.Length();
     for (unsigned int i = 0; i < length; ++i) {
-        Napi::Value mapping = mappingsArray.Get(i);
-        Napi::Object mappingObject = mapping.As<Napi::Object>();
+        if (!mappingsArray.Has(i)) {
+            continue;
+        }
+
+        Napi::Value mappingValue = mappingsArray.Get(i);
+        if (!mappingValue.IsObject()) {
+            continue;
+        }
+
+        Napi::Object mappingObject = mappingValue.As<Napi::Object>();
+        if (!mappingObject.Has("generated")) {
+            continue;
+        }
 
         Napi::Object generated = mappingObject.Get("generated").As<Napi::Object>();
-        int generatedLine = generated.Get("line").As<Napi::Number>().Int32Value() - 1;
-        int generatedColumn = generated.Get("column").As<Napi::Number>().Int32Value();
-        Position generatedPosition = Position{generatedLine + lineOffset, generatedColumn + columnOffset};
-
-        Napi::Value originalPositionValue = mappingObject.Get("original");
-        if (originalPositionValue.IsObject()) {
-            Napi::Object originalPositionObject = originalPositionValue.As<Napi::Object>();
-            int originalLine = originalPositionObject.Get("line").As<Napi::Number>().Int32Value() - 1;
-            int originalColumn = originalPositionObject.Get("column").As<Napi::Number>().Int32Value();
-            Position originalPosition = Position{originalLine, originalColumn};
-
-            std::string sourceString = mappingObject.Get("source").As<Napi::String>().Utf8Value();
-            int source = _mapping_container.addSource(sourceString);
-
-            Napi::Value nameValue = mappingObject.Get("name");
-            if (nameValue.IsString()) {
-                std::string nameString = nameValue.As<Napi::String>().Utf8Value();
-                _mapping_container.addMapping(generatedPosition, originalPosition, source, _mapping_container.addName(nameString));
-            } else {
-                _mapping_container.addMapping(generatedPosition, originalPosition, source);
-            }
-        } else {
-            _mapping_container.addMapping(generatedPosition);
+        if (!generated.Has("line") || !generated.Has("column")) {
+            continue;
         }
+
+        int generatedLine = generated.Get("line").As<Napi::Number>().Int32Value() + lineOffset - 1;
+        int generatedColumn = generated.Get("column").As<Napi::Number>().Int32Value() + columnOffset;
+        Position generatedPosition = Position{generatedLine, generatedColumn};
+        Position originalPosition = Position{-1, -1};
+        int sourceIndex = -1;
+        int nameIndex = -1;
+
+        if (mappingObject.Has("original")) {
+            Napi::Value originalPositionValue = mappingObject.Get("original");
+            if (originalPositionValue.IsObject()) {
+                Napi::Object originalPositionObject = originalPositionValue.As<Napi::Object>();
+                if (originalPositionObject.Has("line") && originalPositionObject.Has("column")) {
+                    originalPosition.line = originalPositionObject.Get("line").As<Napi::Number>().Int32Value() - 1;
+                    originalPosition.column = originalPositionObject.Get("column").As<Napi::Number>().Int32Value();
+                }
+
+                if (mappingObject.Has("source")) {
+                    Napi::Value sourceValue = mappingObject.Get("source");
+                    if (sourceValue.IsString()) {
+                        std::string sourceString = mappingObject.Get("source").As<Napi::String>().Utf8Value();
+                        sourceIndex = _mapping_container.addSource(sourceString);
+                    }
+                }
+
+                if (mappingObject.Has("name")) {
+                    Napi::Value nameValue = mappingObject.Get("name");
+                    if (nameValue.IsString()) {
+                        std::string nameString = nameValue.As<Napi::String>().Utf8Value();
+                        nameIndex = _mapping_container.addName(nameString);
+                    }
+                }
+            }
+        }
+
+        _mapping_container.addMapping(generatedPosition, originalPosition, sourceIndex, nameIndex);
     }
 }
 
@@ -368,7 +397,8 @@ void SourceMapBinding::addEmptyMap(const Napi::CallbackInfo &info) {
     }
 
     if (info.Length() == 3 && !info[2].IsNumber()) {
-        Napi::TypeError::New(env, "Expected third parameter to be a lineOffset of type Integer").ThrowAsJavaScriptException();
+        Napi::TypeError::New(env,
+                             "Expected third parameter to be a lineOffset of type Integer").ThrowAsJavaScriptException();
         return;
     }
 
@@ -387,8 +417,9 @@ Napi::Value SourceMapBinding::findClosestMapping(const Napi::CallbackInfo &info)
         Napi::TypeError::New(env, "Expected 1 parameter of type buffer").ThrowAsJavaScriptException();
         return env.Null();
     }
-    
-    Mapping m = _mapping_container.findClosestMapping(info[0].As<Napi::Number>().Int32Value() - 1, info[1].As<Napi::Number>().Int32Value());
+
+    Mapping m = _mapping_container.findClosestMapping(info[0].As<Napi::Number>().Int32Value() - 1,
+                                                      info[1].As<Napi::Number>().Int32Value());
     return _mappingToObject(env, m);
 }
 

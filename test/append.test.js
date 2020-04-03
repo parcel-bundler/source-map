@@ -492,10 +492,25 @@ describe("SourceMap - Append Mappings", () => {
           column: 15
         }
       },
+      {
+        name: null,
+        source: 'test.js',
+        original: {},
+        generated: {
+          line: 9,
+          column: 15
+        }
+      },
+      {
+        name: null,
+        source: 'test.js',
+        original: "invalid-type",
+        generated: "invalid-type"
+      },
     ]);
 
     let mappings = map.getMap().mappings;
-    assert.equal(mappings.length, 5);
+    assert.equal(mappings.length, 6);
 
     // Validate mappings
     assert.deepEqual(mappings[0], {
