@@ -9,7 +9,6 @@ import type {
 import path from "path";
 import { generateInlineMap, partialVlqMapToSourceMap } from "./utils";
 
-import RawModule from "../wasm/index.js";
 let Module;
 
 function arrayFromEmbind(from, mutate): any {
@@ -184,9 +183,11 @@ export default class SourceMap {
   }
 }
 
-export const init = new Promise<void>((res) =>
-  RawModule().then((v) => {
-    Module = v;
-    res();
-  })
-);
+export function init(RawModule) {
+  return new Promise<void>((res) =>
+    RawModule().then((v) => {
+      Module = v;
+      res();
+    })
+  );
+}

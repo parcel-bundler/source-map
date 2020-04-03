@@ -2,15 +2,15 @@
   "name": "@parcel/source-map",
   "version": "2.0.0-alpha.4.6",
   "main": "./dist/node.js",
-  "browser": "./dist/wasm.js",
+  "browser": "./dist/wasm-browser.js",
   "license": "MIT",
   "scripts": {
-    "test": "npm run test-node && npm run test-wasm",
-    "test-node": "cross-env BACKEND=node mocha ./test/*.test.js",
-    "test-wasm": "cross-env BACKEND=wasm mocha ./test/*.test.js",
-    "benchmark": "npm run benchmark-node && npm run benchmark-wasm",
-    "benchmark-node": "cross-env BACKEND=node node ./bench/run",
-    "benchmark-wasm": "cross-env BACKEND=wasm node ./bench/run",
+    "test": "npm run test:node && npm run test:wasm",
+    "test:node": "cross-env BACKEND=node mocha ./test/*.test.js",
+    "test:wasm": "cross-env BACKEND=wasm mocha ./test/*.test.js",
+    "benchmark": "npm run benchmark:node && npm run benchmark:wasm",
+    "benchmark:node": "cross-env BACKEND=node node ./bench/run",
+    "benchmark:wasm": "cross-env BACKEND=wasm node ./bench/run",
     "transpile": "babel ./src/*.js --out-dir ./dist && flow-copy-source -v src dist",
     "compile-wasm": "make",
     "lint": "prettier --write src/*.js",
@@ -23,12 +23,13 @@
   },
   "files": [
     "binding.gyp",
-    "wasm",
     "dist",
     "package.json",
     "prebuilds",
     "README.md",
-    "src"
+    "src",
+    "wasm-browser",
+    "wasm-node"
   ],
   "binary": {
     "napi_versions": [

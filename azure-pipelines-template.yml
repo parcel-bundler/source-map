@@ -47,14 +47,14 @@ jobs:
           PATH: $(PATH):$(System.DefaultWorkingDirectory)/emsdk/bin:$(System.DefaultWorkingDirectory)/emsdk/upstream/emscripten
         condition: eq('${{ parameters.name }}', 'macOS')
 
-      - script: npm run test-node
+      - script: npm run test:node
         displayName: Run tests (node)
-      - script: npm run benchmark-node
+      - script: npm run benchmark:node
         displayName: Run benchmark (node)
-      - script: npm run test-wasm
+      - script: npm run test:wasm
         displayName: Run tests (wasm)
         condition: eq('${{ parameters.name }}', 'macOS')
-      - script: npm run benchmark-wasm
+      - script: npm run benchmark:wasm
         displayName: Run benchmark (wasm)
         condition: eq('${{ parameters.name }}', 'macOS')
 

@@ -1,7 +1,7 @@
 const Benchmark = require("tiny-benchy");
 const assert = require("assert");
 const { default: SourceMap, init } =
-  process.env.BACKEND === "wasm" ? require("../dist/wasm") : require("../");
+  process.env.BACKEND === "wasm" ? require("../dist/wasm-node") : require("../");
 
 const ITERATIONS = 250;
 
