@@ -3,7 +3,7 @@ import type {
   ParsedMap,
   VLQMap,
   SourceMapStringifyOptions,
-  IndexedMapping
+  IndexedMapping,
 } from "./types";
 
 import path from "path";
@@ -107,7 +107,7 @@ export default class SourceMap {
         generated: m.generated,
         original: m.original || { line: -1, column: -1 },
         source: m.source != null ? m.source : "",
-        name: m.name != null ? m.name : ""
+        name: m.name != null ? m.name : "",
       });
     }
     this.sourceMapInstance.addIndexedMappings(
@@ -163,7 +163,7 @@ export default class SourceMap {
     return {
       mappings,
       sources: arrayFromEmbind(this.sourceMapInstance.getSources()),
-      names: arrayFromEmbind(this.sourceMapInstance.getNames())
+      names: arrayFromEmbind(this.sourceMapInstance.getNames()),
     };
   }
 
@@ -175,7 +175,7 @@ export default class SourceMap {
     return {
       mappings: this.sourceMapInstance.getVLQMappings(),
       sources: arrayFromEmbind(this.sourceMapInstance.getSources()),
-      names: arrayFromEmbind(this.sourceMapInstance.getNames())
+      names: arrayFromEmbind(this.sourceMapInstance.getNames()),
     };
   }
 
@@ -184,8 +184,8 @@ export default class SourceMap {
   }
 }
 
-export const init = new Promise<void>(res =>
-  RawModule().then(v => {
+export const init = new Promise<void>((res) =>
+  RawModule().then((v) => {
     Module = v;
     res();
   })

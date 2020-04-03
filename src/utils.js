@@ -18,7 +18,7 @@ export async function partialVlqMapToSourceMap(
     inlineSources,
     rootDir,
     inlineMap,
-    format = "string"
+    format = "string",
   }: SourceMapStringifyOptions
 ) {
   map.version = 3;
@@ -27,7 +27,7 @@ export async function partialVlqMapToSourceMap(
 
   if (inlineSources && fs) {
     map.sourcesContent = await Promise.all(
-      map.sources.map(async sourceName => {
+      map.sources.map(async (sourceName) => {
         try {
           return await fs.readFile(
             path.join(rootDir || "", sourceName),

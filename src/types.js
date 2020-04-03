@@ -1,7 +1,7 @@
 // @flow
 export type MappingPosition = {|
   line: number,
-  column: number
+  column: number,
 |};
 
 export type IndexedMapping<T> = {
@@ -15,7 +15,7 @@ export type IndexedMapping<T> = {
 export type ParsedMap = {|
   sources: Array<string>,
   names: Array<string>,
-  mappings: Array<IndexedMapping<number>>
+  mappings: Array<IndexedMapping<number>>,
 |};
 
 export type VLQMap = {

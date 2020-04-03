@@ -3,7 +3,7 @@ import type {
   ParsedMap,
   VLQMap,
   SourceMapStringifyOptions,
-  IndexedMapping
+  IndexedMapping,
 } from "./types";
 
 import path from "path";
