@@ -1,6 +1,6 @@
 {
   "name": "@parcel/source-map",
-  "version": "2.0.0-alpha.4.6",
+  "version": "2.0.0-alpha.4.7",
   "main": "./dist/node.js",
   "browser": "./dist/wasm-browser.js",
   "license": "MIT",
