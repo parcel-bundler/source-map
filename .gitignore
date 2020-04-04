@@ -4,9 +4,10 @@ node_modules
 .idea
 report.*.json
 
-build
 cmake-*
-prebuilds
-dist
-wasm
 *.o
+build
+dist
+prebuilds
+wasm-node
+wasm-browser

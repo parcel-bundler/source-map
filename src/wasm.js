@@ -3,13 +3,12 @@ import type {
   ParsedMap,
   VLQMap,
   SourceMapStringifyOptions,
-  IndexedMapping
+  IndexedMapping,
 } from "./types";
 
 import path from "path";
 import { generateInlineMap, partialVlqMapToSourceMap } from "./utils";
 
-import RawModule from "../wasm/index.js";
 let Module;
 
 function arrayFromEmbind(from, mutate): any {
@@ -168,7 +167,7 @@ export default class SourceMap {
     return {
       mappings,
       sources: arrayFromEmbind(this.sourceMapInstance.getSources()),
-      names: arrayFromEmbind(this.sourceMapInstance.getNames())
+      names: arrayFromEmbind(this.sourceMapInstance.getNames()),
     };
   }
 
@@ -180,7 +179,7 @@ export default class SourceMap {
     return {
       mappings: this.sourceMapInstance.getVLQMappings(),
       sources: arrayFromEmbind(this.sourceMapInstance.getSources()),
-      names: arrayFromEmbind(this.sourceMapInstance.getNames())
+      names: arrayFromEmbind(this.sourceMapInstance.getNames()),
     };
   }
 
@@ -189,9 +188,11 @@ export default class SourceMap {
   }
 }
 
-export const init = new Promise<void>(res =>
-  RawModule().then(v => {
-    Module = v;
-    res();
-  })
-);
+export function init(RawModule) {
+  return new Promise<void>((res) =>
+    RawModule().then((v) => {
+      Module = v;
+      res();
+    })
+  );
+}
