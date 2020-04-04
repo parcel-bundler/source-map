@@ -59,32 +59,23 @@ std::vector<Mapping> SourceMap::getMappings(){
     return mappings;
 }
 
-// addIndexedMappings(array<mapping>, lineOffset, columnOffset): uses numbers for source and name with the index specified in the sources/names map/array in SourceMap instance
-void SourceMap::addIndexedMappings(std::vector<IndexedMapping> mappingsArray, int lineOffset, int columnOffset) {
-    for (auto mapping = mappingsArray.begin(), lineEnd = mappingsArray.end();
-            mapping != lineEnd; ++mapping) {
+// addIndexedMapping(generatedLine, generatedColumn, originalLine, originalColumn, source, name)
+void SourceMap::addIndexedMapping(int generatedLine, int generatedColumn, int originalLine, int originalColumn, std::string source, std::string name) {
+    Position generatedPosition = Position{generatedLine, generatedColumn};
+    Position originalPosition = Position{originalLine, originalColumn};
+    int sourceIndex = -1;
+    int nameIndex = -1;
+    if (originalPosition.line > -1) {
+        if (source.size() > 0) {
+            sourceIndex = _mapping_container.addSource(source);
+        }
 
-
-        int generatedLine = mapping->generated.line - 1;
-        int generatedColumn = mapping->generated.column;
-        Position generatedPosition = Position{generatedLine + lineOffset, generatedColumn + columnOffset};
-
-        int originalColumn = mapping->original.column;
-        int originalLine = mapping->original.line - 1;
-        if (originalColumn >= 0 && originalLine >= 0) {
-            Position originalPosition = Position{originalLine, originalColumn};
-
-            int source = _mapping_container.addSource(mapping->source);
-
-            if (mapping->name.size() > 0) {
-                _mapping_container.addMapping(generatedPosition, originalPosition, source, _mapping_container.addName(mapping->name));
-            } else {
-                _mapping_container.addMapping(generatedPosition, originalPosition, source);
-            }
-        } else {
-            _mapping_container.addMapping(generatedPosition);
+        if (name.size() > 0) {
+            nameIndex = _mapping_container.addName(name);
         }
     }
+
+    _mapping_container.addMapping(generatedPosition, originalPosition, sourceIndex, nameIndex);
 }
 
 int SourceMap::getSourceIndex(std::string source) {
@@ -131,7 +122,7 @@ EMSCRIPTEN_BINDINGS(my_class_example) {
         .constructor<>()
         .function("addRawMappings", &SourceMap::addRawMappings)
         .function("addBufferMappings", &SourceMap::addBufferMappings)
-        .function("addIndexedMappings", &SourceMap::addIndexedMappings)
+        .function("addIndexedMapping", &SourceMap::addIndexedMapping)
         .function("getVLQMappings", &SourceMap::getVLQMappings)
         .function("getMappings", &SourceMap::getMappings)
         .function("getSources", &SourceMap::getSources)
