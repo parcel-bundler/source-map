@@ -449,7 +449,7 @@ void MappingContainer::addIndexedMapping(int generatedLine, int generatedColumn,
             sourceIndex = addSource(source);
         }
 
-        if (name.size() > 0) {
+        if (!name.empty()) {
             nameIndex = addName(name);
         }
     }
