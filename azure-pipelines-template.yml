@@ -68,9 +68,15 @@ jobs:
           artifactName: prebuilds
           pathtoPublish: "$(System.DefaultWorkingDirectory)/prebuilds"
       - task: PublishBuildArtifacts@1
-        displayName: Publish Wasm Artifacts
+        displayName: Publish wasm-node Artifacts
         condition: and(succeeded(), eq(variables['publish_artifacts'], 'true'), eq('${{ parameters.name }}', 'macOS'))
         inputs:
-          artifactName: wasm
-          pathtoPublish: "$(System.DefaultWorkingDirectory)/wasm-*"
+          artifactName: wasm-node
+          pathtoPublish: "$(System.DefaultWorkingDirectory)/wasm-node"
+      - task: PublishBuildArtifacts@1
+        displayName: Publish wasm-browser Artifacts
+        condition: and(succeeded(), eq(variables['publish_artifacts'], 'true'), eq('${{ parameters.name }}', 'macOS'))
+        inputs:
+          artifactName: wasm-browser
+          pathtoPublish: "$(System.DefaultWorkingDirectory)/wasm-browser"
           
