@@ -46,9 +46,14 @@ jobs:
               artifactName: prebuilds
               downloadPath: "$(System.DefaultWorkingDirectory)"
           - task: DownloadBuildArtifacts@0
-            displayName: Download Wasm Artifacts
+            displayName: Download wasm-node Artifacts
             inputs:
-              artifactName: wasm
+              artifactName: wasm-node
+              downloadPath: "$(System.DefaultWorkingDirectory)"
+          - task: DownloadBuildArtifacts@0
+            displayName: Download wasm-browser Artifacts
+            inputs:
+              artifactName: wasm-browser
               downloadPath: "$(System.DefaultWorkingDirectory)"
           - script: npm install --build-from-source
             displayName: Install Node Modules
