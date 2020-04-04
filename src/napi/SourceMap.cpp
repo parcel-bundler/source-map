@@ -207,94 +207,36 @@ Napi::Value SourceMapBinding::getMap(const Napi::CallbackInfo &info) {
     return obj;
 }
 
-// addIndexedMappings(array<mapping>, lineOffset, columnOffset): uses numbers for source and name with the index specified in the sources/names map/array in SourceMap instance
-void SourceMapBinding::addIndexedMappings(const Napi::CallbackInfo &info) {
+// addIndexedMapping(generatedLine, generatedColumn, originalLine, originalColumn, source, name)
+void SourceMapBinding::addIndexedMapping(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
 
-    if (info.Length() < 1) {
-        Napi::TypeError::New(env, "Expected 1-3 parameters").ThrowAsJavaScriptException();
+    if (info.Length() < 6) {
+        Napi::TypeError::New(env, "Expected 6 parameters").ThrowAsJavaScriptException();
         return;
     }
 
-    if (!info[0].IsArray()) {
-        Napi::TypeError::New(env, "First parameter should be an array").ThrowAsJavaScriptException();
-        return;
+    Position generatedPosition = Position{info[0].As<Napi::Number>().Int32Value(),
+                                          info[1].As<Napi::Number>().Int32Value()};
+    Position originalPosition = Position{info[2].As<Napi::Number>().Int32Value(),
+                                         info[3].As<Napi::Number>().Int32Value()};
+
+    int sourceIndex = -1;
+    int nameIndex = -1;
+    if (originalPosition.line > -1) {
+        if (info[4].IsString()) {
+            std::string sourceString = info[4].As<Napi::String>().Utf8Value();
+            sourceIndex = _mapping_container.addSource(sourceString);
+        }
+
+        if (info[5].IsString()) {
+            std::string nameString = info[5].As<Napi::String>().Utf8Value();
+            nameIndex = _mapping_container.addName(nameString);
+        }
     }
 
-    if (info.Length() > 1 && !info[1].IsNumber()) {
-        Napi::TypeError::New(env,
-                             "Second parameter should be a lineOffset of type integer").ThrowAsJavaScriptException();
-        return;
-    }
-
-    if (info.Length() > 2 && !info[2].IsNumber()) {
-        Napi::TypeError::New(env,
-                             "Third parameter should be a lineOffset of type integer").ThrowAsJavaScriptException();
-        return;
-    }
-
-    const Napi::Array mappingsArray = info[0].As<Napi::Array>();
-    int lineOffset = info.Length() > 1 ? info[1].As<Napi::Number>().Int32Value() : 0;
-    int columnOffset = info.Length() > 2 ? info[2].As<Napi::Number>().Int32Value() : 0;
-
-    unsigned int length = mappingsArray.Length();
-    for (unsigned int i = 0; i < length; ++i) {
-        if (!mappingsArray.Has(i)) {
-            continue;
-        }
-
-        Napi::Value mappingValue = mappingsArray.Get(i);
-        if (!mappingValue.IsObject()) {
-            continue;
-        }
-
-        Napi::Object mappingObject = mappingValue.As<Napi::Object>();
-        if (!mappingObject.Has("generated")) {
-            continue;
-        }
-
-        Napi::Object generated = mappingObject.Get("generated").As<Napi::Object>();
-        if (!generated.Has("line") || !generated.Has("column")) {
-            continue;
-        }
-
-        int generatedLine = generated.Get("line").As<Napi::Number>().Int32Value() + lineOffset - 1;
-        int generatedColumn = generated.Get("column").As<Napi::Number>().Int32Value() + columnOffset;
-        Position generatedPosition = Position{generatedLine, generatedColumn};
-        Position originalPosition = Position{-1, -1};
-        int sourceIndex = -1;
-        int nameIndex = -1;
-
-        if (mappingObject.Has("original")) {
-            Napi::Value originalPositionValue = mappingObject.Get("original");
-            if (originalPositionValue.IsObject()) {
-                Napi::Object originalPositionObject = originalPositionValue.As<Napi::Object>();
-                if (originalPositionObject.Has("line") && originalPositionObject.Has("column")) {
-                    originalPosition.line = originalPositionObject.Get("line").As<Napi::Number>().Int32Value() - 1;
-                    originalPosition.column = originalPositionObject.Get("column").As<Napi::Number>().Int32Value();
-                }
-
-                if (mappingObject.Has("source")) {
-                    Napi::Value sourceValue = mappingObject.Get("source");
-                    if (sourceValue.IsString()) {
-                        std::string sourceString = mappingObject.Get("source").As<Napi::String>().Utf8Value();
-                        sourceIndex = _mapping_container.addSource(sourceString);
-                    }
-                }
-
-                if (mappingObject.Has("name")) {
-                    Napi::Value nameValue = mappingObject.Get("name");
-                    if (nameValue.IsString()) {
-                        std::string nameString = nameValue.As<Napi::String>().Utf8Value();
-                        nameIndex = _mapping_container.addName(nameString);
-                    }
-                }
-            }
-        }
-
-        _mapping_container.addMapping(generatedPosition, originalPosition, sourceIndex, nameIndex);
-    }
+    _mapping_container.addMapping(generatedPosition, originalPosition, sourceIndex, nameIndex);
 }
 
 Napi::Value SourceMapBinding::getSourceIndex(const Napi::CallbackInfo &info) {
@@ -431,7 +373,7 @@ Napi::Object SourceMapBinding::Init(Napi::Env env, Napi::Object exports) {
             InstanceMethod("stringify", &SourceMapBinding::stringify),
             InstanceMethod("toBuffer", &SourceMapBinding::toBuffer),
             InstanceMethod("getMap", &SourceMapBinding::getMap),
-            InstanceMethod("addIndexedMappings", &SourceMapBinding::addIndexedMappings),
+            InstanceMethod("addIndexedMapping", &SourceMapBinding::addIndexedMapping),
             InstanceMethod("addNames", &SourceMapBinding::addNames),
             InstanceMethod("addSources", &SourceMapBinding::addSources),
             InstanceMethod("getSourceIndex", &SourceMapBinding::getSourceIndex),

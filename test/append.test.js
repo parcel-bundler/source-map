@@ -502,12 +502,6 @@ describe("SourceMap - Append Mappings", () => {
         }
       },
       {
-        name: null,
-        source: 'test.js',
-        original: "invalid-type",
-        generated: "invalid-type"
-      },
-      {
         original: {
           line: 3,
           column: 0
