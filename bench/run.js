@@ -1,4 +1,5 @@
 const Benchmark = require("tiny-benchy");
+const MozillaSourceMap = require("source-map");
 const assert = require("assert");
 const { default: SourceMap, init } =
   process.env.BACKEND === "wasm" ? require("../dist/wasm") : require("../");
@@ -14,12 +15,12 @@ init.then(() => {
       name: "A",
       original: {
         line: index + 1,
-        column: 0 + 10 * index
+        column: 0 + 10 * index,
       },
       generated: {
         line: 1,
-        column: 15 + 10 * index
-      }
+        column: 15 + 10 * index,
+      },
     };
   });
 
@@ -47,6 +48,21 @@ init.then(() => {
     map.addIndexedMappings(mappings);
   });
 
+  suite.add("JS Mappings => vlq (mozilla source-map) => buffer", async () => {
+    let map = new MozillaSourceMap.SourceMapGenerator({
+      sourceRoot: "/",
+    });
+
+    for (let mapping of mappings) {
+      map.addMapping(mapping);
+    }
+
+    let json = map.toJSON();
+
+    let sourceMap = new SourceMap();
+    sourceMap.addRawMappings(json.mappings, json.sources, json.names);
+  });
+
   suite.add("Save buffer", async () => {
     sourcemapInstance.toBuffer();
   });
@@ -60,7 +76,7 @@ init.then(() => {
   suite.add("stringify", async () => {
     await sourcemapInstance.stringify({
       file: "index.js.map",
-      sourceRoot: "/"
+      sourceRoot: "/",
     });
   });
 
@@ -90,7 +106,7 @@ init.then(() => {
     }
     await map.stringify({
       file: "index.js.map",
-      sourceRoot: "/"
+      sourceRoot: "/",
     });
   });
 

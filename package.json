@@ -48,6 +48,7 @@
     "flow-copy-source": "^2.0.9",
     "mocha": "^7.1.0",
     "prebuildify": "^3.0.4",
+    "source-map": "^0.7.3",
     "tiny-benchy": "^1.0.0"
   }
 }
