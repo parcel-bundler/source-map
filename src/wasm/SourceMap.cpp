@@ -37,7 +37,7 @@ std::vector<std::string> SourceMap::getNames(){
 
 emscripten::val SourceMap::toBuffer() {
     auto builder = _mapping_container.toBuffer();
-    return emscripten::val(emscripten::typed_memory_view(builder.GetSize(), builder.GetBufferPointer()));
+    return emscripten::val(emscripten::memory_view<uint8_t>(builder.GetSize(), builder.GetBufferPointer()));
 }
 
 std::vector<Mapping> SourceMap::getMappings(){
