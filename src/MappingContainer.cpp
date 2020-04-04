@@ -437,3 +437,22 @@ void MappingContainer::addBufferMappings(const void *buf, int lineOffset, int co
         }
     }
 }
+
+void MappingContainer::addIndexedMapping(int generatedLine, int generatedColumn, int originalLine, int originalColumn,
+                                         std::string source, std::string name) {
+    Position generatedPosition = Position{generatedLine, generatedColumn};
+    Position originalPosition = Position{originalLine, originalColumn};
+    int sourceIndex = -1;
+    int nameIndex = -1;
+    if (originalPosition.line > -1) {
+        if (source.size() > 0) {
+            sourceIndex = addSource(source);
+        }
+
+        if (name.size() > 0) {
+            nameIndex = addName(name);
+        }
+    }
+
+    addMapping(generatedPosition, originalPosition, sourceIndex, nameIndex);
+}

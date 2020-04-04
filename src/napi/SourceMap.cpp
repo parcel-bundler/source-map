@@ -217,26 +217,14 @@ void SourceMapBinding::addIndexedMapping(const Napi::CallbackInfo &info) {
         return;
     }
 
-    Position generatedPosition = Position{info[0].As<Napi::Number>().Int32Value(),
-                                          info[1].As<Napi::Number>().Int32Value()};
-    Position originalPosition = Position{info[2].As<Napi::Number>().Int32Value(),
-                                         info[3].As<Napi::Number>().Int32Value()};
+    int generatedLine = info[0].As<Napi::Number>().Int32Value();
+    int generatedColumn = info[1].As<Napi::Number>().Int32Value();
+    int originalLine = info[2].As<Napi::Number>().Int32Value();
+    int originalColumn = info[3].As<Napi::Number>().Int32Value();
+    std::string source = info[4].As<Napi::String>().Utf8Value();
+    std::string name = info[5].As<Napi::String>().Utf8Value();
 
-    int sourceIndex = -1;
-    int nameIndex = -1;
-    if (originalPosition.line > -1) {
-        if (info[4].IsString()) {
-            std::string sourceString = info[4].As<Napi::String>().Utf8Value();
-            sourceIndex = _mapping_container.addSource(sourceString);
-        }
-
-        if (info[5].IsString()) {
-            std::string nameString = info[5].As<Napi::String>().Utf8Value();
-            nameIndex = _mapping_container.addName(nameString);
-        }
-    }
-
-    _mapping_container.addMapping(generatedPosition, originalPosition, sourceIndex, nameIndex);
+    _mapping_container.addIndexedMapping(generatedLine, generatedColumn, originalLine, originalColumn, source, name);
 }
 
 Napi::Value SourceMapBinding::getSourceIndex(const Napi::CallbackInfo &info) {

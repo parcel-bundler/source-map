@@ -61,21 +61,7 @@ std::vector<Mapping> SourceMap::getMappings(){
 
 // addIndexedMapping(generatedLine, generatedColumn, originalLine, originalColumn, source, name)
 void SourceMap::addIndexedMapping(int generatedLine, int generatedColumn, int originalLine, int originalColumn, std::string source, std::string name) {
-    Position generatedPosition = Position{generatedLine, generatedColumn};
-    Position originalPosition = Position{originalLine, originalColumn};
-    int sourceIndex = -1;
-    int nameIndex = -1;
-    if (originalPosition.line > -1) {
-        if (source.size() > 0) {
-            sourceIndex = _mapping_container.addSource(source);
-        }
-
-        if (name.size() > 0) {
-            nameIndex = _mapping_container.addName(name);
-        }
-    }
-
-    _mapping_container.addMapping(generatedPosition, originalPosition, sourceIndex, nameIndex);
+    _mapping_container.addIndexedMapping(generatedLine, generatedColumn, originalLine, originalColumn, source, name);
 }
 
 int SourceMap::getSourceIndex(std::string source) {

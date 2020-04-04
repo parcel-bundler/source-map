@@ -84,8 +84,8 @@ export default class SourceMap {
         hasValidOriginal ? mapping.original.line - 1 : -1,
         // $FlowFixMe
         hasValidOriginal ? mapping.original.column : -1,
-        mapping.source,
-        mapping.name
+        mapping.source || "",
+        mapping.name || ""
       );
     }
     return this;
