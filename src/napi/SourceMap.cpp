@@ -65,12 +65,14 @@ void SourceMapBinding::addBufferMappings(const Napi::CallbackInfo &info) {
     }
 
     if (info.Length() > 1 && !info[1].IsNumber()) {
-        Napi::TypeError::New(env, "Expected a lineOffset of type integer for the second parameter").ThrowAsJavaScriptException();
+        Napi::TypeError::New(env,
+                             "Expected a lineOffset of type integer for the second parameter").ThrowAsJavaScriptException();
         return;
     }
 
     if (info.Length() > 2 && !info[2].IsNumber()) {
-        Napi::TypeError::New(env, "Expected a columnOffset of type integer for the third parameter").ThrowAsJavaScriptException();
+        Napi::TypeError::New(env,
+                             "Expected a columnOffset of type integer for the third parameter").ThrowAsJavaScriptException();
         return;
     }
 
@@ -205,68 +207,24 @@ Napi::Value SourceMapBinding::getMap(const Napi::CallbackInfo &info) {
     return obj;
 }
 
-// addIndexedMappings(array<mapping>, lineOffset, columnOffset): uses numbers for source and name with the index specified in the sources/names map/array in SourceMap instance
-void SourceMapBinding::addIndexedMappings(const Napi::CallbackInfo &info) {
+// addIndexedMapping(generatedLine, generatedColumn, originalLine, originalColumn, source, name)
+void SourceMapBinding::addIndexedMapping(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
 
-    if (info.Length() < 1) {
-        Napi::TypeError::New(env, "Expected 1-3 parameters").ThrowAsJavaScriptException();
+    if (info.Length() < 6) {
+        Napi::TypeError::New(env, "Expected 6 parameters").ThrowAsJavaScriptException();
         return;
     }
 
-    if (!info[0].IsArray()) {
-        Napi::TypeError::New(env, "First parameter should be an array").ThrowAsJavaScriptException();
-        return;
-    }
+    int generatedLine = info[0].As<Napi::Number>().Int32Value();
+    int generatedColumn = info[1].As<Napi::Number>().Int32Value();
+    int originalLine = info[2].As<Napi::Number>().Int32Value();
+    int originalColumn = info[3].As<Napi::Number>().Int32Value();
+    std::string source = info[4].As<Napi::String>().Utf8Value();
+    std::string name = info[5].As<Napi::String>().Utf8Value();
 
-    if (info.Length() > 1 && !info[1].IsNumber()) {
-        Napi::TypeError::New(env,
-                             "Second parameter should be a lineOffset of type integer").ThrowAsJavaScriptException();
-        return;
-    }
-
-    if (info.Length() > 2 && !info[2].IsNumber()) {
-        Napi::TypeError::New(env,
-                             "Third parameter should be a lineOffset of type integer").ThrowAsJavaScriptException();
-        return;
-    }
-
-    const Napi::Array mappingsArray = info[0].As<Napi::Array>();
-    int lineOffset = info.Length() > 1 ? info[1].As<Napi::Number>().Int32Value() : 0;
-    int columnOffset = info.Length() > 2 ? info[2].As<Napi::Number>().Int32Value() : 0;
-
-    unsigned int length = mappingsArray.Length();
-    for (unsigned int i = 0; i < length; ++i) {
-        Napi::Value mapping = mappingsArray.Get(i);
-        Napi::Object mappingObject = mapping.As<Napi::Object>();
-
-        Napi::Object generated = mappingObject.Get("generated").As<Napi::Object>();
-        int generatedLine = generated.Get("line").As<Napi::Number>().Int32Value() - 1;
-        int generatedColumn = generated.Get("column").As<Napi::Number>().Int32Value();
-        Position generatedPosition = Position{generatedLine + lineOffset, generatedColumn + columnOffset};
-
-        Napi::Value originalPositionValue = mappingObject.Get("original");
-        if (originalPositionValue.IsObject()) {
-            Napi::Object originalPositionObject = originalPositionValue.As<Napi::Object>();
-            int originalLine = originalPositionObject.Get("line").As<Napi::Number>().Int32Value() - 1;
-            int originalColumn = originalPositionObject.Get("column").As<Napi::Number>().Int32Value();
-            Position originalPosition = Position{originalLine, originalColumn};
-
-            std::string sourceString = mappingObject.Get("source").As<Napi::String>().Utf8Value();
-            int source = _mapping_container.addSource(sourceString);
-
-            Napi::Value nameValue = mappingObject.Get("name");
-            if (nameValue.IsString()) {
-                std::string nameString = nameValue.As<Napi::String>().Utf8Value();
-                _mapping_container.addMapping(generatedPosition, originalPosition, source, _mapping_container.addName(nameString));
-            } else {
-                _mapping_container.addMapping(generatedPosition, originalPosition, source);
-            }
-        } else {
-            _mapping_container.addMapping(generatedPosition);
-        }
-    }
+    _mapping_container.addIndexedMapping(generatedLine, generatedColumn, originalLine, originalColumn, source, name);
 }
 
 Napi::Value SourceMapBinding::getSourceIndex(const Napi::CallbackInfo &info) {
@@ -368,7 +326,8 @@ void SourceMapBinding::addEmptyMap(const Napi::CallbackInfo &info) {
     }
 
     if (info.Length() == 3 && !info[2].IsNumber()) {
-        Napi::TypeError::New(env, "Expected third parameter to be a lineOffset of type Integer").ThrowAsJavaScriptException();
+        Napi::TypeError::New(env,
+                             "Expected third parameter to be a lineOffset of type Integer").ThrowAsJavaScriptException();
         return;
     }
 
@@ -387,8 +346,9 @@ Napi::Value SourceMapBinding::findClosestMapping(const Napi::CallbackInfo &info)
         Napi::TypeError::New(env, "Expected 1 parameter of type buffer").ThrowAsJavaScriptException();
         return env.Null();
     }
-    
-    Mapping m = _mapping_container.findClosestMapping(info[0].As<Napi::Number>().Int32Value() - 1, info[1].As<Napi::Number>().Int32Value());
+
+    Mapping m = _mapping_container.findClosestMapping(info[0].As<Napi::Number>().Int32Value() - 1,
+                                                      info[1].As<Napi::Number>().Int32Value());
     return _mappingToObject(env, m);
 }
 
@@ -401,7 +361,7 @@ Napi::Object SourceMapBinding::Init(Napi::Env env, Napi::Object exports) {
             InstanceMethod("stringify", &SourceMapBinding::stringify),
             InstanceMethod("toBuffer", &SourceMapBinding::toBuffer),
             InstanceMethod("getMap", &SourceMapBinding::getMap),
-            InstanceMethod("addIndexedMappings", &SourceMapBinding::addIndexedMappings),
+            InstanceMethod("addIndexedMapping", &SourceMapBinding::addIndexedMapping),
             InstanceMethod("addNames", &SourceMapBinding::addNames),
             InstanceMethod("addSources", &SourceMapBinding::addSources),
             InstanceMethod("getSourceIndex", &SourceMapBinding::getSourceIndex),

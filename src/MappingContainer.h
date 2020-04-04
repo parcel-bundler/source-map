@@ -50,6 +50,8 @@ public:
 
     void addBufferMappings(const void *buf, int lineOffset = 0, int columnOffset = 0);
 
+    void addIndexedMapping(int generatedLine, int generatedColumn, int originalLine, int originalColumn, std::string source, std::string name);
+
 private:
     // Processed mappings, for all kinds of modifying within the sourcemap
     std::vector<std::string> _sources;

@@ -65,15 +65,29 @@ export default class SourceMap {
 
   // line numbers start at 1 so we have the same api as `source-map` by mozilla
   addIndexedMappings(
-    mappings: Array<IndexedMapping<number | string>>,
+    mappings: Array<IndexedMapping<string>>,
     lineOffset?: number = 0,
     columnOffset?: number = 0
   ) {
-    this.sourceMapInstance.addIndexedMappings(
-      mappings,
-      lineOffset,
-      columnOffset
-    );
+    for (let mapping of mappings) {
+      let hasValidOriginal =
+        mapping.original &&
+        typeof mapping.original.line === "number" &&
+        !isNaN(mapping.original.line) &&
+        typeof mapping.original.column === "number" &&
+        !isNaN(mapping.original.column);
+
+      this.sourceMapInstance.addIndexedMapping(
+        mapping.generated.line + lineOffset - 1,
+        mapping.generated.column + columnOffset,
+        // $FlowFixMe
+        hasValidOriginal ? mapping.original.line - 1 : -1,
+        // $FlowFixMe
+        hasValidOriginal ? mapping.original.column : -1,
+        mapping.source || "",
+        mapping.name || ""
+      );
+    }
     return this;
   }
 

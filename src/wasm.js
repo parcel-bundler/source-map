@@ -100,20 +100,25 @@ export default class SourceMap {
     lineOffset?: number = 0,
     columnOffset?: number = 0
   ) {
-    let mappingsVector = new Module.VectorIndexedMapping();
-    for (let m of mappings) {
-      mappingsVector.push_back({
-        generated: m.generated,
-        original: m.original || { line: -1, column: -1 },
-        source: m.source != null ? m.source : "",
-        name: m.name != null ? m.name : "",
-      });
+    for (let mapping of mappings) {
+      let hasValidOriginal =
+        mapping.original &&
+        typeof mapping.original.line === "number" &&
+        !isNaN(mapping.original.line) &&
+        typeof mapping.original.column === "number" &&
+        !isNaN(mapping.original.column);
+
+      this.sourceMapInstance.addIndexedMapping(
+        mapping.generated.line + lineOffset - 1,
+        mapping.generated.column + columnOffset,
+        // $FlowFixMe
+        hasValidOriginal ? mapping.original.line - 1 : -1,
+        // $FlowFixMe
+        hasValidOriginal ? mapping.original.column : -1,
+        mapping.source || "",
+        mapping.name || ""
+      );
     }
-    this.sourceMapInstance.addIndexedMappings(
-      mappingsVector,
-      lineOffset,
-      columnOffset
-    );
     return this;
   }
 

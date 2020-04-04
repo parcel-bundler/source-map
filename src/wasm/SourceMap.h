@@ -9,7 +9,7 @@ public:
 
     void addRawMappings(std::string rawMappings, std::vector<std::string> sources, std::vector<std::string> names, int lineOffset, int columnOffset);
     void addBufferMappings(std::string mapbuffer, int lineOffset, int columnOffset);
-    void addIndexedMappings(std::vector<IndexedMapping> mappingsArray, int lineOffset, int columnOffset);
+    void addIndexedMapping(int generatedLine, int generatedColumn, int originalLine, int originalColumn, std::string source, std::string name);
 
     void extends(std::string mapBuffer);
 
