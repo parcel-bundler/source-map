@@ -6,7 +6,7 @@ const SIMPLE_SOURCE_MAP = {
   file: "helloworld.js",
   sources: ["helloworld.coffee"],
   names: [],
-  mappings: "AAAA;AAAA,EAAA,OAAO,CAAC,GAAR,CAAY,aAAZ,CAAA,CAAA;AAAA"
+  mappings: "AAAA;AAAA,EAAA,OAAO,CAAC,GAAR,CAAY,aAAZ,CAAA,CAAA;AAAA",
 };
 
 describe("SourceMap - Basics", () => {
@@ -20,7 +20,7 @@ describe("SourceMap - Basics", () => {
     let stringifiedMap = JSON.parse(
       await map.stringify({
         file: "index.js.map",
-        sourceRoot: "/"
+        sourceRoot: "/",
       })
     );
     assert.equal(stringifiedMap.mappings, SIMPLE_SOURCE_MAP.mappings);
@@ -41,59 +41,59 @@ describe("SourceMap - Basics", () => {
         {
           generated: { line: 1, column: 0 },
           original: { line: 1, column: 0 },
-          source: 0
+          source: 0,
         },
         {
           generated: { line: 2, column: 0 },
           original: { line: 1, column: 0 },
-          source: 0
+          source: 0,
         },
         {
           generated: { line: 2, column: 2 },
           original: { line: 1, column: 0 },
-          source: 0
+          source: 0,
         },
         {
           generated: { line: 2, column: 9 },
           original: { line: 1, column: 7 },
-          source: 0
+          source: 0,
         },
         {
           generated: { line: 2, column: 10 },
           original: { line: 1, column: 8 },
-          source: 0
+          source: 0,
         },
         {
           generated: { line: 2, column: 13 },
           original: { line: 1, column: 0 },
-          source: 0
+          source: 0,
         },
         {
           generated: { line: 2, column: 14 },
           original: { line: 1, column: 12 },
-          source: 0
+          source: 0,
         },
         {
           generated: { line: 2, column: 27 },
           original: { line: 1, column: 0 },
-          source: 0
+          source: 0,
         },
         {
           generated: { line: 2, column: 28 },
           original: { line: 1, column: 0 },
-          source: 0
+          source: 0,
         },
         {
           generated: { line: 2, column: 29 },
           original: { line: 1, column: 0 },
-          source: 0
+          source: 0,
         },
         {
           generated: { line: 3, column: 0 },
           original: { line: 1, column: 0 },
-          source: 0
-        }
-      ]
+          source: 0,
+        },
+      ],
     });
   });
 
@@ -106,19 +106,19 @@ describe("SourceMap - Basics", () => {
         name: "A",
         original: {
           line: 1,
-          column: 0
+          column: 0,
         },
         generated: {
           line: 6,
-          column: 15
-        }
-      }
+          column: 15,
+        },
+      },
     ]);
 
     let stringifiedMap = JSON.parse(
       await map.stringify({
         file: "index.js.map",
-        sourceRoot: "/"
+        sourceRoot: "/",
       })
     );
     assert.deepEqual(stringifiedMap, {
@@ -127,7 +127,7 @@ describe("SourceMap - Basics", () => {
       sourceRoot: "/",
       mappings: ";;;;;eAAAA",
       sources: ["index.js"],
-      names: ["A"]
+      names: ["A"],
     });
   });
 
@@ -140,19 +140,19 @@ describe("SourceMap - Basics", () => {
         name: undefined,
         original: {
           line: 1,
-          column: 0
+          column: 0,
         },
         generated: {
           line: 6,
-          column: 15
-        }
-      }
+          column: 15,
+        },
+      },
     ]);
 
     let stringifiedMap = JSON.parse(
       await map.stringify({
         file: "index.js.map",
-        sourceRoot: "/"
+        sourceRoot: "/",
       })
     );
     assert.deepEqual(stringifiedMap, {
@@ -161,7 +161,7 @@ describe("SourceMap - Basics", () => {
       sourceRoot: "/",
       mappings: ";;;;;eAAA",
       sources: ["index.js"],
-      names: []
+      names: [],
     });
   });
 
@@ -175,15 +175,15 @@ describe("SourceMap - Basics", () => {
         original: undefined,
         generated: {
           line: 6,
-          column: 15
-        }
-      }
+          column: 15,
+        },
+      },
     ]);
 
     let stringifiedMap = JSON.parse(
       await map.stringify({
         file: "index.js.map",
-        sourceRoot: "/"
+        sourceRoot: "/",
       })
     );
     assert.deepEqual(stringifiedMap, {
@@ -192,7 +192,7 @@ describe("SourceMap - Basics", () => {
       sourceRoot: "/",
       mappings: ";;;;;e",
       sources: [],
-      names: []
+      names: [],
     });
   });
 
@@ -209,7 +209,7 @@ describe("SourceMap - Basics", () => {
     let stringifiedMap = JSON.parse(
       await newMap.stringify({
         file: "index.js.map",
-        sourceRoot: "/"
+        sourceRoot: "/",
       })
     );
     assert.equal(stringifiedMap.mappings, SIMPLE_SOURCE_MAP.mappings);
@@ -225,6 +225,8 @@ describe("SourceMap - Basics", () => {
 
     assert.deepEqual(map.addSources(["index.js"]), [1]);
     assert.deepEqual(map.addSources(["test.js", "execute.js"]), [2, 3]);
+
+    assert.deepEqual(map.addSource("abc.js"), 4);
   });
 
   it("Should be able to add names to a sourcemap", () => {
@@ -237,6 +239,8 @@ describe("SourceMap - Basics", () => {
 
     assert.deepEqual(map.addNames(["run"]), [0]);
     assert.deepEqual(map.addNames(["processQueue", "processNode"]), [1, 2]);
+
+    assert.deepEqual(map.addName("window"), 3);
   });
 
   it("Should be able to return source index", () => {
@@ -264,5 +268,30 @@ describe("SourceMap - Basics", () => {
     map.addNames(["test"]);
     assert.equal(map.getNameIndex("test"), 0);
     assert.equal(map.getNameIndex("something"), -1);
+  });
+
+  it("Should be able to return source for a certain index", () => {
+    let map = new SourceMap();
+    map.addRawMappings(
+      SIMPLE_SOURCE_MAP.mappings,
+      SIMPLE_SOURCE_MAP.sources,
+      SIMPLE_SOURCE_MAP.names
+    );
+    
+    assert.equal(map.getSource(0), "helloworld.coffee");
+    assert.equal(map.getSource(1), "");
+  });
+
+  it("Should be able to return name for a certain index", () => {
+    let map = new SourceMap();
+    map.addRawMappings(
+      SIMPLE_SOURCE_MAP.mappings,
+      SIMPLE_SOURCE_MAP.sources,
+      SIMPLE_SOURCE_MAP.names
+    );
+
+    map.addNames(["test"]);
+    assert.equal(map.getName(0), "test");
+    assert.equal(map.getName(1), "");
   });
 });

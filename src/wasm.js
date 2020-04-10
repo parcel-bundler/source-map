@@ -188,7 +188,7 @@ export default class SourceMap {
   }
 }
 
-export function init(RawModule) {
+export function init(RawModule: any) {
   return new Promise<void>((res) =>
     RawModule().then((v) => {
       Module = v;

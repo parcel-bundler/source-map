@@ -238,12 +238,28 @@ int MappingContainer::getSourceIndex(std::string &source) {
     return foundValue->second;
 }
 
+std::string MappingContainer::getSource(int sourceIndex) {
+    if (sourceIndex < 0 || sourceIndex >= ((int) _sources.size())) {
+        return "";
+    }
+
+    return _sources[sourceIndex];
+}
+
 int MappingContainer::getNameIndex(std::string &name) {
     auto foundValue = _names_index.find(name);
     if (foundValue == _names_index.end()) {
         return -1;
     }
     return foundValue->second;
+}
+
+std::string MappingContainer::getName(int nameIndex) {
+    if (nameIndex < 0 || nameIndex >= ((int) _names.size())) {
+        return "";
+    }
+
+    return _names[nameIndex];
 }
 
 void MappingContainer::addEmptyMap(std::string sourceName, std::string sourceContent, int lineOffset) {

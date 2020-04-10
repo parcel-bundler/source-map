@@ -242,6 +242,20 @@ Napi::Value SourceMapBinding::getSourceIndex(const Napi::CallbackInfo &info) {
     return Napi::Number::New(env, index);
 }
 
+
+Napi::Value SourceMapBinding::getSource(const Napi::CallbackInfo &info) {
+    Napi::Env env = info.Env();
+    Napi::HandleScope scope(env);
+
+    if (info.Length() < 1 || !info[0].IsNumber()) {
+        Napi::TypeError::New(env, "Expected a single number parameter").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    int index = info[0].As<Napi::Number>().Int32Value();
+    return Napi::String::New(env, _mapping_container.getSource(index));
+}
+
 Napi::Value SourceMapBinding::getNameIndex(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
@@ -257,6 +271,19 @@ Napi::Value SourceMapBinding::getNameIndex(const Napi::CallbackInfo &info) {
     return Napi::Number::New(env, index);
 }
 
+Napi::Value SourceMapBinding::getName(const Napi::CallbackInfo &info) {
+    Napi::Env env = info.Env();
+    Napi::HandleScope scope(env);
+
+    if (info.Length() < 1 || !info[0].IsNumber()) {
+        Napi::TypeError::New(env, "Expected a single number parameter").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    int index = info[0].As<Napi::Number>().Int32Value();
+    return Napi::String::New(env, _mapping_container.getName(index));
+}
+
 std::vector<int> SourceMapBinding::_addNames(Napi::Array &namesArray) {
     std::vector<int> insertions;
     int length = namesArray.Length();
@@ -267,23 +294,17 @@ std::vector<int> SourceMapBinding::_addNames(Napi::Array &namesArray) {
     return insertions;
 }
 
-Napi::Value SourceMapBinding::addNames(const Napi::CallbackInfo &info) {
+Napi::Value SourceMapBinding::addName(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
 
-    if (info.Length() != 1 || !info[0].IsArray()) {
-        Napi::TypeError::New(env, "Expected one parameter of type Array<string>").ThrowAsJavaScriptException();
+    if (info.Length() != 1 || !info[0].IsString()) {
+        Napi::TypeError::New(env, "Expected one parameter of type string").ThrowAsJavaScriptException();
         return env.Null();
     }
 
-    Napi::Array arr = info[0].As<Napi::Array>();
-    std::vector<int> indexes = _addNames(arr);
-    int size = indexes.size();
-    Napi::Array indexesArr = Napi::Array::New(env, size);
-    for (int i = 0; i < size; ++i) {
-        indexesArr.Set(i, Napi::Number::New(env, indexes[i]));
-    }
-    return indexesArr;
+    std::string name = info[0].As<Napi::String>().Utf8Value();
+    return Napi::Number::New(env, _mapping_container.addName(name));
 }
 
 std::vector<int> SourceMapBinding::_addSources(Napi::Array &sourcesArray) {
@@ -296,23 +317,17 @@ std::vector<int> SourceMapBinding::_addSources(Napi::Array &sourcesArray) {
     return insertions;
 }
 
-Napi::Value SourceMapBinding::addSources(const Napi::CallbackInfo &info) {
+Napi::Value SourceMapBinding::addSource(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
 
-    if (info.Length() != 1 || !info[0].IsArray()) {
-        Napi::TypeError::New(env, "Expected one parameter of type Array<string>").ThrowAsJavaScriptException();
+    if (info.Length() != 1 || !info[0].IsString()) {
+        Napi::TypeError::New(env, "Expected one parameter of type string").ThrowAsJavaScriptException();
         return env.Null();
     }
 
-    Napi::Array arr = info[0].As<Napi::Array>();
-    std::vector<int> indexes = _addSources(arr);
-    int size = indexes.size();
-    Napi::Array indexesArr = Napi::Array::New(env, size);
-    for (int i = 0; i < size; ++i) {
-        indexesArr.Set(i, Napi::Number::New(env, indexes[i]));
-    }
-    return indexesArr;
+    std::string source = info[0].As<Napi::String>().Utf8Value();
+    return Napi::Number::New(env, _mapping_container.addSource(source));
 }
 
 void SourceMapBinding::addEmptyMap(const Napi::CallbackInfo &info) {
@@ -362,10 +377,12 @@ Napi::Object SourceMapBinding::Init(Napi::Env env, Napi::Object exports) {
             InstanceMethod("toBuffer", &SourceMapBinding::toBuffer),
             InstanceMethod("getMap", &SourceMapBinding::getMap),
             InstanceMethod("addIndexedMapping", &SourceMapBinding::addIndexedMapping),
-            InstanceMethod("addNames", &SourceMapBinding::addNames),
-            InstanceMethod("addSources", &SourceMapBinding::addSources),
+            InstanceMethod("addName", &SourceMapBinding::addName),
+            InstanceMethod("addSource", &SourceMapBinding::addSource),
             InstanceMethod("getSourceIndex", &SourceMapBinding::getSourceIndex),
+            InstanceMethod("getSource", &SourceMapBinding::getSource),
             InstanceMethod("getNameIndex", &SourceMapBinding::getNameIndex),
+            InstanceMethod("getName", &SourceMapBinding::getName),
             InstanceMethod("extends", &SourceMapBinding::extends),
             InstanceMethod("addEmptyMap", &SourceMapBinding::addEmptyMap),
             InstanceMethod("findClosestMapping", &SourceMapBinding::findClosestMapping),
