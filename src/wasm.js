@@ -80,7 +80,7 @@ export default class WasmSourceMap extends SourceMap {
     if (mapping.generated.line === -1) {
       return null;
     } else {
-      return this.mappingWithIndexesToMappingWithStrings(patchMapping(mapping));
+      return this.indexedMappingToStringMapping(patchMapping(mapping));
     }
   }
 

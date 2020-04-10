@@ -115,7 +115,7 @@ export default class SourceMap {
     return this.sourceMapInstance.getName(index);
   }
 
-  mappingWithIndexesToMappingWithStrings(
+  indexedMappingToStringMapping(
     mapping: ?IndexedMapping<number>
   ): ?IndexedMapping<string> {
     if (!mapping) return mapping;
@@ -136,7 +136,7 @@ export default class SourceMap {
 
   findClosestMapping(line: number, column: number): ?IndexedMapping<string> {
     let mapping = this.sourceMapInstance.findClosestMapping(line, column);
-    return this.mappingWithIndexesToMappingWithStrings(mapping);
+    return this.indexedMappingToStringMapping(mapping);
   }
 
   // Remaps original positions from this map to the ones in the provided map
