@@ -14,14 +14,14 @@ describe("SourceMap - Find", () => {
     assert.deepEqual(mapping, {
       generated: { line: 2, column: 14 },
       original: { line: 1, column: 12 },
-      source: 0
+      source: "helloworld.coffee"
     });
 
     mapping = map.findClosestMapping(2, 12);
     assert.deepEqual(mapping, {
       generated: { line: 2, column: 13 },
       original: { line: 1, column: 0 },
-      source: 0
+      source: "helloworld.coffee"
     });
   });
 });

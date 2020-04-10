@@ -115,8 +115,28 @@ export default class SourceMap {
     return this.sourceMapInstance.getName(index);
   }
 
-  findClosestMapping(line: number, column: number): ?IndexedMapping<number> {
-    return this.sourceMapInstance.findClosestMapping(line, column);
+  mappingWithIndexesToMappingWithStrings(
+    mapping: ?IndexedMapping<number>
+  ): ?IndexedMapping<string> {
+    if (!mapping) return mapping;
+
+    if (mapping.source != null && mapping.source > -1) {
+      // $FlowFixMe
+      mapping.source = this.getSource(mapping.source);
+    }
+
+    if (mapping.name != null && mapping.name > -1) {
+      // $FlowFixMe
+      mapping.name = this.getName(mapping.name);
+    }
+
+    // $FlowFixMe
+    return mapping;
+  }
+
+  findClosestMapping(line: number, column: number): ?IndexedMapping<string> {
+    let mapping = this.sourceMapInstance.findClosestMapping(line, column);
+    return this.mappingWithIndexesToMappingWithStrings(mapping);
   }
 
   // Remaps original positions from this map to the ones in the provided map

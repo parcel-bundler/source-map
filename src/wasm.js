@@ -29,6 +29,7 @@ function patchMapping(mapping: any): any {
   } else {
     mapping.original.line++;
   }
+  return mapping;
 }
 
 function arrayToEmbind(Type, from): any {
@@ -74,13 +75,12 @@ export default class WasmSourceMap extends SourceMap {
     return this;
   }
 
-  findClosestMapping(line: number, column: number): ?IndexedMapping<number> {
+  findClosestMapping(line: number, column: number): ?IndexedMapping<string> {
     let mapping = this.sourceMapInstance.findClosestMapping(line, column);
     if (mapping.generated.line === -1) {
       return null;
     } else {
-      patchMapping(mapping);
-      return mapping;
+      return this.mappingWithIndexesToMappingWithStrings(patchMapping(mapping));
     }
   }
 
