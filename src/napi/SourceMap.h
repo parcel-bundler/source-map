@@ -27,9 +27,9 @@ private:
 
     std::vector<int> _addNames(Napi::Array &namesArray);
 
-    Napi::Value addSources(const Napi::CallbackInfo &info);
+    Napi::Value addSource(const Napi::CallbackInfo &info);
 
-    Napi::Value addNames(const Napi::CallbackInfo &info);
+    Napi::Value addName(const Napi::CallbackInfo &info);
 
     Napi::Value getMap(const Napi::CallbackInfo &info);
 
@@ -39,7 +39,11 @@ private:
 
     Napi::Value getSourceIndex(const Napi::CallbackInfo &info);
 
+    Napi::Value getSource(const Napi::CallbackInfo &info);
+
     Napi::Value getNameIndex(const Napi::CallbackInfo &info);
+
+    Napi::Value getName(const Napi::CallbackInfo &info);
 
     Napi::Value findClosestMapping(const Napi::CallbackInfo &info);
 

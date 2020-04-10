@@ -68,8 +68,16 @@ int SourceMap::getSourceIndex(std::string source) {
     return _mapping_container.getSourceIndex(source);
 }
 
+std::string SourceMap::getSource(int index) {
+    return _mapping_container.getSource(index);
+}
+
 int SourceMap::getNameIndex(std::string name) {
     return _mapping_container.getNameIndex(name);
+}
+
+std::string SourceMap::getName(int index) {
+    return _mapping_container.getName(index);
 }
 
 std::vector<int> SourceMap::addNames(std::vector<std::string> &names) {
@@ -88,6 +96,14 @@ std::vector<int> SourceMap::addSources(std::vector<std::string> &sources) {
         insertions.push_back(_mapping_container.addSource(source));
     }
     return insertions;
+}
+
+int SourceMap::addSource(std::string source) {
+    return _mapping_container.addSource(source);
+}
+
+int SourceMap::addName(std::string name) {
+    return _mapping_container.addName(name);
 }
 
 void SourceMap::addEmptyMap(std::string sourceName, std::string sourceContent, int lineOffset) {
@@ -114,10 +130,12 @@ EMSCRIPTEN_BINDINGS(my_class_example) {
         .function("getSources", &SourceMap::getSources)
         .function("getNames", &SourceMap::getNames)
         .function("toBuffer", &SourceMap::toBuffer)
-        .function("addNames", &SourceMap::addNames)
-        .function("addSources", &SourceMap::addSources)
+        .function("addName", &SourceMap::addName)
+        .function("addSource", &SourceMap::addSource)
         .function("getSourceIndex", &SourceMap::getSourceIndex)
+        .function("getSource", &SourceMap::getSource)
         .function("getNameIndex", &SourceMap::getNameIndex)
+        .function("getName", &SourceMap::getName)
         .function("addEmptyMap", &SourceMap::addEmptyMap)
         .function("extends", &SourceMap::extends)
         .function("findClosestMapping", &SourceMap::findClosestMapping)

@@ -16,6 +16,8 @@ public:
     void addEmptyMap(std::string sourceName, std::string sourceContent, int lineOffset);
     std::vector<int> addSources(std::vector<std::string> &sourcesArray);
     std::vector<int> addNames(std::vector<std::string> &namesArray);
+    int addSource(std::string source);
+    int addName(std::string name);
 
     std::string getVLQMappings();
     std::vector<Mapping> getMappings();
@@ -23,7 +25,9 @@ public:
     std::vector<std::string> getNames();
     emscripten::val toBuffer();
     int getSourceIndex(std::string source);
+    std::string getSource(int index);
     int getNameIndex(std::string name);
+    std::string getName(int index);
 
     Mapping findClosestMapping(int line, int column);
 

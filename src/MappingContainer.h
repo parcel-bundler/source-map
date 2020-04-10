@@ -26,11 +26,15 @@ public:
 
     int getSourceIndex(std::string &source);
 
+    std::string getSource(int sourceIndex);
+
     std::vector<std::string> &getNamesVector();
 
     int addName(std::string &name);
 
     int getNameIndex(std::string &name);
+
+    std::string getName(int nameIndex);
 
     int getGeneratedLines();
 
