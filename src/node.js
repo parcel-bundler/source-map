@@ -63,6 +63,30 @@ export default class SourceMap {
     return this;
   }
 
+  addIndexedMapping(
+    mapping: IndexedMapping<string>,
+    lineOffset?: number = 0,
+    columnOffset?: number = 0
+  ) {
+    let hasValidOriginal =
+      mapping.original &&
+      typeof mapping.original.line === "number" &&
+      !isNaN(mapping.original.line) &&
+      typeof mapping.original.column === "number" &&
+      !isNaN(mapping.original.column);
+
+    this.sourceMapInstance.addIndexedMapping(
+      mapping.generated.line + lineOffset - 1,
+      mapping.generated.column + columnOffset,
+      // $FlowFixMe
+      hasValidOriginal ? mapping.original.line - 1 : -1,
+      // $FlowFixMe
+      hasValidOriginal ? mapping.original.column : -1,
+      mapping.source || "",
+      mapping.name || ""
+    );
+  }
+
   // line numbers start at 1 so we have the same api as `source-map` by mozilla
   addIndexedMappings(
     mappings: Array<IndexedMapping<string>>,
@@ -70,23 +94,7 @@ export default class SourceMap {
     columnOffset?: number = 0
   ) {
     for (let mapping of mappings) {
-      let hasValidOriginal =
-        mapping.original &&
-        typeof mapping.original.line === "number" &&
-        !isNaN(mapping.original.line) &&
-        typeof mapping.original.column === "number" &&
-        !isNaN(mapping.original.column);
-
-      this.sourceMapInstance.addIndexedMapping(
-        mapping.generated.line + lineOffset - 1,
-        mapping.generated.column + columnOffset,
-        // $FlowFixMe
-        hasValidOriginal ? mapping.original.line - 1 : -1,
-        // $FlowFixMe
-        hasValidOriginal ? mapping.original.column : -1,
-        mapping.source || "",
-        mapping.name || ""
-      );
+      this.addIndexedMapping(mapping, lineOffset, columnOffset);
     }
     return this;
   }
