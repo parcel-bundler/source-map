@@ -122,26 +122,36 @@ export default class SourceMap {
     return this;
   }
 
+  addName(name: string): number {
+    return this.sourceMapInstance.addName(name);
+  }
+
   addNames(names: Array<string>): Array<number> {
-    return arrayFromEmbind(
-      this.sourceMapInstance.addNames(arrayToEmbind(Module.VectorInt, names))
-    );
+    return names.map((n) => this.addName(n));
+  }
+
+  addSource(source: string): number {
+    return this.sourceMapInstance.addSource(source);
   }
 
   addSources(sources: Array<string>): Array<number> {
-    return arrayFromEmbind(
-      this.sourceMapInstance.addSources(
-        arrayToEmbind(Module.VectorInt, sources)
-      )
-    );
+    return sources.map((s) => this.addSource(s));
   }
 
   getSourceIndex(source: string): number {
     return this.sourceMapInstance.getSourceIndex(source);
   }
 
+  getSource(index: number): string {
+    return this.sourceMapInstance.getSource(index);
+  }
+
   getNameIndex(name: string): number {
     return this.sourceMapInstance.getNameIndex(name);
+  }
+
+  getName(index: number): string {
+    return this.sourceMapInstance.getName(index);
   }
 
   findClosestMapping(line: number, column: number): ?IndexedMapping<number> {
