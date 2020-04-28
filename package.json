@@ -13,7 +13,7 @@
     "benchmark:wasm": "cross-env BACKEND=wasm node ./bench/run",
     "compile-wasm": "make",
     "transpile": "babel ./src/*.js --out-dir ./dist && flow-copy-source -v src dist",
-    "prebuild": "prebuildify --napi --strip --tag-libc",
+    "prebuild": "prebuildify -t 10.20.1 --napi --strip --tag-libc",
     "build:dev": "node-gyp rebuild --debug",
     "rebuild": "rm -rf build && yarn build:dev",
     "install": "node-gyp-build",
