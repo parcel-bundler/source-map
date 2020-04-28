@@ -30,7 +30,7 @@ export async function partialVlqMapToSourceMap(
       map.sources.map(async (sourceName) => {
         try {
           return await fs.readFile(
-            path.join(rootDir || "", sourceName),
+            path.resolve(rootDir || "", sourceName),
             "utf-8"
           );
         } catch (e) {
