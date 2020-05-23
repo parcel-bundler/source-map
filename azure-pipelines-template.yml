@@ -54,9 +54,9 @@ jobs:
       - script: npm run test:wasm
         displayName: Run tests (wasm)
         condition: eq('${{ parameters.name }}', 'macOS')
-      - script: npm run benchmark:wasm
-        displayName: Run benchmark (wasm)
-        condition: eq('${{ parameters.name }}', 'macOS')
+      #- script: npm run benchmark:wasm
+      #  displayName: Run benchmark (wasm)
+      #  condition: eq('${{ parameters.name }}', 'macOS')
 
       - script: npm run prebuild
         displayName: Test prebuild
