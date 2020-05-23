@@ -16,7 +16,7 @@ export default class SourceMap {
     sourceName: string,
     sourceContent: string,
     lineOffset: number = 0
-  ) {
+  ): SourceMap {
     this.sourceMapInstance.addEmptyMap(sourceName, sourceContent, lineOffset);
     return this;
   }
@@ -27,7 +27,7 @@ export default class SourceMap {
     names: Array<string>,
     lineOffset: number = 0,
     columnOffset: number = 0
-  ) {
+  ): SourceMap {
     this.sourceMapInstance.addRawMappings(
       mappings,
       sources,
@@ -42,7 +42,7 @@ export default class SourceMap {
     buffer: Buffer,
     lineOffset: number = 0,
     columnOffset: number = 0
-  ) {
+  ): SourceMap {
     this.sourceMapInstance.addBufferMappings(buffer, lineOffset, columnOffset);
     return this;
   }
@@ -51,7 +51,7 @@ export default class SourceMap {
     mapping: IndexedMapping<string>,
     lineOffset?: number = 0,
     columnOffset?: number = 0
-  ) {
+  ): void {
     let hasValidOriginal =
       mapping.original &&
       typeof mapping.original.line === "number" &&
@@ -76,7 +76,7 @@ export default class SourceMap {
     mappings: Array<IndexedMapping<string>>,
     lineOffset?: number = 0,
     columnOffset?: number = 0
-  ) {
+  ): SourceMap {
     for (let mapping of mappings) {
       this.addIndexedMapping(mapping, lineOffset, columnOffset);
     }
@@ -140,7 +140,7 @@ export default class SourceMap {
   }
 
   // Remaps original positions from this map to the ones in the provided map
-  extends(buffer: Buffer) {
+  extends(buffer: Buffer): SourceMap {
     this.sourceMapInstance.extends(buffer);
     return this;
   }
@@ -157,7 +157,9 @@ export default class SourceMap {
     return this.sourceMapInstance.stringify();
   }
 
-  async stringify(options: SourceMapStringifyOptions) {
+  async stringify(
+    options: SourceMapStringifyOptions
+  ): Promise<string | VLQMap> {
     return partialVlqMapToSourceMap(this.toVLQ(), options);
   }
 }

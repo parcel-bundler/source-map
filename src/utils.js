@@ -3,7 +3,7 @@ import type { VLQMap, SourceMapStringifyOptions } from "./types";
 
 import path from "path";
 
-export function generateInlineMap(map: string) {
+export function generateInlineMap(map: string): string {
   return `data:application/json;charset=utf-8;base64,${Buffer.from(
     map
   ).toString("base64")}`;
@@ -17,10 +17,9 @@ export async function partialVlqMapToSourceMap(
     sourceRoot,
     inlineSources,
     rootDir,
-    inlineMap,
     format = "string",
   }: SourceMapStringifyOptions
-) {
+): Promise<VLQMap | string> {
   map.version = 3;
   map.file = file;
   map.sourceRoot = sourceRoot;
@@ -38,11 +37,6 @@ export async function partialVlqMapToSourceMap(
         }
       })
     );
-  }
-
-  // Handle deprecated option
-  if (inlineMap) {
-    format = "inline";
   }
 
   if (format === "inline" || format === "string") {
