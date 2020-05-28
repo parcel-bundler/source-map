@@ -64,7 +64,7 @@ describe("SourceMap - Extend Map", () => {
       version: 3,
       file: "index.js.map",
       sourceRoot: "/",
-      sources: ["index.js"],
+      sources: ["./index.js"],
       names: ["B", "A"],
       mappings: ";;;;YAAAC"
     });
@@ -159,7 +159,7 @@ describe("SourceMap - Extend Map", () => {
       file: "index.js.map",
       sourceRoot: "/",
       mappings: "e,+FAKeE",
-      sources: ["index.js"],
+      sources: ["./index.js"],
       names: ["B", "C", "A"]
     });
   });

@@ -6,7 +6,7 @@ const SIMPLE_SOURCE_MAP = {
   file: "helloworld.js",
   sources: ["helloworld.coffee"],
   names: [],
-  mappings: "AAAA;AAAA,EAAA,OAAO,CAAC,GAAR,CAAY,aAAZ,CAAA,CAAA;AAAA"
+  mappings: "AAAA;AAAA,EAAA,OAAO,CAAC,GAAR,CAAY,aAAZ,CAAA,CAAA;AAAA",
 };
 
 describe("SourceMap - Formats", () => {
@@ -21,10 +21,10 @@ describe("SourceMap - Formats", () => {
     let stringifiedMap = await map.stringify({
       file: "index.js.map",
       sourceRoot: "/",
-      format: "inline"
+      format: "inline",
     });
-    
-    assert(stringifiedMap.startsWith('data:application/json;charset'));
+
+    assert(stringifiedMap.startsWith("data:application/json;charset"));
   });
 
   it("Should return a base64 encoded inline map when using deprecated inlineMap option", async () => {
@@ -38,10 +38,10 @@ describe("SourceMap - Formats", () => {
     let stringifiedMap = await map.stringify({
       file: "index.js.map",
       sourceRoot: "/",
-      inlineMap: true
+      inlineMap: true,
     });
-    
-    assert(stringifiedMap.startsWith('data:application/json;charset'));
+
+    assert(stringifiedMap.startsWith("data:application/json;charset"));
   });
 
   it("Should return a stringified map when format is string", async () => {
@@ -55,10 +55,10 @@ describe("SourceMap - Formats", () => {
     let stringifiedMap = await map.stringify({
       file: "index.js.map",
       sourceRoot: "/",
-      format: "string"
+      format: "string",
     });
-    
-    assert(typeof stringifiedMap === 'string');
+
+    assert(typeof stringifiedMap === "string");
   });
 
   it("Should return an object map when format is object", async () => {
@@ -72,9 +72,45 @@ describe("SourceMap - Formats", () => {
     let stringifiedMap = await map.stringify({
       file: "index.js.map",
       sourceRoot: "/",
-      format: "object"
+      format: "object",
     });
-    
-    assert(typeof stringifiedMap === 'object');
+
+    assert(typeof stringifiedMap === "object");
+  });
+
+  it("Should make all sourcePaths relative to rootDir", async () => {
+    let map = new SourceMap();
+    map.addRawMappings(
+      SIMPLE_SOURCE_MAP.mappings,
+      ["/Users/test/helloworld.coffee"],
+      SIMPLE_SOURCE_MAP.names
+    );
+
+    let stringifiedMap = await map.stringify({
+      file: "index.js.map",
+      rootDir: "/Users/test/",
+      sourceRoot: "/",
+      format: "object",
+    });
+
+    assert.deepEqual(stringifiedMap.sources, ["./helloworld.coffee"]);
+  });
+
+  it("Should make all sourcePaths web friendly aka no windows backslashes", async () => {
+    let map = new SourceMap();
+    map.addRawMappings(
+      SIMPLE_SOURCE_MAP.mappings,
+      ["\\Users\\test\\helloworld.coffee"],
+      SIMPLE_SOURCE_MAP.names
+    );
+
+    let stringifiedMap = await map.stringify({
+      file: "index.js.map",
+      rootDir: "\\Users\\test\\",
+      sourceRoot: "/",
+      format: "object",
+    });
+
+    assert.deepEqual(stringifiedMap.sources, ["./helloworld.coffee"]);
   });
 });

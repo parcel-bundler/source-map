@@ -431,7 +431,7 @@ describe("SourceMap - Append Mappings", () => {
       version: 3,
       file: "index.js.map",
       sourceRoot: "/",
-      sources: ["index.js", "local.js"],
+      sources: ["./index.js", "./local.js"],
       names: ["A", "T", "Q"],
       mappings:
         ";;;;;eAAAA;;;;;;M;;;;;;;;;;;;;;;;;;;;;;;;MCAAC;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;iEAAAC;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;uB"

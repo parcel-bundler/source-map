@@ -126,7 +126,7 @@ describe("SourceMap - Basics", () => {
       file: "index.js.map",
       sourceRoot: "/",
       mappings: ";;;;;eAAAA",
-      sources: ["index.js"],
+      sources: ["./index.js"],
       names: ["A"],
     });
   });
@@ -160,7 +160,7 @@ describe("SourceMap - Basics", () => {
       file: "index.js.map",
       sourceRoot: "/",
       mappings: ";;;;;eAAA",
-      sources: ["index.js"],
+      sources: ["./index.js"],
       names: [],
     });
   });
