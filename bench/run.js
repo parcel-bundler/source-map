@@ -1,10 +1,10 @@
 const Benchmark = require("tiny-benchy");
 const MozillaSourceMap = require("source-map");
 const assert = require("assert");
-const WASM = process.env.BACKEND === "wasm";
-const { default: SourceMap, init } = WASM
-  ? require("../dist/wasm-node")
-  : require("../");
+const { default: SourceMap, init } =
+  process.env.BACKEND === "wasm"
+    ? require("../dist/wasm-node")
+    : require("../");
 
 const ITERATIONS = 250;
 
@@ -38,19 +38,19 @@ init.then(() => {
       rawSourceMap.sources,
       rawSourceMap.names
     );
-    if (WASM) map.sourceMapInstance.delete();
+    map.delete();
   });
 
   suite.add("consume flatbuffer", async () => {
     let map = new SourceMap();
     map.addBufferMappings(sourcemapBuffer);
-    if (WASM) map.sourceMapInstance.delete();
+    map.delete();
   });
 
   suite.add("consume JS Mappings", async () => {
     let map = new SourceMap();
     map.addIndexedMappings(mappings);
-    if (WASM) map.sourceMapInstance.delete();
+    map.delete();
   });
 
   suite.add("JS Mappings => vlq (mozilla source-map) => buffer", async () => {
@@ -66,7 +66,7 @@ init.then(() => {
 
     let sourceMap = new SourceMap();
     sourceMap.addRawMappings(json.mappings, json.sources, json.names);
-    if (WASM) sourceMap.sourceMapInstance.delete();
+    sourceMap.delete();
   });
 
   suite.add("Save buffer", async () => {
@@ -77,7 +77,7 @@ init.then(() => {
     let map = new SourceMap();
     map.addBufferMappings(sourcemapBuffer);
     map.extends(sourcemapBuffer);
-    if (WASM) map.sourceMapInstance.delete();
+    map.delete();
   });
 
   suite.add("stringify", async () => {
@@ -92,7 +92,7 @@ init.then(() => {
     for (let i = 0; i < 1000; i++) {
       map.addBufferMappings(sourcemapBuffer, i * 4);
     }
-    if (WASM) map.sourceMapInstance.delete();
+    map.delete();
   });
 
   suite.add("combine 1000 maps using vlq mappings", async () => {
@@ -105,7 +105,7 @@ init.then(() => {
         i * 4
       );
     }
-    if (WASM) map.sourceMapInstance.delete();
+    map.delete();
   });
 
   suite.add("combine 1000 maps using flatbuffers and stringify", async () => {
@@ -117,7 +117,7 @@ init.then(() => {
       file: "index.js.map",
       sourceRoot: "/",
     });
-    if (WASM) map.sourceMapInstance.delete();
+    map.delete();
   });
 
   suite.run();

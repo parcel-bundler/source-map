@@ -110,8 +110,12 @@ export default class WasmSourceMap extends SourceMap {
     };
   }
 
-  toBuffer(): Buffer {
+  toBuffer(): Uint8Array {
     return new Uint8Array(this.sourceMapInstance.toBuffer());
+  }
+
+  delete() {
+    this.sourceMapInstance.delete();
   }
 }
 

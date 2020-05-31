@@ -26,6 +26,8 @@ export default class NodeSourceMap extends SourceMap {
     return v;
   }
 
+  delete() {}
+
   static generateEmptyMap(
     sourceName: string,
     sourceContent: string,

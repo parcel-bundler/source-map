@@ -1,2 +1,2 @@
-[include]
-index.js.flow
+[ignore]
+<PROJECT_ROOT>/dist/.*
