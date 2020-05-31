@@ -104,6 +104,11 @@ export default class WasmSourceMap extends SourceMap {
       names: arrayFromEmbind(this.sourceMapInstance.getNames()),
     };
   }
+
+  toBuffer(): Buffer {
+    return new Uint8Array(this.sourceMapInstance.toBuffer());
+  }
+
 }
 
 export function init(RawModule: any) {

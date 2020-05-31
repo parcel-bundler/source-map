@@ -16,6 +16,10 @@ export default class NodeSourceMap extends SourceMap {
     this.sourceMapInstance = new bindings.SourceMap();
   }
 
+  toBuffer(): Buffer {
+    return this.sourceMapInstance.toBuffer();
+  }
+
   static generateEmptyMap(
     sourceName: string,
     sourceContent: string,

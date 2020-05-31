@@ -149,10 +149,6 @@ export default class SourceMap {
     return this.sourceMapInstance.getMap();
   }
 
-  toBuffer(): Buffer {
-    return this.sourceMapInstance.toBuffer();
-  }
-
   toVLQ(): VLQMap {
     return this.sourceMapInstance.stringify();
   }
