@@ -31,13 +31,13 @@ int MappingContainer::getGeneratedLines() {
 void MappingContainer::sort() {
     auto lineEnd = _mapping_lines.end();
     for (auto lineIterator = _mapping_lines.begin(); lineIterator != lineEnd; ++lineIterator) {
-        (*lineIterator)->sort();
+        lineIterator->sort();
     }
 }
 
 void MappingContainer::addMapping(Position generated, Position original, int source, int name) {
     createLinesIfUndefined(generated.line);
-    _mapping_lines[generated.line]->addMapping(Mapping{generated, original, source, name});
+    _mapping_lines[generated.line].addMapping(Mapping{generated, original, source, name});
     ++_segment_count;
 }
 
@@ -140,7 +140,7 @@ std::string MappingContainer::toVLQMappings() {
         }
 
         bool isFirstSegment = true;
-        auto &segments = line->_segments;
+        auto &segments = line._segments;
         auto segmentsEnd = segments.end();
         for (auto segmentIterator = segments.begin(); segmentIterator != segmentsEnd; ++segmentIterator) {
             Mapping &mapping = *segmentIterator;
@@ -182,7 +182,7 @@ std::string MappingContainer::toVLQMappings() {
 Mapping MappingContainer::findClosestMapping(int lineIndex, int columnIndex) {
     if (lineIndex <= _generated_lines) {
         auto &line = _mapping_lines.at(lineIndex);
-        auto &segments = line->_segments;
+        auto &segments = line._segments;
         unsigned int segmentsCount = segments.size();
 
         int startIndex = 0;
@@ -220,14 +220,12 @@ std::vector<std::string> &MappingContainer::getSourcesVector() {
     return _sources;
 }
 
-std::vector<MappingLine *> &MappingContainer::getMappingLinesVector() {
+std::vector<MappingLine> &MappingContainer::getMappingLinesVector() {
     return _mapping_lines;
 }
 
-MappingLine *MappingContainer::addLine(int size) {
-    MappingLine *line = new MappingLine(++_generated_lines, size);
-    _mapping_lines.push_back(line);
-    return line;
+void MappingContainer::addLine(int size) {
+    _mapping_lines.push_back(MappingLine(++_generated_lines, size));
 }
 
 int MappingContainer::getSourceIndex(std::string &source) {
@@ -304,7 +302,7 @@ flatbuffers::FlatBufferBuilder MappingContainer::toBuffer() {
     auto lineEnd = mappingLinesVector.end();
     for (auto lineIterator = mappingLinesVector.begin(); lineIterator != lineEnd; ++lineIterator) {
         auto &line = (*lineIterator);
-        auto &segments = line->_segments;
+        auto &segments = line._segments;
         auto segmentsEnd = segments.end();
 
         std::vector<SourceMapSchema::Mapping> mappings_vector;
@@ -317,7 +315,7 @@ flatbuffers::FlatBufferBuilder MappingContainer::toBuffer() {
                                              mapping.original.column, mapping.source, mapping.name));
         }
 
-        lines_vector.push_back(SourceMapSchema::CreateMappingLineDirect(builder, line->lineNumber(), line->isSorted(),
+        lines_vector.push_back(SourceMapSchema::CreateMappingLineDirect(builder, line.lineNumber(), line.isSorted(),
                                                                         &mappings_vector));
     }
 
@@ -360,7 +358,7 @@ void MappingContainer::extends(const void *buf) {
     auto lineEnd = mappingLinesVector.end();
     for (auto lineIterator = mappingLinesVector.begin(); lineIterator != lineEnd; ++lineIterator) {
         auto &line = (*lineIterator);
-        auto &segments = line->_segments;
+        auto &segments = line._segments;
         unsigned int segmentsCount = segments.size();
 
         std::vector<SourceMapSchema::Mapping> mappings_vector;

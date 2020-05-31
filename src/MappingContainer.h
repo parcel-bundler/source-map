@@ -12,7 +12,7 @@ public:
 
     void addMapping(Position generated, Position original = Position{-1, -1}, int source = -1, int name = -1);
 
-    MappingLine* addLine(int size = 0);
+    void addLine(int size = 0);
 
     void createLinesIfUndefined(int generatedLine);
 
@@ -40,7 +40,7 @@ public:
 
     int getTotalSegments();
 
-    std::vector<MappingLine *> &getMappingLinesVector();
+    std::vector<MappingLine> &getMappingLinesVector();
 
     void sort();
 
@@ -60,7 +60,7 @@ private:
     // Processed mappings, for all kinds of modifying within the sourcemap
     std::vector<std::string> _sources;
     std::vector<std::string> _names;
-    std::vector<MappingLine *> _mapping_lines;
+    std::vector<MappingLine> _mapping_lines;
     std::unordered_map<std::string, int> _sources_index;
     std::unordered_map<std::string, int> _names_index;
 
