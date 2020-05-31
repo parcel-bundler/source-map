@@ -19,7 +19,8 @@
     "install": "node-gyp-build",
     "prepublish": "npm run transpile",
     "lint": "prettier --write bench/run.js src/*.js",
-    "typecheck": "flow"
+    "typecheck": "flow",
+    "compile-schema": "./flatc --cpp -o ./src ./src/sourcemap-schema.fbs"
   },
   "files": [
     "binding.gyp",
