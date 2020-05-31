@@ -31,7 +31,7 @@ init.then(() => {
   let sourcemapBuffer = sourcemapInstance.toBuffer();
   let rawSourceMap = sourcemapInstance.toVLQ();
 
-  /*suite.add("consume vlq mappings", async () => {
+  suite.add("consume vlq mappings", async () => {
     let map = new SourceMap();
     map.addRawMappings(
       rawSourceMap.mappings,
@@ -106,7 +106,7 @@ init.then(() => {
       );
     }
     map.delete();
-  });*/
+  });
 
   suite.add("combine 1000 maps using flatbuffers and stringify", async () => {
     let map = new SourceMap();
@@ -116,6 +116,8 @@ init.then(() => {
     await map.stringify({
       file: "index.js.map",
       sourceRoot: "/",
+      // We don't wanna benchmark JSON.stringify...
+      format: "object",
     });
     map.delete();
   });
