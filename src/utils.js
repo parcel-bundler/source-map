@@ -20,10 +20,12 @@ export async function partialVlqMapToSourceMap(
     format = "string",
   }: SourceMapStringifyOptions
 ) {
-  let resultMap = { ...map };
-  resultMap.version = 3;
-  resultMap.file = file;
-  resultMap.sourceRoot = sourceRoot;
+  let resultMap = {
+    ...map,
+    version: 3,
+    file,
+    sourceRoot,
+  };
 
   if (inlineSources && fs) {
     resultMap.sourcesContent = await Promise.all(
