@@ -224,8 +224,8 @@ std::vector<MappingLine> &MappingContainer::getMappingLinesVector() {
     return _mapping_lines;
 }
 
-void MappingContainer::addLine(int size) {
-    _mapping_lines.push_back(MappingLine(++_generated_lines, size));
+void MappingContainer::addLine() {
+    _mapping_lines.push_back(MappingLine(++_generated_lines));
 }
 
 int MappingContainer::getSourceIndex(std::string &source) {

@@ -12,7 +12,7 @@ public:
 
     void addMapping(Position generated, Position original = Position{-1, -1}, int source = -1, int name = -1);
 
-    void addLine(int size = 0);
+    void addLine();
 
     void createLinesIfUndefined(int generatedLine);
 
