@@ -18,7 +18,7 @@
     "rebuild": "rm -rf build && yarn build:dev",
     "install": "node-gyp-build",
     "prepublish": "npm run transpile",
-    "lint": "prettier --write src/*.js",
+    "lint": "prettier --write bench/run.js src/*.js",
     "typecheck": "flow"
   },
   "files": [

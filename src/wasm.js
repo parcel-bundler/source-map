@@ -72,15 +72,20 @@ export default class WasmSourceMap extends SourceMap {
       lineOffset,
       columnOffset
     );
+    sourcesVector.delete();
+    namesVector.delete();
     return this;
   }
 
   findClosestMapping(line: number, column: number): ?IndexedMapping<string> {
     let mapping = this.sourceMapInstance.findClosestMapping(line, column);
     if (mapping.generated.line === -1) {
+      mapping.delete();
       return null;
     } else {
-      return this.indexedMappingToStringMapping(patchMapping(mapping));
+      let m = { ...mapping };
+      mapping.delete();
+      return this.indexedMappingToStringMapping(patchMapping(m));
     }
   }
 
@@ -108,7 +113,6 @@ export default class WasmSourceMap extends SourceMap {
   toBuffer(): Buffer {
     return new Uint8Array(this.sourceMapInstance.toBuffer());
   }
-
 }
 
 export function init(RawModule: any) {
