@@ -19,6 +19,23 @@ export default class SourceMap {
    * @param sourceContent content of the source file
    * @param lineOffset an offset that gets added to the sourceLine index of each mapping
    */
+  static generateEmptyMap(
+    sourceName: string,
+    sourceContent: string,
+    lineOffset: number = 0
+  ): SourceMap {
+    throw new Error(
+      "SourceMap.generateEmptyMap() must be implemented when extending SourceMap"
+    );
+  }
+
+  /**
+   * Generates an empty map from the provided fileName and sourceContent
+   *
+   * @param sourceName path of the source file
+   * @param sourceContent content of the source file
+   * @param lineOffset an offset that gets added to the sourceLine index of each mapping
+   */
   addEmptyMap(
     sourceName: string,
     sourceContent: string,
@@ -251,12 +268,26 @@ export default class SourceMap {
   getMap(): ParsedMap {
     return this.sourceMapInstance.getMap();
   }
-  
+
+  /**
+   * Searches through the sourcemap and returns a mapping that is close to the provided generated line and column
+   *
+   * @param line the line in the generated code (starts at 1)
+   * @param column the column in the generated code (starts at 0)
+   */
+  findClosestMapping(line: number, column: number): ?IndexedMapping<string> {
+    throw new Error(
+      "SourceMap.findClosestMapping() must be implemented when extending SourceMap"
+    );
+  }
+
   /**
    * Returns a flatbuffer that represents this sourcemap, used for caching
    */
   toBuffer(): Buffer {
-    return this.sourceMapInstance.toBuffer();
+    throw new Error(
+      "SourceMap.toBuffer() must be implemented when extending SourceMap"
+    );
   }
 
   /**
@@ -267,8 +298,17 @@ export default class SourceMap {
   }
 
   /**
+   * A function that has to be called at the end of the SourceMap's lifecycle to ensure all memory and native bindings get de-allocated
+   */
+  delete() {
+    throw new Error(
+      "SourceMap.delete() must be implemented when extending SourceMap"
+    );
+  }
+
+  /**
    * Returns a serialised map
-   * 
+   *
    * @param options options used for formatting the serialised map
    */
   async stringify(
