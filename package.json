@@ -11,15 +11,16 @@
     "benchmark": "npm run benchmark:node && npm run benchmark:wasm",
     "benchmark:node": "cross-env BACKEND=node node ./bench/run",
     "benchmark:wasm": "cross-env BACKEND=wasm node ./bench/run",
-    "compile-wasm": "make",
+    "compile-wasm": "make -j4",
     "transpile": "babel ./src/*.js --out-dir ./dist && flow-copy-source -v src dist",
     "prebuild": "prebuildify -t 10.20.1 --napi --strip --tag-libc",
     "build:dev": "node-gyp rebuild --debug",
     "rebuild": "rm -rf build && yarn build:dev",
     "install": "node-gyp-build",
     "prepublish": "npm run transpile",
-    "lint": "prettier --write src/*.js",
-    "typecheck": "flow"
+    "lint": "prettier --write bench/run.js src/*.js",
+    "typecheck": "flow",
+    "compile-schema": "./flatc --cpp -o ./src ./src/sourcemap-schema.fbs"
   },
   "files": [
     "binding.gyp",

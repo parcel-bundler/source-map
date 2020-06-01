@@ -3,7 +3,7 @@
 
 class MappingLine {
 public:
-    MappingLine(int lineNumber, int upperbound = 0);
+    MappingLine(int lineNumber);
 
     void addMapping(Mapping m);
 

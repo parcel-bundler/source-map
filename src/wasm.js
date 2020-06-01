@@ -72,6 +72,10 @@ export default class WasmSourceMap extends SourceMap {
       lineOffset,
       columnOffset
     );
+
+    sourcesVector.delete();
+    namesVector.delete();
+
     return this;
   }
 
@@ -80,7 +84,8 @@ export default class WasmSourceMap extends SourceMap {
     if (mapping.generated.line === -1) {
       return null;
     } else {
-      return this.indexedMappingToStringMapping(patchMapping(mapping));
+      let m = { ...mapping };
+      return this.indexedMappingToStringMapping(patchMapping(m));
     }
   }
 
@@ -103,6 +108,14 @@ export default class WasmSourceMap extends SourceMap {
       sources: arrayFromEmbind(this.sourceMapInstance.getSources()),
       names: arrayFromEmbind(this.sourceMapInstance.getNames()),
     };
+  }
+
+  toBuffer(): Uint8Array {
+    return new Uint8Array(this.sourceMapInstance.toBuffer());
+  }
+
+  delete() {
+    this.sourceMapInstance.delete();
   }
 }
 

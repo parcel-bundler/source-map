@@ -227,7 +227,7 @@ export default class SourceMap {
     // $FlowFixMe
     return mapping;
   }
-
+  
   /**
    * Find the closest mapping to the provided location
    *
@@ -262,7 +262,7 @@ export default class SourceMap {
   getMap(): ParsedMap {
     return this.sourceMapInstance.getMap();
   }
-
+  
   /**
    * Returns a flatbuffer that represents this sourcemap, used for caching
    */

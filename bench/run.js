@@ -2,7 +2,9 @@ const Benchmark = require("tiny-benchy");
 const MozillaSourceMap = require("source-map");
 const assert = require("assert");
 const { default: SourceMap, init } =
-  process.env.BACKEND === "wasm" ? require("../dist/wasm-node") : require("../");
+  process.env.BACKEND === "wasm"
+    ? require("../dist/wasm-node")
+    : require("../");
 
 const ITERATIONS = 250;
 
@@ -36,16 +38,19 @@ init.then(() => {
       rawSourceMap.sources,
       rawSourceMap.names
     );
+    map.delete();
   });
 
   suite.add("consume flatbuffer", async () => {
     let map = new SourceMap();
     map.addBufferMappings(sourcemapBuffer);
+    map.delete();
   });
 
   suite.add("consume JS Mappings", async () => {
     let map = new SourceMap();
     map.addIndexedMappings(mappings);
+    map.delete();
   });
 
   suite.add("JS Mappings => vlq (mozilla source-map) => buffer", async () => {
@@ -61,6 +66,7 @@ init.then(() => {
 
     let sourceMap = new SourceMap();
     sourceMap.addRawMappings(json.mappings, json.sources, json.names);
+    sourceMap.delete();
   });
 
   suite.add("Save buffer", async () => {
@@ -71,6 +77,7 @@ init.then(() => {
     let map = new SourceMap();
     map.addBufferMappings(sourcemapBuffer);
     map.extends(sourcemapBuffer);
+    map.delete();
   });
 
   suite.add("stringify", async () => {
@@ -85,6 +92,7 @@ init.then(() => {
     for (let i = 0; i < 1000; i++) {
       map.addBufferMappings(sourcemapBuffer, i * 4);
     }
+    map.delete();
   });
 
   suite.add("combine 1000 maps using vlq mappings", async () => {
@@ -97,6 +105,7 @@ init.then(() => {
         i * 4
       );
     }
+    map.delete();
   });
 
   suite.add("combine 1000 maps using flatbuffers and stringify", async () => {
@@ -107,7 +116,10 @@ init.then(() => {
     await map.stringify({
       file: "index.js.map",
       sourceRoot: "/",
+      // We don't wanna benchmark JSON.stringify...
+      format: "object",
     });
+    map.delete();
   });
 
   suite.run();
