@@ -14,7 +14,7 @@ function normalisePath(filepath: string): string {
 }
 
 function relatifyPath(filepath: string, rootDir: string): string {
-  // Sourcemaps are made for web, so replace weird windows backslashes with normal slashes
+  // Sourcemaps are made for web, so replace backslashes with regular slashes
   filepath = normalisePath(filepath);
 
   // Make root paths relative to the rootDir
