@@ -3,7 +3,7 @@ import type { VLQMap, SourceMapStringifyOptions } from "./types";
 
 import path from "path";
 
-export function generateInlineMap(map: string) {
+export function generateInlineMap(map: string): string {
   return `data:application/json;charset=utf-8;base64,${Buffer.from(
     map
   ).toString("base64")}`;
@@ -40,7 +40,7 @@ export async function partialVlqMapToSourceMap(
     rootDir,
     format = "string",
   }: SourceMapStringifyOptions
-) {
+): Promise<VLQMap | string> {
   let root = normalisePath(rootDir || "/");
   let resultMap = {
     ...map,
