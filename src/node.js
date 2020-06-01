@@ -16,6 +16,18 @@ export default class NodeSourceMap extends SourceMap {
     this.sourceMapInstance = new bindings.SourceMap();
   }
 
+  toBuffer(): Buffer {
+    return this.sourceMapInstance.toBuffer();
+  }
+
+  findClosestMapping(line: number, column: number): ?IndexedMapping<string> {
+    let mapping = this.sourceMapInstance.findClosestMapping(line, column);
+    let v = this.indexedMappingToStringMapping(mapping);
+    return v;
+  }
+
+  delete() {}
+
   static generateEmptyMap(
     sourceName: string,
     sourceContent: string,

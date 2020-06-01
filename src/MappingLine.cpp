@@ -7,9 +7,7 @@ struct MappingGeneratedColumnComparator {
     }
 };
 
-MappingLine::MappingLine(int lineNumber, int upperbound) : _line_number{lineNumber} {
-    _segments.reserve(upperbound);
-}
+MappingLine::MappingLine(int lineNumber) : _line_number{lineNumber} {}
 
 void MappingLine::addMapping(Mapping m) {
     _segments.push_back(m);

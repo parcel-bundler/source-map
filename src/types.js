@@ -36,8 +36,5 @@ export type SourceMapStringifyOptions = {
   inlineSources?: boolean,
   fs?: any,
   format?: "inline" | "string" | "object",
-
-  // !Deprecated
-  inlineMap?: boolean,
   ...
 };

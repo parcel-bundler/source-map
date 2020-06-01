@@ -38,22 +38,24 @@ export async function partialVlqMapToSourceMap(
     sourceRoot,
     inlineSources,
     rootDir,
-    inlineMap,
     format = "string",
   }: SourceMapStringifyOptions
 ) {
   let root = normalisePath(rootDir || "/");
-  map.version = 3;
-  map.file = file;
-  map.sourceRoot = sourceRoot;
+  let resultMap = {
+    ...map,
+    version: 3,
+    file,
+    sourceRoot,
+  };
 
   map.sources = map.sources.map((sourceFilePath) => {
     return relatifyPath(sourceFilePath, root);
   });
 
   if (inlineSources && fs) {
-    map.sourcesContent = await Promise.all(
-      map.sources.map(async (sourceName) => {
+    resultMap.sourcesContent = await Promise.all(
+      resultMap.sources.map(async (sourceName) => {
         try {
           return await fs.readFile(path.resolve(root, sourceName), "utf-8");
         } catch (e) {
@@ -63,17 +65,13 @@ export async function partialVlqMapToSourceMap(
     );
   }
 
-  // Handle deprecated option
-  if (inlineMap) {
-    format = "inline";
-  }
-
   if (format === "inline" || format === "string") {
-    let stringifiedMap = JSON.stringify(map);
-    return format === "inline"
-      ? generateInlineMap(stringifiedMap)
-      : stringifiedMap;
+    let stringifiedMap = JSON.stringify(resultMap);
+    if (format === "inline") {
+      return generateInlineMap(stringifiedMap);
+    }
+    return stringifiedMap;
   }
 
-  return map;
+  return resultMap;
 }

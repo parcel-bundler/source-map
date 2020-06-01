@@ -46,12 +46,12 @@ std::vector<Mapping> SourceMap::getMappings(){
     std::vector<Mapping> mappings;
     auto lineEnd = mappingLinesVector.end();
     for (auto lineIterator = mappingLinesVector.begin(); lineIterator != lineEnd; ++lineIterator) {
-        auto &line = (*lineIterator);
-        auto &segments = line->_segments;
+        const auto &line = (*lineIterator);
+        auto &segments = line._segments;
         auto segmentsEnd = segments.end();
 
         for (auto segmentIterator = segments.begin(); segmentIterator != segmentsEnd; ++segmentIterator) {
-            Mapping &mapping = *segmentIterator;
+            const Mapping &mapping = *segmentIterator;
             mappings.push_back(mapping);
         }
     }

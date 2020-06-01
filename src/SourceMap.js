@@ -134,11 +134,6 @@ export default class SourceMap {
     return mapping;
   }
 
-  findClosestMapping(line: number, column: number): ?IndexedMapping<string> {
-    let mapping = this.sourceMapInstance.findClosestMapping(line, column);
-    return this.indexedMappingToStringMapping(mapping);
-  }
-
   // Remaps original positions from this map to the ones in the provided map
   extends(buffer: Buffer) {
     this.sourceMapInstance.extends(buffer);
@@ -147,10 +142,6 @@ export default class SourceMap {
 
   getMap(): ParsedMap {
     return this.sourceMapInstance.getMap();
-  }
-
-  toBuffer(): Buffer {
-    return this.sourceMapInstance.toBuffer();
   }
 
   toVLQ(): VLQMap {
