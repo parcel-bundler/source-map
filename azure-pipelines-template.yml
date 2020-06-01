@@ -37,8 +37,8 @@ jobs:
           script: |
             git clone https://github.com/emscripten-core/emsdk.git
             cd emsdk
-            ./emsdk install 1.39.14
-            ./emsdk activate 1.39.14
+            ./emsdk install latest
+            ./emsdk activate latest
             cd ..
         condition: eq('${{ parameters.name }}', 'macOS')
       - script: npm run compile-wasm
