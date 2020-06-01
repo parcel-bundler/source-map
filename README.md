@@ -1,6 +1,6 @@
 # Parcel's source-map library
 
-A source-map library purpose build for the Parcel.js bundler with a focus on fast combining and manipulating of source-maps.
+A source map library purpose-build for the Parcel bundler with a focus on fast combining and manipulating of source-maps.
 
 ## How to use this library?
 
@@ -99,6 +99,14 @@ Without these libraries this library wouldn't be as good as it is today. We've i
 ## Contributing to this library
 
 All contributions to this library are welcome as is with any part of Parcel's vast collection of libraries and tools.
+
+### Prerequisites
+
+To be able to build and work on this project you need to have the following tools installed:
+
+- [`emscripten`](https://emscripten.org/docs/getting_started/downloads.html)
+- [`node.js`](https://nodejs.org/en/)
+- `make`
 
 ### Building the project
 
