@@ -193,7 +193,7 @@ Napi::Value SourceMapBinding::getMap(const Napi::CallbackInfo &info) {
     int currentMapping = 0;
     for (auto lineIterator = mappingLinesVector.begin(); lineIterator != lineEnd; ++lineIterator) {
         auto &line = (*lineIterator);
-        auto &segments = line->_segments;
+        auto &segments = line._segments;
         auto segmentsEnd = segments.end();
 
         for (auto segmentIterator = segments.begin(); segmentIterator != segmentsEnd; ++segmentIterator) {

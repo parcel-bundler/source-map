@@ -27,23 +27,6 @@ describe("SourceMap - Formats", () => {
     assert(stringifiedMap.startsWith('data:application/json;charset'));
   });
 
-  it("Should return a base64 encoded inline map when using deprecated inlineMap option", async () => {
-    let map = new SourceMap();
-    map.addRawMappings(
-      SIMPLE_SOURCE_MAP.mappings,
-      SIMPLE_SOURCE_MAP.sources,
-      SIMPLE_SOURCE_MAP.names
-    );
-
-    let stringifiedMap = await map.stringify({
-      file: "index.js.map",
-      sourceRoot: "/",
-      inlineMap: true
-    });
-    
-    assert(stringifiedMap.startsWith('data:application/json;charset'));
-  });
-
   it("Should return a stringified map when format is string", async () => {
     let map = new SourceMap();
     map.addRawMappings(
