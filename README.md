@@ -1,6 +1,6 @@
 # Parcel's source-map library
 
-A source-map library purpose build for the Parcel.js bundler with a focus on fast combining and manipulating of source-maps.
+A source map library purpose-build for the Parcel bundler with a focus on fast combining and manipulating of source-maps.
 
 # How to use this library?
 
