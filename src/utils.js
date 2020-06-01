@@ -9,6 +9,27 @@ export function generateInlineMap(map: string) {
   ).toString("base64")}`;
 }
 
+function normalisePath(filepath: string): string {
+  return filepath.replace(/\\/g, "/");
+}
+
+function relatifyPath(filepath: string, rootDir: string): string {
+  // Sourcemaps are made for web, so replace backslashes with regular slashes
+  filepath = normalisePath(filepath);
+
+  // Make root paths relative to the rootDir
+  if (filepath[0] === "/") {
+    filepath = normalisePath(path.relative(rootDir, filepath));
+  }
+
+  // Prefix relative paths with ./ as it makes it more clear and probably prevents issues
+  if (filepath[0] !== ".") {
+    filepath = `./${filepath}`;
+  }
+
+  return filepath;
+}
+
 export async function partialVlqMapToSourceMap(
   map: VLQMap,
   {
@@ -20,6 +41,7 @@ export async function partialVlqMapToSourceMap(
     format = "string",
   }: SourceMapStringifyOptions
 ) {
+  let root = normalisePath(rootDir || "/");
   let resultMap = {
     ...map,
     version: 3,
@@ -27,14 +49,15 @@ export async function partialVlqMapToSourceMap(
     sourceRoot,
   };
 
+  resultMap.sources = resultMap.sources.map((sourceFilePath) => {
+    return relatifyPath(sourceFilePath, root);
+  });
+
   if (inlineSources && fs) {
     resultMap.sourcesContent = await Promise.all(
       resultMap.sources.map(async (sourceName) => {
         try {
-          return await fs.readFile(
-            path.resolve(rootDir || "", sourceName),
-            "utf-8"
-          );
+          return await fs.readFile(path.resolve(root, sourceName), "utf-8");
         } catch (e) {
           return null;
         }
