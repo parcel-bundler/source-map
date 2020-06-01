@@ -227,17 +227,6 @@ export default class SourceMap {
     // $FlowFixMe
     return mapping;
   }
-  
-  /**
-   * Find the closest mapping to the provided location
-   *
-   * @param line
-   * @param column
-   */
-  findClosestMapping(line: number, column: number): ?IndexedMapping<string> {
-    let mapping = this.sourceMapInstance.findClosestMapping(line, column);
-    return this.indexedMappingToStringMapping(mapping);
-  }
 
   /**
    * Remaps original positions from this map to the ones in the provided map
