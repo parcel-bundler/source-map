@@ -100,6 +100,14 @@ Without these libraries this library wouldn't be as good as it is today. We've i
 
 All contributions to this library are welcome as is with any part of Parcel's vast collection of libraries and tools.
 
+## Prerequisites
+
+To be able to build and work on this project you need to have the following tools installed:
+
+- [`emscripten`](https://emscripten.org/docs/getting_started/downloads.html)
+- [`node.js`](https://nodejs.org/en/)
+- `make`
+
 ## Building the project
 
 For development purposes you might want to build or rebuild the project, for this you need to build the N-API module, JS Code and WASM bindings.
