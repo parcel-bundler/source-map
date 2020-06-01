@@ -49,7 +49,7 @@ export async function partialVlqMapToSourceMap(
     sourceRoot,
   };
 
-  map.sources = map.sources.map((sourceFilePath) => {
+  resultMap.sources = resultMap.sources.map((sourceFilePath) => {
     return relatifyPath(sourceFilePath, root);
   });
 
