@@ -113,5 +113,5 @@ yarn transpile && yarn build:dev && make clean && make all
 ## Compile flatbuffer schema
 
 ```bash
-cd ./src && ../flatc --cpp ./sourcemap-schema.fbs && cd ..
+./flatc -o ./src --cpp ./src/sourcemap-schema.fbs
 ```
