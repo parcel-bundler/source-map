@@ -15,6 +15,7 @@ describe('SourceMap - Empty Map', () => {
     let mapContent = map.getMap();
     assert.deepEqual(mapContent, {
       sources: ['index.js'],
+      sourcesContent: [],
       names: [],
       mappings: [
         {
@@ -55,7 +56,7 @@ describe('SourceMap - Empty Map', () => {
     let mapContent = map.getMap();
     assert.deepEqual(mapContent, {
       sources: ['index.js'],
-      sourcesContent: [null],
+      sourcesContent: [],
       names: [],
       mappings: [
         {

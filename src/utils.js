@@ -45,6 +45,10 @@ export async function partialVlqMapToSourceMap(
     return relatifyPath(sourceFilePath, root);
   });
 
+  if (resultMap.sourcesContent.length < resultMap.sources.length) {
+    resultMap.sourcesContent.push(...new Array(resultMap.sources.length - resultMap.sourcesContent.length).fill(null));
+  }
+
   if (inlineSources && fs) {
     resultMap.sourcesContent = await Promise.all(
       resultMap.sourcesContent.map(async (content, index): Promise<string | null> => {

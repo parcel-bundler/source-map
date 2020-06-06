@@ -36,6 +36,7 @@ describe('SourceMap - Basics', () => {
 
     assert.deepEqual(map.getMap(), {
       sources: ['helloworld.coffee'],
+      sourcesContent: [''],
       names: [],
       mappings: [
         {
@@ -127,6 +128,7 @@ describe('SourceMap - Basics', () => {
       sourceRoot: '/',
       mappings: ';;;;;eAAAA',
       sources: ['./index.js'],
+      sourcesContent: [null],
       names: ['A'],
     });
   });
@@ -161,6 +163,7 @@ describe('SourceMap - Basics', () => {
       sourceRoot: '/',
       mappings: ';;;;;eAAA',
       sources: ['./index.js'],
+      sourcesContent: [null],
       names: [],
     });
   });
@@ -192,6 +195,7 @@ describe('SourceMap - Basics', () => {
       sourceRoot: '/',
       mappings: ';;;;;e',
       sources: [],
+      sourcesContent: [],
       names: [],
     });
   });

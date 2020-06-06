@@ -42,8 +42,8 @@ void SourceMapBinding::addRawMappings(const Napi::CallbackInfo &info) {
     Napi::Array sources = info[1].As<Napi::Array>();
     Napi::Array sourcesContent = info[2].As<Napi::Array>();
     Napi::Array names = info[3].As<Napi::Array>();
-    int lineOffset = info.Length() > 3 ? info[4].As<Napi::Number>().Int32Value() : 0;
-    int columnOffset = info.Length() > 4 ? info[5].As<Napi::Number>().Int32Value() : 0;
+    int lineOffset = info.Length() > 4 ? info[4].As<Napi::Number>().Int32Value() : 0;
+    int columnOffset = info.Length() > 5 ? info[5].As<Napi::Number>().Int32Value() : 0;
 
     std::vector<int> namesIndex = _addNames(names);
     std::vector<int> sourcesIndex = _addSources(sources, sourcesContent);
@@ -116,6 +116,14 @@ Napi::Value SourceMapBinding::stringify(const Napi::CallbackInfo &info) {
         sourcesArray.Set(i, sourcesVector[i]);
     }
     obj.Set("sources", sourcesArray);
+
+    auto sourcesContentVector = _mapping_container.getSourcesContentVector();
+    len = sourcesContentVector.size();
+    Napi::Array sourcesContentArray = Napi::Array::New(env, len);
+    for (int i = 0; i < len; ++i) {
+        sourcesContentArray.Set(i, sourcesContentVector[i]);
+    }
+    obj.Set("sourcesContent", sourcesContentArray);
 
     auto namesVector = _mapping_container.getNamesVector();
     len = namesVector.size();

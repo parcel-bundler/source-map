@@ -11,6 +11,7 @@ const SIMPLE_SOURCE_MAP = {
 
 let expectedResultOne = {
   sources: ['helloworld.coffee'],
+  sourcesContent: [''],
   names: [],
   mappings: [
     {
@@ -128,6 +129,7 @@ let expectedResultOne = {
 
 let expectedResultTwo = {
   sources: ['helloworld.coffee'],
+  sourcesContent: [''],
   names: [],
   mappings: [
     {
@@ -290,7 +292,6 @@ describe('SourceMap - Append Mappings', () => {
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
       names: SIMPLE_SOURCE_MAP.names,
-      lineOffset: 10,
     });
     map.addRawMappings({
       mappings: SIMPLE_SOURCE_MAP.mappings,
@@ -433,6 +434,7 @@ describe('SourceMap - Append Mappings', () => {
       file: 'index.js.map',
       sourceRoot: '/',
       sources: ['./index.js', './local.js'],
+      sourcesContent: [null, null],
       names: ['A', 'T', 'Q'],
       mappings:
         ';;;;;eAAAA;;;;;;M;;;;;;;;;;;;;;;;;;;;;;;;MCAAC;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;iEAAAC;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;uB',
