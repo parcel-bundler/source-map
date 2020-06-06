@@ -1,12 +1,7 @@
 // @flow
-import type {
-  ParsedMap,
-  VLQMap,
-  SourceMapStringifyOptions,
-  IndexedMapping,
-} from "./types";
-import path from "path";
-import SourceMap from "./SourceMap";
+import type { ParsedMap, VLQMap, SourceMapStringifyOptions, IndexedMapping } from './types';
+import path from 'path';
+import SourceMap from './SourceMap';
 
 let Module;
 
@@ -46,28 +41,40 @@ export default class WasmSourceMap extends SourceMap {
     this.sourceMapInstance = new Module.SourceMap();
   }
 
-  static generateEmptyMap(
-    sourceName: string,
-    sourceContent: string,
-    lineOffset: number = 0
-  ): WasmSourceMap {
+  static generateEmptyMap(sourceName: string, sourceContent: string, lineOffset: number = 0): WasmSourceMap {
     let map = new WasmSourceMap();
     map.addEmptyMap(sourceName, sourceContent, lineOffset);
     return map;
   }
 
-  addRawMappings(
+  addRawMappings({
+    mappings,
+    sources,
+    sourcesContent,
+    names,
+    lineOffset = 0,
+    columnOffset = 0,
+  }: {
     mappings: string,
     sources: Array<string>,
+    sourcesContent?: Array<string | null>,
     names: Array<string>,
-    lineOffset: number = 0,
-    columnOffset: number = 0
-  ) {
+    lineOffset: number,
+    columnOffset: number,
+  }) {
+    if (!sourcesContent) {
+      sourcesContent = sources.map(() => '');
+    } else {
+      sourcesContent = sourcesContent.map((content) => (content ? content : ''));
+    }
+
     let sourcesVector = arrayToEmbind(Module.VectorString, sources);
     let namesVector = arrayToEmbind(Module.VectorString, names);
+    let sourcesContentVector = arrayToEmbind(Module.VectorString, sourcesContent);
     this.sourceMapInstance.addRawMappings(
       mappings,
       sourcesVector,
+      sourcesContentVector,
       namesVector,
       lineOffset,
       columnOffset
@@ -90,10 +97,7 @@ export default class WasmSourceMap extends SourceMap {
   }
 
   getMap(): ParsedMap {
-    let mappings = arrayFromEmbind(
-      this.sourceMapInstance.getMappings(),
-      patchMapping
-    );
+    let mappings = arrayFromEmbind(this.sourceMapInstance.getMappings(), patchMapping);
 
     return {
       mappings,
@@ -106,10 +110,12 @@ export default class WasmSourceMap extends SourceMap {
     return {
       mappings: this.sourceMapInstance.getVLQMappings(),
       sources: arrayFromEmbind(this.sourceMapInstance.getSources()),
+      sourcesContent: arrayFromEmbind(this.sourceMapInstance.getSourcesContent()),
       names: arrayFromEmbind(this.sourceMapInstance.getNames()),
     };
   }
 
+  // $FlowFixMe don't know how we'll handle this yet...
   toBuffer(): Uint8Array {
     return new Uint8Array(this.sourceMapInstance.toBuffer());
   }

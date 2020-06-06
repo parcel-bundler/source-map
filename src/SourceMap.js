@@ -1,13 +1,8 @@
 // @flow
-import type {
-  ParsedMap,
-  VLQMap,
-  SourceMapStringifyOptions,
-  IndexedMapping,
-} from "./types";
+import type { ParsedMap, VLQMap, SourceMapStringifyOptions, IndexedMapping } from './types';
 
-import path from "path";
-import { generateInlineMap, partialVlqMapToSourceMap } from "./utils";
+import path from 'path';
+import { generateInlineMap, partialVlqMapToSourceMap } from './utils';
 
 export default class SourceMap {
   sourceMapInstance: any;
@@ -19,14 +14,8 @@ export default class SourceMap {
    * @param sourceContent content of the source file
    * @param lineOffset an offset that gets added to the sourceLine index of each mapping
    */
-  static generateEmptyMap(
-    sourceName: string,
-    sourceContent: string,
-    lineOffset: number = 0
-  ): SourceMap {
-    throw new Error(
-      "SourceMap.generateEmptyMap() must be implemented when extending SourceMap"
-    );
+  static generateEmptyMap(sourceName: string, sourceContent: string, lineOffset: number = 0): SourceMap {
+    throw new Error('SourceMap.generateEmptyMap() must be implemented when extending SourceMap');
   }
 
   /**
@@ -36,11 +25,7 @@ export default class SourceMap {
    * @param sourceContent content of the source file
    * @param lineOffset an offset that gets added to the sourceLine index of each mapping
    */
-  addEmptyMap(
-    sourceName: string,
-    sourceContent: string,
-    lineOffset: number = 0
-  ): SourceMap {
+  addEmptyMap(sourceName: string, sourceContent: string, lineOffset: number = 0): SourceMap {
     this.sourceMapInstance.addEmptyMap(sourceName, sourceContent, lineOffset);
     return this;
   }
@@ -54,20 +39,29 @@ export default class SourceMap {
    * @param lineOffset an offset that gets added to the sourceLine index of each mapping
    * @param columnOffset  an offset that gets added to the sourceColumn index of each mapping
    */
-  addRawMappings(
+  addRawMappings({
+    mappings,
+    sources,
+    sourcesContent,
+    names,
+    lineOffset = 0,
+    columnOffset = 0,
+  }: {
     mappings: string,
     sources: Array<string>,
+    sourcesContent?: Array<string | null>,
     names: Array<string>,
-    lineOffset: number = 0,
-    columnOffset: number = 0
-  ): SourceMap {
-    this.sourceMapInstance.addRawMappings(
-      mappings,
-      sources,
-      names,
-      lineOffset,
-      columnOffset
-    );
+    lineOffset: number,
+    columnOffset: number,
+  }): SourceMap {
+    if (!sourcesContent) {
+      sourcesContent = sources.map(() => '');
+    } else {
+      sourcesContent = sourcesContent.map((content) => (content ? content : ''));
+    }
+
+    this.sourceMapInstance.addRawMappings(mappings, sources, sourcesContent, names, lineOffset, columnOffset);
+
     return this;
   }
 
@@ -79,11 +73,7 @@ export default class SourceMap {
    * @param lineOffset an offset that gets added to the sourceLine index of each mapping
    * @param columnOffset  an offset that gets added to the sourceColumn index of each mapping
    */
-  addBufferMappings(
-    buffer: Buffer,
-    lineOffset: number = 0,
-    columnOffset: number = 0
-  ): SourceMap {
+  addBufferMappings(buffer: Buffer, lineOffset: number = 0, columnOffset: number = 0): SourceMap {
     this.sourceMapInstance.addBufferMappings(buffer, lineOffset, columnOffset);
     return this;
   }
@@ -96,16 +86,12 @@ export default class SourceMap {
    * @param lineOffset an offset that gets added to the sourceLine index of each mapping
    * @param columnOffset  an offset that gets added to the sourceColumn index of each mapping
    */
-  addIndexedMapping(
-    mapping: IndexedMapping<string>,
-    lineOffset?: number = 0,
-    columnOffset?: number = 0
-  ): void {
+  addIndexedMapping(mapping: IndexedMapping<string>, lineOffset?: number = 0, columnOffset?: number = 0): void {
     let hasValidOriginal =
       mapping.original &&
-      typeof mapping.original.line === "number" &&
+      typeof mapping.original.line === 'number' &&
       !isNaN(mapping.original.line) &&
-      typeof mapping.original.column === "number" &&
+      typeof mapping.original.column === 'number' &&
       !isNaN(mapping.original.column);
 
     this.sourceMapInstance.addIndexedMapping(
@@ -115,8 +101,8 @@ export default class SourceMap {
       hasValidOriginal ? mapping.original.line - 1 : -1,
       // $FlowFixMe
       hasValidOriginal ? mapping.original.column : -1,
-      mapping.source || "",
-      mapping.name || ""
+      mapping.source || '',
+      mapping.name || ''
     );
   }
 
@@ -226,9 +212,7 @@ export default class SourceMap {
    *
    * @param index the Mapping that should get converted to a string-based Mapping
    */
-  indexedMappingToStringMapping(
-    mapping: ?IndexedMapping<number>
-  ): ?IndexedMapping<string> {
+  indexedMappingToStringMapping(mapping: ?IndexedMapping<number>): ?IndexedMapping<string> {
     if (!mapping) return mapping;
 
     if (mapping.source != null && mapping.source > -1) {
@@ -276,18 +260,14 @@ export default class SourceMap {
    * @param column the column in the generated code (starts at 0)
    */
   findClosestMapping(line: number, column: number): ?IndexedMapping<string> {
-    throw new Error(
-      "SourceMap.findClosestMapping() must be implemented when extending SourceMap"
-    );
+    throw new Error('SourceMap.findClosestMapping() must be implemented when extending SourceMap');
   }
 
   /**
    * Returns a flatbuffer that represents this sourcemap, used for caching
    */
   toBuffer(): Buffer {
-    throw new Error(
-      "SourceMap.toBuffer() must be implemented when extending SourceMap"
-    );
+    throw new Error('SourceMap.toBuffer() must be implemented when extending SourceMap');
   }
 
   /**
@@ -301,9 +281,7 @@ export default class SourceMap {
    * A function that has to be called at the end of the SourceMap's lifecycle to ensure all memory and native bindings get de-allocated
    */
   delete() {
-    throw new Error(
-      "SourceMap.delete() must be implemented when extending SourceMap"
-    );
+    throw new Error('SourceMap.delete() must be implemented when extending SourceMap');
   }
 
   /**
@@ -311,9 +289,7 @@ export default class SourceMap {
    *
    * @param options options used for formatting the serialised map
    */
-  async stringify(
-    options: SourceMapStringifyOptions
-  ): Promise<string | VLQMap> {
+  async stringify(options: SourceMapStringifyOptions): Promise<string | VLQMap> {
     return partialVlqMapToSourceMap(this.toVLQ(), options);
   }
 }

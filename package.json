@@ -20,6 +20,7 @@
     "prepublish": "npm run transpile",
     "lint": "prettier --write bench/run.js src/*.js",
     "typecheck": "flow",
+    "format": "prettier --write \"./**/*.{js,md,mdx}\"",
     "compile-schema": "./flatc --cpp -o ./src ./src/sourcemap-schema.fbs"
   },
   "files": [

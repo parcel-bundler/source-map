@@ -19,6 +19,7 @@ table MappingLine {
 table Map {
   names:[string];
   sources:[string];
+  sourcesContent:[string];
   lineCount:int;
   lines:[MappingLine];
 }

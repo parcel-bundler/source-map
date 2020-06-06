@@ -14,14 +14,22 @@ int MappingContainer::addName(std::string &name) {
     return index;
 }
 
-int MappingContainer::addSource(std::string &source) {
-    int index = getSourceIndex(source);
+int MappingContainer::addSource(std::string &sourceName) {
+    int index = getSourceIndex(sourceName);
     if (index < 0) {
-        _sources.push_back(source);
+        _sources.push_back(sourceName);
         index = (int) _sources.size() - 1;
-        _sources_index[source] = index;
+        _sources_index[sourceName] = index;
     }
     return index;
+}
+
+void MappingContainer::setSourceContent(int sourceIndex, std::string &sourceContent) {
+    if ((int) _sources_content.size() <= sourceIndex) {
+        _sources_content.resize(sourceIndex + 1);
+    }
+
+    _sources_content[sourceIndex] = sourceContent;
 }
 
 int MappingContainer::getGeneratedLines() {
@@ -220,6 +228,10 @@ std::vector<std::string> &MappingContainer::getSourcesVector() {
     return _sources;
 }
 
+std::vector<std::string> &MappingContainer::getSourcesContentVector() {
+    return _sources_content;
+}
+
 std::vector<MappingLine> &MappingContainer::getMappingLinesVector() {
     return _mapping_lines;
 }
@@ -260,7 +272,7 @@ std::string MappingContainer::getName(int nameIndex) {
     return _names[nameIndex];
 }
 
-void MappingContainer::addEmptyMap(std::string sourceName, std::string sourceContent, int lineOffset) {
+void MappingContainer::addEmptyMap(std::string& sourceName, std::string& sourceContent, int lineOffset) {
     int sourceIndex = addSource(sourceName);
     int currLine = 0;
     auto end = sourceContent.end();
@@ -280,19 +292,21 @@ flatbuffers::FlatBufferBuilder MappingContainer::toBuffer() {
     sort();
 
     std::vector<flatbuffers::Offset<flatbuffers::String>> names_vector;
-    auto namesVector = getNamesVector();
-    names_vector.reserve(namesVector.size());
-    auto namesEnd = namesVector.end();
-    for (auto it = namesVector.begin(); it != namesEnd; ++it) {
+    names_vector.reserve(_names.size());
+    for (auto it = _names.begin(); it != _names.end(); ++it) {
         names_vector.push_back(builder.CreateString(*it));
     }
 
     std::vector<flatbuffers::Offset<flatbuffers::String>> sources_vector;
-    auto sourcesVector = getSourcesVector();
-    sources_vector.reserve(sourcesVector.size());
-    auto sourcesEnd = sourcesVector.end();
-    for (auto it = sourcesVector.begin(); it != sourcesEnd; ++it) {
+    sources_vector.reserve(_sources.size());
+    for (auto it = _sources.begin(); it != _sources.end(); ++it) {
         sources_vector.push_back(builder.CreateString(*it));
+    }
+
+    std::vector<flatbuffers::Offset<flatbuffers::String>> sources_content_vector;
+    sources_content_vector.reserve(_sources_content.size());
+    for (auto it = _sources_content.begin(); it != _sources_content.end(); ++it) {
+        sources_content_vector.push_back(builder.CreateString(*it));
     }
 
     std::vector<flatbuffers::Offset<SourceMapSchema::MappingLine>> lines_vector;
@@ -319,7 +333,7 @@ flatbuffers::FlatBufferBuilder MappingContainer::toBuffer() {
                                                                         &mappings_vector));
     }
 
-    auto map = SourceMapSchema::CreateMapDirect(builder, &names_vector, &sources_vector,
+    auto map = SourceMapSchema::CreateMapDirect(builder, &names_vector, &sources_vector, &sources_vector,
                                                 getGeneratedLines(), &lines_vector);
 
     builder.Finish(map);
@@ -327,6 +341,7 @@ flatbuffers::FlatBufferBuilder MappingContainer::toBuffer() {
     return builder;
 }
 
+// TODO: Implement source contents
 void MappingContainer::extends(const void *buf) {
     auto map = SourceMapSchema::GetMap(buf);
 
@@ -410,6 +425,7 @@ void MappingContainer::extends(const void *buf) {
     }
 }
 
+// TODO: Implement source contents
 void MappingContainer::addBufferMappings(const void *buf, int lineOffset, int columnOffset) {
     auto map = SourceMapSchema::GetMap(buf);
 

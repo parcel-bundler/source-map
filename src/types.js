@@ -20,12 +20,12 @@ export type ParsedMap = {|
 
 export type VLQMap = {
   sources: Array<string>,
+  sourcesContent: Array<string | null>,
   names: Array<string>,
   mappings: string,
   version?: number,
   file?: string,
   sourceRoot?: string,
-  sourcesContent?: Array<any>,
   ...
 };
 
@@ -35,6 +35,6 @@ export type SourceMapStringifyOptions = {
   rootDir?: string,
   inlineSources?: boolean,
   fs?: any,
-  format?: "inline" | "string" | "object",
+  format?: 'inline' | 'string' | 'object',
   ...
 };

@@ -12,8 +12,8 @@ void SourceMapBinding::addRawMappings(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
 
-    if (info.Length() < 3) {
-        Napi::TypeError::New(env, "Expected 3-5 parameters").ThrowAsJavaScriptException();
+    if (info.Length() < 4) {
+        Napi::TypeError::New(env, "Expected 4-5 parameters").ThrowAsJavaScriptException();
         return;
     }
 
@@ -22,30 +22,31 @@ void SourceMapBinding::addRawMappings(const Napi::CallbackInfo &info) {
         return;
     }
 
-    if (!info[1].IsArray() || !info[2].IsArray()) {
+    if (!info[1].IsArray() || !info[2].IsArray() || !info[3].IsArray()) {
         Napi::TypeError::New(env,
-                             "Second and third parameter should be an array of strings").ThrowAsJavaScriptException();
-        return;
-    }
-
-    if (info.Length() > 3 && !info[3].IsNumber()) {
-        Napi::TypeError::New(env, "Fourth parameter should be a positive number").ThrowAsJavaScriptException();
+                             "Second, third and fourth parameter should be an array of strings").ThrowAsJavaScriptException();
         return;
     }
 
     if (info.Length() > 4 && !info[4].IsNumber()) {
-        Napi::TypeError::New(env, "Fifth parameter should be a positive number").ThrowAsJavaScriptException();
+        Napi::TypeError::New(env, "Fifth parameter should be a number").ThrowAsJavaScriptException();
+        return;
+    }
+
+    if (info.Length() > 5 && !info[5].IsNumber()) {
+        Napi::TypeError::New(env, "Sixth parameter should be a number").ThrowAsJavaScriptException();
         return;
     }
 
     std::string rawMappings = info[0].As<Napi::String>().Utf8Value();
     Napi::Array sources = info[1].As<Napi::Array>();
-    Napi::Array names = info[2].As<Napi::Array>();
-    int lineOffset = info.Length() > 3 ? info[3].As<Napi::Number>().Int32Value() : 0;
-    int columnOffset = info.Length() > 4 ? info[4].As<Napi::Number>().Int32Value() : 0;
+    Napi::Array sourcesContent = info[2].As<Napi::Array>();
+    Napi::Array names = info[3].As<Napi::Array>();
+    int lineOffset = info.Length() > 3 ? info[4].As<Napi::Number>().Int32Value() : 0;
+    int columnOffset = info.Length() > 4 ? info[5].As<Napi::Number>().Int32Value() : 0;
 
     std::vector<int> namesIndex = _addNames(names);
-    std::vector<int> sourcesIndex = _addSources(sources);
+    std::vector<int> sourcesIndex = _addSources(sources, sourcesContent);
 
     _mapping_container.addVLQMappings(rawMappings, sourcesIndex, namesIndex, lineOffset, columnOffset);
 }
@@ -179,6 +180,14 @@ Napi::Value SourceMapBinding::getMap(const Napi::CallbackInfo &info) {
     }
     obj.Set("sources", sourcesArray);
 
+    auto sourcesContentVector = _mapping_container.getSourcesContentVector();
+    len = sourcesContentVector.size();
+    Napi::Array sourcesContentArray = Napi::Array::New(env, len);
+    for (int i = 0; i < len; ++i) {
+        sourcesContentArray.Set(i, sourcesContentVector[i]);
+    }
+    obj.Set("sourcesContent", sourcesContentArray);
+
     auto namesVector = _mapping_container.getNamesVector();
     len = namesVector.size();
     Napi::Array namesArray = Napi::Array::New(env, len);
@@ -286,6 +295,7 @@ Napi::Value SourceMapBinding::getName(const Napi::CallbackInfo &info) {
 
 std::vector<int> SourceMapBinding::_addNames(Napi::Array &namesArray) {
     std::vector<int> insertions;
+    insertions.reserve(namesArray.Length());
     int length = namesArray.Length();
     for (int i = 0; i < length; ++i) {
         std::string name = namesArray.Get(i).As<Napi::String>().Utf8Value();
@@ -307,12 +317,20 @@ Napi::Value SourceMapBinding::addName(const Napi::CallbackInfo &info) {
     return Napi::Number::New(env, _mapping_container.addName(name));
 }
 
-std::vector<int> SourceMapBinding::_addSources(Napi::Array &sourcesArray) {
+std::vector<int> SourceMapBinding::_addSources(Napi::Array &sourcesArray, Napi::Array &sourcesContentArray) {
     std::vector<int> insertions;
+    insertions.reserve(sourcesArray.Length());
     unsigned int length = sourcesArray.Length();
     for (unsigned int i = 0; i < length; ++i) {
-        std::string source = sourcesArray.Get(i).As<Napi::String>().Utf8Value();
-        insertions.push_back(_mapping_container.addSource(source));
+        std::string sourceName = sourcesArray.Get(i).As<Napi::String>().Utf8Value();
+        std::string sourceContent = "";
+        if (sourcesContentArray.Length() > i) {
+            sourceContent = sourcesContentArray.Get(i).As<Napi::String>().Utf8Value();
+        }
+
+        int sourceIndex = _mapping_container.addSource(sourceName);
+        _mapping_container.setSourceContent(sourceIndex, sourceContent);
+        insertions.push_back(sourceIndex);
     }
     return insertions;
 }
