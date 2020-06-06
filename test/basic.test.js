@@ -205,6 +205,7 @@ describe('SourceMap - Basics', () => {
     map.addRawMappings({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
+      sourcesContent: ['() => "test"'],
       names: SIMPLE_SOURCE_MAP.names,
     });
     let buffer = map.toBuffer();
@@ -216,7 +217,16 @@ describe('SourceMap - Basics', () => {
         sourceRoot: '/',
       })
     );
-    assert.equal(stringifiedMap.mappings, SIMPLE_SOURCE_MAP.mappings);
+
+    assert.deepEqual(stringifiedMap, {
+      version: 3,
+      file: 'index.js.map',
+      sourceRoot: '/',
+      sources: ['./helloworld.coffee'],
+      sourcesContent: ['() => "test"'],
+      names: SIMPLE_SOURCE_MAP.names,
+      mappings: SIMPLE_SOURCE_MAP.mappings,
+    });
   });
 
   it('Should be able to add sources to a sourcemap', () => {

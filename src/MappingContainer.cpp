@@ -333,7 +333,7 @@ flatbuffers::FlatBufferBuilder MappingContainer::toBuffer() {
                                                                         &mappings_vector));
     }
 
-    auto map = SourceMapSchema::CreateMapDirect(builder, &names_vector, &sources_vector, &sources_vector,
+    auto map = SourceMapSchema::CreateMapDirect(builder, &names_vector, &sources_vector, &sources_content_vector,
                                                 getGeneratedLines(), &lines_vector);
 
     builder.Finish(map);
@@ -341,7 +341,6 @@ flatbuffers::FlatBufferBuilder MappingContainer::toBuffer() {
     return builder;
 }
 
-// TODO: Implement source contents
 void MappingContainer::extends(const void *buf) {
     auto map = SourceMapSchema::GetMap(buf);
 
@@ -352,6 +351,16 @@ void MappingContainer::extends(const void *buf) {
     for (auto it = sourcesArray->begin(); it != sourcesEnd; ++it) {
         std::string source = it->str();
         sources.push_back(addSource(source));
+    }
+
+    int sourcesContentIndex = 0;
+    auto sourcesContentArray = map->sourcesContent();
+    for (auto it = sourcesContentArray->begin(); it != sourcesContentArray->end(); ++it) {
+        std::string sourceContent = it->str();
+        if (sourceContent.length() > 0) {
+            setSourceContent(sources[sourcesContentIndex], sourceContent);
+        }
+        ++sourcesContentIndex;
     }
 
     std::vector<int> names;
@@ -425,24 +434,29 @@ void MappingContainer::extends(const void *buf) {
     }
 }
 
-// TODO: Implement source contents
 void MappingContainer::addBufferMappings(const void *buf, int lineOffset, int columnOffset) {
     auto map = SourceMapSchema::GetMap(buf);
 
     std::vector<int> sources;
     auto sourcesArray = map->sources();
     sources.reserve(sourcesArray->size());
-    auto sourcesEnd = sourcesArray->end();
-    for (auto it = sourcesArray->begin(); it != sourcesEnd; ++it) {
+    for (auto it = sourcesArray->begin(); it != sourcesArray->end(); ++it) {
         std::string source = it->str();
         sources.push_back(addSource(source));
+    }
+
+    int sourcesContentIndex = 0;
+    auto sourcesContentArray = map->sourcesContent();
+    for (auto it = sourcesContentArray->begin(); it != sourcesContentArray->end(); ++it) {
+        std::string sourceContent = it->str();
+        setSourceContent(sources[sourcesContentIndex], sourceContent);
+        ++sourcesContentIndex;
     }
 
     std::vector<int> names;
     auto namesArray = map->names();
     names.reserve(namesArray->size());
-    auto namesEnd = namesArray->end();
-    for (auto it = namesArray->begin(); it != namesEnd; ++it) {
+    for (auto it = namesArray->begin(); it != namesArray->end(); ++it) {
         std::string name = it->str();
         names.push_back(addName(name));
     }
