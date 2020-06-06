@@ -356,6 +356,22 @@ Napi::Value SourceMapBinding::addSource(const Napi::CallbackInfo &info) {
     return Napi::Number::New(env, _mapping_container.addSource(source));
 }
 
+void SourceMapBinding::setSourceContent(const Napi::CallbackInfo &info) {
+    Napi::Env env = info.Env();
+    Napi::HandleScope scope(env);
+
+    if (info.Length() < 2 || !info[0].IsString() || !info[1].IsString()) {
+        Napi::TypeError::New(env,
+                             "Expected 2 parameters of type String: sourceName and sourceContent").ThrowAsJavaScriptException();
+        return;
+    }
+
+    std::string sourceName = info[0].As<Napi::String>().Utf8Value();
+    std::string sourceContent = info[1].As<Napi::String>().Utf8Value();
+
+    _mapping_container.setSourceContent(_mapping_container.addSource(sourceName), sourceContent);
+}
+
 void SourceMapBinding::addEmptyMap(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
@@ -405,6 +421,7 @@ Napi::Object SourceMapBinding::Init(Napi::Env env, Napi::Object exports) {
             InstanceMethod("addIndexedMapping", &SourceMapBinding::addIndexedMapping),
             InstanceMethod("addName", &SourceMapBinding::addName),
             InstanceMethod("addSource", &SourceMapBinding::addSource),
+            InstanceMethod("setSourceContent", &SourceMapBinding::setSourceContent),
             InstanceMethod("getSourceIndex", &SourceMapBinding::getSourceIndex),
             InstanceMethod("getSource", &SourceMapBinding::getSource),
             InstanceMethod("getNameIndex", &SourceMapBinding::getNameIndex),

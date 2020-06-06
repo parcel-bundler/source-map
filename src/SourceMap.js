@@ -186,6 +186,15 @@ export default class SourceMap {
     return this.sourceMapInstance.getSource(index);
   }
 
+  setSourceContent(sourceName: string, sourceContent: string): void {
+    return this.sourceMapInstance.setSourceContent(sourceName, sourceContent);
+  }
+
+  getSourceContent(sourceName: string): string {
+    throw new Error('This function has not been implemented yet.');
+    // return this.sourceMapInstance.getSourceContent(sourceName);
+  }
+
   /**
    * Get the index in the names array for a certain name
    *
