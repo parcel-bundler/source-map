@@ -102,6 +102,7 @@ export default class WasmSourceMap extends SourceMap {
     return {
       mappings,
       sources: arrayFromEmbind(this.sourceMapInstance.getSources()),
+      sourcesContent: arrayFromEmbind(this.sourceMapInstance.getSourcesContent()),
       names: arrayFromEmbind(this.sourceMapInstance.getNames()),
     };
   }

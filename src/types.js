@@ -16,6 +16,7 @@ export type ParsedMap = {|
   sources: Array<string>,
   names: Array<string>,
   mappings: Array<IndexedMapping<number>>,
+  sourcesContent: Array<string | null>,
 |};
 
 export type VLQMap = {

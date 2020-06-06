@@ -11,7 +11,7 @@
     "benchmark": "npm run benchmark:node && npm run benchmark:wasm",
     "benchmark:node": "cross-env BACKEND=node node ./bench/run",
     "benchmark:wasm": "cross-env BACKEND=wasm node ./bench/run",
-    "compile-wasm": "make -j4",
+    "compile-wasm": "make clean && make -j4",
     "transpile": "babel ./src/*.js --out-dir ./dist && flow-copy-source -v src dist",
     "prebuild": "prebuildify -t 10.20.1 --napi --strip --tag-libc",
     "build:dev": "node-gyp rebuild --debug",
