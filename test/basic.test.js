@@ -298,4 +298,31 @@ describe('SourceMap - Basics', () => {
     assert.equal(map.getName(0), 'test');
     assert.equal(map.getName(1), '');
   });
+
+  it('Should be able to store and return sourceContents', async () => {
+    let map = new SourceMap();
+    map.addRawMappings({
+      mappings: SIMPLE_SOURCE_MAP.mappings,
+      sources: SIMPLE_SOURCE_MAP.sources,
+      sourcesContent: ['module.exports = () => "hello world";'],
+      names: SIMPLE_SOURCE_MAP.names,
+    });
+
+    let stringifiedMap = JSON.parse(
+      await map.stringify({
+        file: 'index.js.map',
+        sourceRoot: '/',
+      })
+    );
+
+    assert.deepEqual(stringifiedMap, {
+      version: 3,
+      file: 'index.js.map',
+      sourceRoot: '/',
+      sources: ['./helloworld.coffee'],
+      sourcesContent: ['module.exports = () => "hello world";'],
+      names: [],
+      mappings: 'AAAA;AAAA,EAAA,OAAO,CAAC,GAAR,CAAY,aAAZ,CAAA,CAAA;AAAA',
+    });
+  });
 });
