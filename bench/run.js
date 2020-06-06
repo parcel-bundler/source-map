@@ -30,7 +30,11 @@ init.then(() => {
 
   suite.add('consume vlq mappings', async () => {
     let map = new SourceMap();
-    map.addRawMappings(rawSourceMap.mappings, rawSourceMap.sources, rawSourceMap.names);
+    map.addRawMappings({
+      mappings: rawSourceMap.mappings,
+      sources: rawSourceMap.sources,
+      names: rawSourceMap.names,
+    });
     map.delete();
   });
 
@@ -58,7 +62,11 @@ init.then(() => {
     let json = map.toJSON();
 
     let sourceMap = new SourceMap();
-    sourceMap.addRawMappings(json.mappings, json.sources, json.names);
+    sourceMap.addRawMappings({
+      mappings: json.mappings,
+      sources: json.sources,
+      names: json.names,
+    });
     sourceMap.delete();
   });
 
@@ -91,7 +99,12 @@ init.then(() => {
   suite.add('combine 1000 maps using vlq mappings', async () => {
     let map = new SourceMap();
     for (let i = 0; i < 1000; i++) {
-      map.addRawMappings(rawSourceMap.mappings, rawSourceMap.sources, rawSourceMap.names, i * 4);
+      map.addRawMappings({
+        mappings: rawSourceMap.mappings,
+        sources: rawSourceMap.sources,
+        names: rawSourceMap.names,
+        lineOffset: i * 4,
+      });
     }
     map.delete();
   });
