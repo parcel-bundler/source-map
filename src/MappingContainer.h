@@ -28,6 +28,8 @@ public:
 
     void setSourceContent(int sourceIndex, std::string &sourceContent);
 
+    std::string getSourceContent(int sourceIndex);
+
     int getSourceIndex(std::string &source);
 
     std::string getSource(int sourceIndex);

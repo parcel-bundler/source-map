@@ -191,8 +191,7 @@ export default class SourceMap {
   }
 
   getSourceContent(sourceName: string): string {
-    throw new Error('This function has not been implemented yet.');
-    // return this.sourceMapInstance.getSourceContent(sourceName);
+    return this.sourceMapInstance.getSourceContent(sourceName);
   }
 
   /**

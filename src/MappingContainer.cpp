@@ -272,6 +272,10 @@ std::string MappingContainer::getName(int nameIndex) {
     return _names[nameIndex];
 }
 
+std::string MappingContainer::getSourceContent(int sourceIndex) {
+    return _sources_content[sourceIndex];
+}
+
 void MappingContainer::addEmptyMap(std::string& sourceName, std::string& sourceContent, int lineOffset) {
     int sourceIndex = addSource(sourceName);
     int currLine = 0;

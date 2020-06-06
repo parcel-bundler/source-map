@@ -43,6 +43,8 @@ private:
 
     Napi::Value getSource(const Napi::CallbackInfo &info);
 
+    Napi::Value getSourceContent(const Napi::CallbackInfo &info);
+
     Napi::Value getNameIndex(const Napi::CallbackInfo &info);
 
     Napi::Value getName(const Napi::CallbackInfo &info);

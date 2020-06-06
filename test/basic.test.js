@@ -334,5 +334,7 @@ describe('SourceMap - Basics', () => {
       names: [],
       mappings: 'AAAA;AAAA,EAAA,OAAO,CAAC,GAAR,CAAY,aAAZ,CAAA,CAAA;AAAA',
     });
+
+    assert.equal(map.getSourceContent('helloworld.coffee'), 'module.exports = () => "hello world";');
   });
 });
