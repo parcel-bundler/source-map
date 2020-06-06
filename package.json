@@ -23,6 +23,17 @@
     "format": "prettier --write \"./**/*.{js,md,mdx}\"",
     "compile-schema": "./flatc --cpp -o ./src ./src/sourcemap-schema.fbs"
   },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,json,md}": [
+      "prettier --write",
+      "git add"
+    ]
+  },
   "files": [
     "binding.gyp",
     "dist",
@@ -53,10 +64,12 @@
     "cross-env": "^7.0.2",
     "flow-bin": "^0.123.0",
     "flow-copy-source": "^2.0.9",
+    "husky": "^4.2.5",
+    "lint-staged": "^10.2.9",
     "mocha": "^7.1.2",
     "prebuildify": "^3.0.4",
+    "prettier": "^2.0.5",
     "source-map": "^0.7.3",
-    "tiny-benchy": "^1.0.0",
-    "prettier": "^2.0.5"
+    "tiny-benchy": "^1.0.0"
   }
 }
