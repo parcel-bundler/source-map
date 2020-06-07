@@ -99,12 +99,14 @@ init.then(() => {
   suite.add('combine 1000 maps using vlq mappings', async () => {
     let map = new SourceMap();
     for (let i = 0; i < 1000; i++) {
-      map.addRawMappings({
-        mappings: rawSourceMap.mappings,
-        sources: rawSourceMap.sources,
-        names: rawSourceMap.names,
-        lineOffset: i * 4,
-      });
+      map.addRawMappings(
+        {
+          mappings: rawSourceMap.mappings,
+          sources: rawSourceMap.sources,
+          names: rawSourceMap.names,
+        },
+        i * 4
+      );
     }
     map.delete();
   });

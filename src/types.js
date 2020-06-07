@@ -21,7 +21,7 @@ export type ParsedMap = {|
 
 export type VLQMap = {
   sources: Array<string>,
-  sourcesContent: Array<string | null>,
+  sourcesContent?: Array<string | null>,
   names: Array<string>,
   mappings: string,
   version?: number,

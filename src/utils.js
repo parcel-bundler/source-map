@@ -35,7 +35,7 @@ export async function partialVlqMapToSourceMap(
   let root = normalisePath(rootDir || '/');
   let resultMap = {
     ...map,
-    sourcesContent: map.sourcesContent.map((content) => (content ? content : null)),
+    sourcesContent: map.sourcesContent ? map.sourcesContent.map((content) => (content ? content : null)) : [],
     version: 3,
     file,
     sourceRoot,

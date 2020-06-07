@@ -32,36 +32,22 @@ export default class SourceMap {
 
   /**
    * Appends raw VLQ mappings to the sourcemaps
-   *
-   * @param mappings a string containing the Base64 encoded VLQ Mappings
-   * @param sources an array of source filepaths used in the raw sourcemap
-   * @param names an array of the names used in the raw sourcemap
-   * @param lineOffset an offset that gets added to the sourceLine index of each mapping
-   * @param columnOffset  an offset that gets added to the sourceColumn index of each mapping
    */
-  addRawMappings({
-    mappings,
-    sources,
-    sourcesContent,
-    names,
-    lineOffset = 0,
-    columnOffset = 0,
-  }: {
-    mappings: string,
-    sources: Array<string>,
-    sourcesContent?: Array<string | null>,
-    names: Array<string>,
-    lineOffset: number,
-    columnOffset: number,
-  }): SourceMap {
+  addRawMappings(map: VLQMap, lineOffset: number = 0, columnOffset: number = 0): SourceMap {
+    let { sourcesContent, sources = [], mappings, names = [] } = map;
     if (!sourcesContent) {
       sourcesContent = sources.map(() => '');
     } else {
       sourcesContent = sourcesContent.map((content) => (content ? content : ''));
     }
-
-    this.sourceMapInstance.addRawMappings(mappings, sources, sourcesContent, names, lineOffset, columnOffset);
-
+    this.sourceMapInstance.addRawMappings(
+      mappings,
+      sources,
+      sourcesContent.map((content) => (content ? content : '')),
+      names,
+      lineOffset,
+      columnOffset
+    );
     return this;
   }
 

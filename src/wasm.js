@@ -47,27 +47,17 @@ export default class WasmSourceMap extends SourceMap {
     return map;
   }
 
-  addRawMappings({
-    mappings,
-    sources,
-    sourcesContent,
-    names,
-    lineOffset = 0,
-    columnOffset = 0,
-  }: {
-    mappings: string,
-    sources: Array<string>,
-    sourcesContent?: Array<string | null>,
-    names: Array<string>,
-    lineOffset: number,
-    columnOffset: number,
-  }) {
+  addRawMappings(
+    map: VLQMap,
+    lineOffset: number = 0,
+    columnOffset: number = 0
+  ) {
+    let { sourcesContent, sources = [], mappings, names = [] } = map;
     if (!sourcesContent) {
       sourcesContent = sources.map(() => '');
     } else {
       sourcesContent = sourcesContent.map((content) => (content ? content : ''));
     }
-
     let sourcesVector = arrayToEmbind(Module.VectorString, sources);
     let namesVector = arrayToEmbind(Module.VectorString, names);
     let sourcesContentVector = arrayToEmbind(Module.VectorString, sourcesContent);
@@ -79,10 +69,9 @@ export default class WasmSourceMap extends SourceMap {
       lineOffset,
       columnOffset
     );
-
     sourcesVector.delete();
+    sourcesContentVector.delete();
     namesVector.delete();
-
     return this;
   }
 

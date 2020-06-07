@@ -277,12 +277,14 @@ describe('SourceMap - Append Mappings', () => {
       sources: SIMPLE_SOURCE_MAP.sources,
       names: SIMPLE_SOURCE_MAP.names,
     });
-    map.addRawMappings({
-      mappings: SIMPLE_SOURCE_MAP.mappings,
-      sources: SIMPLE_SOURCE_MAP.sources,
-      names: SIMPLE_SOURCE_MAP.names,
-      lineOffset: 10,
-    });
+    map.addRawMappings(
+      {
+        mappings: SIMPLE_SOURCE_MAP.mappings,
+        sources: SIMPLE_SOURCE_MAP.sources,
+        names: SIMPLE_SOURCE_MAP.names,
+      },
+      10
+    );
     assert.deepEqual(map.getMap(), expectedResultOne);
   });
 
@@ -293,13 +295,15 @@ describe('SourceMap - Append Mappings', () => {
       sources: SIMPLE_SOURCE_MAP.sources,
       names: SIMPLE_SOURCE_MAP.names,
     });
-    map.addRawMappings({
-      mappings: SIMPLE_SOURCE_MAP.mappings,
-      sources: SIMPLE_SOURCE_MAP.sources,
-      names: SIMPLE_SOURCE_MAP.names,
-      lineOffset: 10,
-      columnOffset: 46,
-    });
+    map.addRawMappings(
+      {
+        mappings: SIMPLE_SOURCE_MAP.mappings,
+        sources: SIMPLE_SOURCE_MAP.sources,
+        names: SIMPLE_SOURCE_MAP.names,
+      },
+      10,
+      46
+    );
     assert.deepEqual(map.getMap(), expectedResultTwo);
   });
 
