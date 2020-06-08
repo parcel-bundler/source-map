@@ -23,7 +23,9 @@ private:
 
     void addEmptyMap(const Napi::CallbackInfo &info);
 
-    std::vector<int> _addSources(Napi::Array &sourcesArray);
+    void setSourceContent(const Napi::CallbackInfo &info);
+
+    std::vector<int> _addSources(Napi::Array &sourcesArray, Napi::Array &sourcesContentArray);
 
     std::vector<int> _addNames(Napi::Array &namesArray);
 
@@ -40,6 +42,8 @@ private:
     Napi::Value getSourceIndex(const Napi::CallbackInfo &info);
 
     Napi::Value getSource(const Napi::CallbackInfo &info);
+
+    Napi::Value getSourceContent(const Napi::CallbackInfo &info);
 
     Napi::Value getNameIndex(const Napi::CallbackInfo &info);
 

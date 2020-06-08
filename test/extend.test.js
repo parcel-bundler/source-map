@@ -1,38 +1,38 @@
-const assert = require("assert");
-const SourceMap = require(".").default;
+const assert = require('assert');
+const SourceMap = require('.').default;
 
-describe("SourceMap - Extend Map", () => {
-  it("Basic extending", async function() {
+describe('SourceMap - Extend Map', () => {
+  it('Basic extending', async function () {
     let originalMap = new SourceMap();
     originalMap.addIndexedMappings([
       {
-        source: "index.js",
-        name: "A",
+        source: 'index.js',
+        name: 'A',
         original: {
           line: 1,
-          column: 0
+          column: 0,
         },
         generated: {
           line: 6,
-          column: 15
-        }
-      }
+          column: 15,
+        },
+      },
     ]);
 
     let newMap = new SourceMap();
     newMap.addIndexedMappings([
       {
-        source: "index.js",
-        name: "B",
+        source: 'index.js',
+        name: 'B',
         original: {
           line: 6,
-          column: 15
+          column: 15,
         },
         generated: {
           line: 5,
-          column: 12
-        }
-      }
+          column: 12,
+        },
+      },
     ]);
 
     newMap.extends(originalMap.toBuffer());
@@ -45,82 +45,83 @@ describe("SourceMap - Extend Map", () => {
       name: 1,
       original: {
         line: 1,
-        column: 0
+        column: 0,
       },
       generated: {
         line: 5,
-        column: 12
-      }
+        column: 12,
+      },
     });
 
     let stringifiedMap = JSON.parse(
       await newMap.stringify({
-        file: "index.js.map",
-        sourceRoot: "/"
+        file: 'index.js.map',
+        sourceRoot: '/',
       })
     );
 
     assert.deepEqual(stringifiedMap, {
       version: 3,
-      file: "index.js.map",
-      sourceRoot: "/",
-      sources: ["./index.js"],
-      names: ["B", "A"],
-      mappings: ";;;;YAAAC"
+      file: 'index.js.map',
+      sourceRoot: '/',
+      sources: ['./index.js'],
+      sourcesContent: [null],
+      names: ['B', 'A'],
+      mappings: ';;;;YAAAC',
     });
   });
 
-  it("Extending null mappings", async function() {
+  it('Extending null mappings', async function () {
     let originalMap = new SourceMap();
 
     originalMap.addIndexedMappings([
       {
-        source: "index.js",
-        name: "A",
+        source: 'index.js',
+        name: 'A',
         original: {
           line: 6,
-          column: 15
+          column: 15,
         },
         generated: {
           line: 5,
-          column: 12
-        }
+          column: 12,
+        },
       },
       {
         generated: {
           line: 14,
-          column: 165
-        }
-      }
+          column: 165,
+        },
+      },
     ]);
 
     let newMap = new SourceMap();
 
     newMap.addIndexedMappings([
       {
-        source: "index.js",
-        name: "B",
+        source: 'index.js',
+        name: 'B',
         original: {
           line: 14,
-          column: 165
+          column: 165,
         },
         generated: {
           line: 1,
-          column: 15
-        }
+          column: 15,
+        },
       },
       {
-        source: "index.js",
-        name: "C",
+        source: 'index.js',
+        name: 'C',
         original: {
           line: 5,
-          column: 12
+          column: 12,
         },
         generated: {
           line: 1,
-          column: 110
-        }
-      }
+          column: 110,
+        },
+      },
     ]);
 
     newMap.extends(originalMap.toBuffer());
@@ -131,36 +132,108 @@ describe("SourceMap - Extend Map", () => {
     assert.deepEqual(mappings[0], {
       generated: {
         line: 1,
-        column: 15
-      }
+        column: 15,
+      },
     });
     assert.deepEqual(mappings[1], {
       source: 0,
       name: 2,
       original: {
         line: 6,
-        column: 15
+        column: 15,
       },
       generated: {
         line: 1,
-        column: 110
-      }
+        column: 110,
+      },
     });
 
     let stringifiedMap = JSON.parse(
       await newMap.stringify({
-        file: "index.js.map",
-        sourceRoot: "/"
+        file: 'index.js.map',
+        sourceRoot: '/',
       })
     );
 
     assert.deepEqual(stringifiedMap, {
       version: 3,
-      file: "index.js.map",
-      sourceRoot: "/",
-      mappings: "e,+FAKeE",
-      sources: ["./index.js"],
-      names: ["B", "C", "A"]
+      file: 'index.js.map',
+      sourceRoot: '/',
+      mappings: 'e,+FAKeE',
+      sources: ['./index.js'],
+      sourcesContent: [null],
+      names: ['B', 'C', 'A'],
+    });
+  });
+
+  it('Basic extending w/ sourceContents', async function () {
+    let originalMap = new SourceMap();
+    originalMap.addIndexedMappings([
+      {
+        source: 'index.js',
+        name: 'A',
+        original: {
+          line: 1,
+          column: 0,
+        },
+        generated: {
+          line: 6,
+          column: 15,
+        },
+      },
+    ]);
+
+    originalMap.setSourceContent('index.js', '() => "test"');
+
+    let newMap = new SourceMap();
+    newMap.addIndexedMappings([
+      {
+        source: 'index.js',
+        name: 'B',
+        original: {
+          line: 6,
+          column: 15,
+        },
+        generated: {
+          line: 5,
+          column: 12,
+        },
+      },
+    ]);
+
+    newMap.extends(originalMap.toBuffer());
+
+    let mappings = newMap.getMap().mappings;
+
+    assert.equal(mappings.length, 1);
+    assert.deepEqual(mappings[0], {
+      source: 0,
+      name: 1,
+      original: {
+        line: 1,
+        column: 0,
+      },
+      generated: {
+        line: 5,
+        column: 12,
+      },
+    });
+
+    let stringifiedMap = JSON.parse(
+      await newMap.stringify({
+        file: 'index.js.map',
+        sourceRoot: '/',
+      })
+    );
+
+    assert.deepEqual(stringifiedMap, {
+      version: 3,
+      file: 'index.js.map',
+      sourceRoot: '/',
+      sources: ['./index.js'],
+      sourcesContent: ['() => "test"'],
+      names: ['B', 'A'],
+      mappings: ';;;;YAAAC',
     });
   });
 });

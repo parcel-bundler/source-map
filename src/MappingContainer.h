@@ -22,7 +22,13 @@ public:
 
     std::vector<std::string> &getSourcesVector();
 
-    int addSource(std::string &source);
+    std::vector<std::string> &getSourcesContentVector();
+
+    int addSource(std::string &sourceName);
+
+    void setSourceContent(int sourceIndex, std::string &sourceContent);
+
+    std::string getSourceContent(int sourceIndex);
 
     int getSourceIndex(std::string &source);
 
@@ -46,7 +52,7 @@ public:
 
     Mapping findClosestMapping(int line, int column);
 
-    void addEmptyMap(std::string sourceName, std::string sourceContent, int lineOffset = 0);
+    void addEmptyMap(std::string& sourceName, std::string &sourceContent, int lineOffset = 0);
 
     flatbuffers::FlatBufferBuilder toBuffer();
 
@@ -59,6 +65,7 @@ public:
 private:
     // Processed mappings, for all kinds of modifying within the sourcemap
     std::vector<std::string> _sources;
+    std::vector<std::string> _sources_content;
     std::vector<std::string> _names;
     std::vector<MappingLine> _mapping_lines;
     std::unordered_map<std::string, int> _sources_index;

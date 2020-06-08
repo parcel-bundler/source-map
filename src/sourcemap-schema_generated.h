@@ -139,14 +139,18 @@ struct Map FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_NAMES = 4,
     VT_SOURCES = 6,
-    VT_LINECOUNT = 8,
-    VT_LINES = 10
+    VT_SOURCESCONTENT = 8,
+    VT_LINECOUNT = 10,
+    VT_LINES = 12
   };
   const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *names() const {
     return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *>(VT_NAMES);
   }
   const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *sources() const {
     return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *>(VT_SOURCES);
+  }
+  const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *sourcesContent() const {
+    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *>(VT_SOURCESCONTENT);
   }
   int32_t lineCount() const {
     return GetField<int32_t>(VT_LINECOUNT, 0);
@@ -162,6 +166,9 @@ struct Map FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
            VerifyOffset(verifier, VT_SOURCES) &&
            verifier.VerifyVector(sources()) &&
            verifier.VerifyVectorOfStrings(sources()) &&
+           VerifyOffset(verifier, VT_SOURCESCONTENT) &&
+           verifier.VerifyVector(sourcesContent()) &&
+           verifier.VerifyVectorOfStrings(sourcesContent()) &&
            VerifyField<int32_t>(verifier, VT_LINECOUNT) &&
            VerifyOffset(verifier, VT_LINES) &&
            verifier.VerifyVector(lines()) &&
@@ -179,6 +186,9 @@ struct MapBuilder {
   }
   void add_sources(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> sources) {
     fbb_.AddOffset(Map::VT_SOURCES, sources);
+  }
+  void add_sourcesContent(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> sourcesContent) {
+    fbb_.AddOffset(Map::VT_SOURCESCONTENT, sourcesContent);
   }
   void add_lineCount(int32_t lineCount) {
     fbb_.AddElement<int32_t>(Map::VT_LINECOUNT, lineCount, 0);
@@ -202,11 +212,13 @@ inline flatbuffers::Offset<Map> CreateMap(
     flatbuffers::FlatBufferBuilder &_fbb,
     flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> names = 0,
     flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> sources = 0,
+    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> sourcesContent = 0,
     int32_t lineCount = 0,
     flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<SourceMapSchema::MappingLine>>> lines = 0) {
   MapBuilder builder_(_fbb);
   builder_.add_lines(lines);
   builder_.add_lineCount(lineCount);
+  builder_.add_sourcesContent(sourcesContent);
   builder_.add_sources(sources);
   builder_.add_names(names);
   return builder_.Finish();
@@ -216,15 +228,18 @@ inline flatbuffers::Offset<Map> CreateMapDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
     const std::vector<flatbuffers::Offset<flatbuffers::String>> *names = nullptr,
     const std::vector<flatbuffers::Offset<flatbuffers::String>> *sources = nullptr,
+    const std::vector<flatbuffers::Offset<flatbuffers::String>> *sourcesContent = nullptr,
     int32_t lineCount = 0,
     const std::vector<flatbuffers::Offset<SourceMapSchema::MappingLine>> *lines = nullptr) {
   auto names__ = names ? _fbb.CreateVector<flatbuffers::Offset<flatbuffers::String>>(*names) : 0;
   auto sources__ = sources ? _fbb.CreateVector<flatbuffers::Offset<flatbuffers::String>>(*sources) : 0;
+  auto sourcesContent__ = sourcesContent ? _fbb.CreateVector<flatbuffers::Offset<flatbuffers::String>>(*sourcesContent) : 0;
   auto lines__ = lines ? _fbb.CreateVector<flatbuffers::Offset<SourceMapSchema::MappingLine>>(*lines) : 0;
   return SourceMapSchema::CreateMap(
       _fbb,
       names__,
       sources__,
+      sourcesContent__,
       lineCount,
       lines__);
 }

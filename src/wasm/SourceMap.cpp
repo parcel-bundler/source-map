@@ -8,9 +8,12 @@
 SourceMap::SourceMap() {}
 SourceMap::~SourceMap() {}
 
-void SourceMap::addRawMappings(std::string rawMappings, std::vector<std::string> sources, std::vector<std::string> names, int lineOffset, int columnOffset) {
+void SourceMap::addRawMappings(std::string rawMappings, std::vector<std::string> sources, std::vector<std::string> sourcesContent, std::vector<std::string> names, int lineOffset, int columnOffset) {
     std::vector<int> namesIndex = addNames(names);
     std::vector<int> sourcesIndex = addSources(sources);
+    for (int i=0; i < sourcesContent.size(); ++i) {
+        _mapping_container.setSourceContent(sourcesIndex[i], sourcesContent[i]);
+    }
 
     _mapping_container.addVLQMappings(rawMappings, sourcesIndex, namesIndex, lineOffset, columnOffset);
 }
@@ -106,6 +109,18 @@ int SourceMap::addName(std::string name) {
     return _mapping_container.addName(name);
 }
 
+std::string SourceMap::getSourceContent(std::string sourceName) {
+    return _mapping_container.getSourceContent(_mapping_container.getSourceIndex(sourceName));
+}
+
+std::vector<std::string> SourceMap::getSourcesContent() {
+    return _mapping_container.getSourcesContentVector();
+}
+
+void SourceMap::setSourceContent(std::string sourceName, std::string sourceContent) {
+    _mapping_container.setSourceContent(_mapping_container.addSource(sourceName), sourceContent);
+}
+
 void SourceMap::addEmptyMap(std::string sourceName, std::string sourceContent, int lineOffset) {
     _mapping_container.addEmptyMap(sourceName, sourceContent, lineOffset);
 }
@@ -128,12 +143,15 @@ EMSCRIPTEN_BINDINGS(my_class_example) {
         .function("getVLQMappings", &SourceMap::getVLQMappings)
         .function("getMappings", &SourceMap::getMappings)
         .function("getSources", &SourceMap::getSources)
+        .function("getSourcesContent", &SourceMap::getSourcesContent)
         .function("getNames", &SourceMap::getNames)
         .function("toBuffer", &SourceMap::toBuffer)
         .function("addName", &SourceMap::addName)
         .function("addSource", &SourceMap::addSource)
         .function("getSourceIndex", &SourceMap::getSourceIndex)
         .function("getSource", &SourceMap::getSource)
+        .function("getSourceContent", &SourceMap::getSourceContent)
+        .function("setSourceContent", &SourceMap::setSourceContent)
         .function("getNameIndex", &SourceMap::getNameIndex)
         .function("getName", &SourceMap::getName)
         .function("addEmptyMap", &SourceMap::addEmptyMap)

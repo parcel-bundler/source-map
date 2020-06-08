@@ -2,6 +2,8 @@
 
 A source map library purpose-build for the Parcel bundler with a focus on fast combining and manipulating of source-maps.
 
+To learn more about how sourcemaps are formatted and how they work, you can have a look at the [SourceMap Specification](https://docs.google.com/document/d/1U1RGAehQwRypUTovF1KRlpiOFze0b-_2gc6fAH0KY0k).
+
 ## How to use this library?
 
 If you want to use this library in your project or are looking to write a Parcel plugin with sourcemap support this should explain how you could get started.

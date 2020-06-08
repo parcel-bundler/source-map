@@ -1,41 +1,42 @@
-const assert = require("assert");
-const SourceMap = require(".").default;
+const assert = require('assert');
+const SourceMap = require('.').default;
 
 const SIMPLE_SOURCE_MAP = {
   version: 3,
-  file: "helloworld.js",
-  sources: ["helloworld.coffee"],
+  file: 'helloworld.js',
+  sources: ['helloworld.coffee'],
   names: [],
-  mappings: "AAAA;AAAA,EAAA,OAAO,CAAC,GAAR,CAAY,aAAZ,CAAA,CAAA;AAAA",
+  mappings: 'AAAA;AAAA,EAAA,OAAO,CAAC,GAAR,CAAY,aAAZ,CAAA,CAAA;AAAA',
 };
 
-describe("SourceMap - Basics", () => {
-  it("Should be able to instantiate a SourceMap with vlq mappings", async () => {
+describe('SourceMap - Basics', () => {
+  it('Should be able to instantiate a SourceMap with vlq mappings', async () => {
     let map = new SourceMap();
-    map.addRawMappings(
-      SIMPLE_SOURCE_MAP.mappings,
-      SIMPLE_SOURCE_MAP.sources,
-      SIMPLE_SOURCE_MAP.names
-    );
+    map.addRawMappings({
+      mappings: SIMPLE_SOURCE_MAP.mappings,
+      sources: SIMPLE_SOURCE_MAP.sources,
+      names: SIMPLE_SOURCE_MAP.names,
+    });
     let stringifiedMap = JSON.parse(
       await map.stringify({
-        file: "index.js.map",
-        sourceRoot: "/",
+        file: 'index.js.map',
+        sourceRoot: '/',
       })
     );
     assert.equal(stringifiedMap.mappings, SIMPLE_SOURCE_MAP.mappings);
   });
 
-  it("Should be able to output the processed mappings as JS Objects", () => {
+  it('Should be able to output the processed mappings as JS Objects', () => {
     let map = new SourceMap();
-    map.addRawMappings(
-      SIMPLE_SOURCE_MAP.mappings,
-      SIMPLE_SOURCE_MAP.sources,
-      SIMPLE_SOURCE_MAP.names
-    );
+    map.addRawMappings({
+      mappings: SIMPLE_SOURCE_MAP.mappings,
+      sources: SIMPLE_SOURCE_MAP.sources,
+      names: SIMPLE_SOURCE_MAP.names,
+    });
 
     assert.deepEqual(map.getMap(), {
-      sources: ["helloworld.coffee"],
+      sources: ['helloworld.coffee'],
+      sourcesContent: [''],
       names: [],
       mappings: [
         {
@@ -97,13 +98,13 @@ describe("SourceMap - Basics", () => {
     });
   });
 
-  it("Should be able to instantiate a SourceMap with processed mappings", async () => {
+  it('Should be able to instantiate a SourceMap with processed mappings', async () => {
     let map = new SourceMap();
 
     map.addIndexedMappings([
       {
-        source: "index.js",
-        name: "A",
+        source: 'index.js',
+        name: 'A',
         original: {
           line: 1,
           column: 0,
@@ -117,26 +118,27 @@ describe("SourceMap - Basics", () => {
 
     let stringifiedMap = JSON.parse(
       await map.stringify({
-        file: "index.js.map",
-        sourceRoot: "/",
+        file: 'index.js.map',
+        sourceRoot: '/',
       })
     );
     assert.deepEqual(stringifiedMap, {
       version: 3,
-      file: "index.js.map",
-      sourceRoot: "/",
-      mappings: ";;;;;eAAAA",
-      sources: ["./index.js"],
-      names: ["A"],
+      file: 'index.js.map',
+      sourceRoot: '/',
+      mappings: ';;;;;eAAAA',
+      sources: ['./index.js'],
+      sourcesContent: [null],
+      names: ['A'],
     });
   });
 
-  it("Should be able to handle undefined name field using addIndexedMappings", async () => {
+  it('Should be able to handle undefined name field using addIndexedMappings', async () => {
     let map = new SourceMap();
 
     map.addIndexedMappings([
       {
-        source: "index.js",
+        source: 'index.js',
         name: undefined,
         original: {
           line: 1,
@@ -151,21 +153,22 @@ describe("SourceMap - Basics", () => {
 
     let stringifiedMap = JSON.parse(
       await map.stringify({
-        file: "index.js.map",
-        sourceRoot: "/",
+        file: 'index.js.map',
+        sourceRoot: '/',
       })
     );
     assert.deepEqual(stringifiedMap, {
       version: 3,
-      file: "index.js.map",
-      sourceRoot: "/",
-      mappings: ";;;;;eAAA",
-      sources: ["./index.js"],
+      file: 'index.js.map',
+      sourceRoot: '/',
+      mappings: ';;;;;eAAA',
+      sources: ['./index.js'],
+      sourcesContent: [null],
       names: [],
     });
   });
 
-  it("Should be able to handle undefined name and source field using addIndexedMappings", async () => {
+  it('Should be able to handle undefined name and source field using addIndexedMappings', async () => {
     let map = new SourceMap();
 
     map.addIndexedMappings([
@@ -182,116 +185,156 @@ describe("SourceMap - Basics", () => {
 
     let stringifiedMap = JSON.parse(
       await map.stringify({
-        file: "index.js.map",
-        sourceRoot: "/",
+        file: 'index.js.map',
+        sourceRoot: '/',
       })
     );
     assert.deepEqual(stringifiedMap, {
       version: 3,
-      file: "index.js.map",
-      sourceRoot: "/",
-      mappings: ";;;;;e",
+      file: 'index.js.map',
+      sourceRoot: '/',
+      mappings: ';;;;;e',
       sources: [],
+      sourcesContent: [],
       names: [],
     });
   });
 
-  it("Should be able to create a SourceMap buffer and construct a new SourceMap from it", async () => {
+  it('Should be able to create a SourceMap buffer and construct a new SourceMap from it', async () => {
     let map = new SourceMap();
-    map.addRawMappings(
-      SIMPLE_SOURCE_MAP.mappings,
-      SIMPLE_SOURCE_MAP.sources,
-      SIMPLE_SOURCE_MAP.names
-    );
+    map.addRawMappings({
+      mappings: SIMPLE_SOURCE_MAP.mappings,
+      sources: SIMPLE_SOURCE_MAP.sources,
+      sourcesContent: ['() => "test"'],
+      names: SIMPLE_SOURCE_MAP.names,
+    });
     let buffer = map.toBuffer();
     let newMap = new SourceMap();
     newMap.addBufferMappings(buffer);
     let stringifiedMap = JSON.parse(
       await newMap.stringify({
-        file: "index.js.map",
-        sourceRoot: "/",
+        file: 'index.js.map',
+        sourceRoot: '/',
       })
     );
-    assert.equal(stringifiedMap.mappings, SIMPLE_SOURCE_MAP.mappings);
+
+    assert.deepEqual(stringifiedMap, {
+      version: 3,
+      file: 'index.js.map',
+      sourceRoot: '/',
+      sources: ['./helloworld.coffee'],
+      sourcesContent: ['() => "test"'],
+      names: SIMPLE_SOURCE_MAP.names,
+      mappings: SIMPLE_SOURCE_MAP.mappings,
+    });
   });
 
-  it("Should be able to add sources to a sourcemap", () => {
+  it('Should be able to add sources to a sourcemap', () => {
     let map = new SourceMap();
-    map.addRawMappings(
-      SIMPLE_SOURCE_MAP.mappings,
-      SIMPLE_SOURCE_MAP.sources,
-      SIMPLE_SOURCE_MAP.names
-    );
+    map.addRawMappings({
+      mappings: SIMPLE_SOURCE_MAP.mappings,
+      sources: SIMPLE_SOURCE_MAP.sources,
+      names: SIMPLE_SOURCE_MAP.names,
+    });
 
-    assert.deepEqual(map.addSources(["index.js"]), [1]);
-    assert.deepEqual(map.addSources(["test.js", "execute.js"]), [2, 3]);
+    assert.deepEqual(map.addSources(['index.js']), [1]);
+    assert.deepEqual(map.addSources(['test.js', 'execute.js']), [2, 3]);
 
-    assert.deepEqual(map.addSource("abc.js"), 4);
+    assert.deepEqual(map.addSource('abc.js'), 4);
   });
 
-  it("Should be able to add names to a sourcemap", () => {
+  it('Should be able to add names to a sourcemap', () => {
     let map = new SourceMap();
-    map.addRawMappings(
-      SIMPLE_SOURCE_MAP.mappings,
-      SIMPLE_SOURCE_MAP.sources,
-      SIMPLE_SOURCE_MAP.names
-    );
+    map.addRawMappings({
+      mappings: SIMPLE_SOURCE_MAP.mappings,
+      sources: SIMPLE_SOURCE_MAP.sources,
+      names: SIMPLE_SOURCE_MAP.names,
+    });
 
-    assert.deepEqual(map.addNames(["run"]), [0]);
-    assert.deepEqual(map.addNames(["processQueue", "processNode"]), [1, 2]);
+    assert.deepEqual(map.addNames(['run']), [0]);
+    assert.deepEqual(map.addNames(['processQueue', 'processNode']), [1, 2]);
 
-    assert.deepEqual(map.addName("window"), 3);
+    assert.deepEqual(map.addName('window'), 3);
   });
 
-  it("Should be able to return source index", () => {
+  it('Should be able to return source index', () => {
     let map = new SourceMap();
-    map.addRawMappings(
-      SIMPLE_SOURCE_MAP.mappings,
-      SIMPLE_SOURCE_MAP.sources,
-      SIMPLE_SOURCE_MAP.names
-    );
+    map.addRawMappings({
+      mappings: SIMPLE_SOURCE_MAP.mappings,
+      sources: SIMPLE_SOURCE_MAP.sources,
+      names: SIMPLE_SOURCE_MAP.names,
+    });
 
-    map.addSources(["test.ts"]);
-    assert.equal(map.getSourceIndex("helloworld.coffee"), 0);
-    assert.equal(map.getSourceIndex("e.coffee"), -1);
-    assert.equal(map.getSourceIndex("test.ts"), 1);
+    map.addSources(['test.ts']);
+    assert.equal(map.getSourceIndex('helloworld.coffee'), 0);
+    assert.equal(map.getSourceIndex('e.coffee'), -1);
+    assert.equal(map.getSourceIndex('test.ts'), 1);
   });
 
-  it("Should be able to return name index", () => {
+  it('Should be able to return name index', () => {
     let map = new SourceMap();
-    map.addRawMappings(
-      SIMPLE_SOURCE_MAP.mappings,
-      SIMPLE_SOURCE_MAP.sources,
-      SIMPLE_SOURCE_MAP.names
-    );
+    map.addRawMappings({
+      mappings: SIMPLE_SOURCE_MAP.mappings,
+      sources: SIMPLE_SOURCE_MAP.sources,
+      names: SIMPLE_SOURCE_MAP.names,
+    });
 
-    map.addNames(["test"]);
-    assert.equal(map.getNameIndex("test"), 0);
-    assert.equal(map.getNameIndex("something"), -1);
+    map.addNames(['test']);
+    assert.equal(map.getNameIndex('test'), 0);
+    assert.equal(map.getNameIndex('something'), -1);
   });
 
-  it("Should be able to return source for a certain index", () => {
+  it('Should be able to return source for a certain index', () => {
     let map = new SourceMap();
-    map.addRawMappings(
-      SIMPLE_SOURCE_MAP.mappings,
-      SIMPLE_SOURCE_MAP.sources,
-      SIMPLE_SOURCE_MAP.names
-    );
-    
-    assert.equal(map.getSource(0), "helloworld.coffee");
-    assert.equal(map.getSource(1), "");
+    map.addRawMappings({
+      mappings: SIMPLE_SOURCE_MAP.mappings,
+      sources: SIMPLE_SOURCE_MAP.sources,
+      names: SIMPLE_SOURCE_MAP.names,
+    });
+
+    assert.equal(map.getSource(0), 'helloworld.coffee');
+    assert.equal(map.getSource(1), '');
   });
 
-  it("Should be able to return name for a certain index", () => {
+  it('Should be able to return name for a certain index', () => {
     let map = new SourceMap();
-    map.addRawMappings(
-      SIMPLE_SOURCE_MAP.mappings,
-      SIMPLE_SOURCE_MAP.sources,
-      SIMPLE_SOURCE_MAP.names
+    map.addRawMappings({
+      mappings: SIMPLE_SOURCE_MAP.mappings,
+      sources: SIMPLE_SOURCE_MAP.sources,
+      names: SIMPLE_SOURCE_MAP.names,
+    });
+
+    map.addNames(['test']);
+    assert.equal(map.getName(0), 'test');
+    assert.equal(map.getName(1), '');
+  });
+
+  it('Should be able to store and return sourceContents', async () => {
+    let map = new SourceMap();
+    map.addRawMappings({
+      mappings: SIMPLE_SOURCE_MAP.mappings,
+      sources: SIMPLE_SOURCE_MAP.sources,
+      sourcesContent: ['module.exports = () => "hello world";'],
+      names: SIMPLE_SOURCE_MAP.names,
+    });
+
+    let stringifiedMap = JSON.parse(
+      await map.stringify({
+        file: 'index.js.map',
+        sourceRoot: '/',
+      })
     );
 
-    map.addNames(["test"]);
-    assert.equal(map.getName(0), "test");
-    assert.equal(map.getName(1), "");
+    assert.deepEqual(stringifiedMap, {
+      version: 3,
+      file: 'index.js.map',
+      sourceRoot: '/',
+      sources: ['./helloworld.coffee'],
+      sourcesContent: ['module.exports = () => "hello world";'],
+      names: [],
+      mappings: 'AAAA;AAAA,EAAA,OAAO,CAAC,GAAR,CAAY,aAAZ,CAAA,CAAA;AAAA',
+    });
+
+    assert.equal(map.getSourceContent('helloworld.coffee'), 'module.exports = () => "hello world";');
   });
 });

@@ -11,7 +11,7 @@
     "benchmark": "npm run benchmark:node && npm run benchmark:wasm",
     "benchmark:node": "cross-env BACKEND=node node ./bench/run",
     "benchmark:wasm": "cross-env BACKEND=wasm node ./bench/run",
-    "compile-wasm": "make -j4",
+    "compile-wasm": "make clean && make -j4",
     "transpile": "babel ./src/*.js --out-dir ./dist && flow-copy-source -v src dist",
     "prebuild": "prebuildify -t 10.20.1 --napi --strip --tag-libc",
     "build:dev": "node-gyp rebuild --debug",
@@ -20,7 +20,18 @@
     "prepublish": "npm run transpile",
     "lint": "prettier --write bench/run.js src/*.js",
     "typecheck": "flow",
+    "format": "prettier --write \"./**/*.{js,md,mdx}\"",
     "compile-schema": "./flatc --cpp -o ./src ./src/sourcemap-schema.fbs"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,json,md}": [
+      "prettier --write"
+    ]
   },
   "files": [
     "binding.gyp",
@@ -52,10 +63,12 @@
     "cross-env": "^7.0.2",
     "flow-bin": "^0.123.0",
     "flow-copy-source": "^2.0.9",
+    "husky": "^4.2.5",
+    "lint-staged": "^10.2.9",
     "mocha": "^7.1.2",
     "prebuildify": "^3.0.4",
+    "prettier": "^2.0.5",
     "source-map": "^0.7.3",
-    "tiny-benchy": "^1.0.0",
-    "prettier": "^2.0.5"
+    "tiny-benchy": "^1.0.0"
   }
 }

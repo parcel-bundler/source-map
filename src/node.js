@@ -1,14 +1,9 @@
 // @flow
-import type {
-  ParsedMap,
-  VLQMap,
-  SourceMapStringifyOptions,
-  IndexedMapping,
-} from "./types";
-import path from "path";
-import SourceMap from "./SourceMap";
+import type { ParsedMap, VLQMap, SourceMapStringifyOptions, IndexedMapping } from './types';
+import path from 'path';
+import SourceMap from './SourceMap';
 
-const bindings = require("node-gyp-build")(path.join(__dirname, ".."));
+const bindings = require('node-gyp-build')(path.join(__dirname, '..'));
 
 export default class NodeSourceMap extends SourceMap {
   constructor() {
@@ -28,11 +23,7 @@ export default class NodeSourceMap extends SourceMap {
 
   delete() {}
 
-  static generateEmptyMap(
-    sourceName: string,
-    sourceContent: string,
-    lineOffset: number = 0
-  ): NodeSourceMap {
+  static generateEmptyMap(sourceName: string, sourceContent: string, lineOffset: number = 0): NodeSourceMap {
     let map = new NodeSourceMap();
     map.addEmptyMap(sourceName, sourceContent, lineOffset);
     return map;
