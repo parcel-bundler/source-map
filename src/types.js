@@ -35,7 +35,7 @@ export type SourceMapStringifyOptions = {
   sourceRoot?: string,
   rootDir?: string,
   inlineSources?: boolean,
-  fs?: any,
+  fs?: { readFile(path: string, encoding: string): Promise<string>, ... },
   format?: 'inline' | 'string' | 'object',
   ...
 };
