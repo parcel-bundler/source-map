@@ -5,6 +5,9 @@ import path from 'path';
 import { generateInlineMap, partialVlqMapToSourceMap } from './utils';
 
 export default class SourceMap {
+  /**
+   * @private
+   */
   sourceMapInstance: any;
 
   /**
