@@ -12,6 +12,8 @@ const SIMPLE_SOURCE_MAP = {
 };
 
 const ROOT_DIR = path.join(__dirname, 'integration/sub-folder');
+const fileOneContent = fs.readFileSync(path.join(ROOT_DIR, SIMPLE_SOURCE_MAP.sources[0]), 'utf-8');
+const fileTwoContent = fs.readFileSync(path.join(ROOT_DIR, SIMPLE_SOURCE_MAP.sources[1]), 'utf-8');
 
 describe('SourceMap - Inline Sources', () => {
   it('Should be able to inline sources', async () => {
@@ -34,10 +36,7 @@ describe('SourceMap - Inline Sources', () => {
     assert.deepEqual(stringifiedMap, {
       mappings: 'AAAA;AAAA,EAAA,OAAO,CAAC,GAAR,CAAY,aAAZ,CAAA,CAAA;AAAA',
       sources: ['../a.js', './b.js'],
-      sourcesContent: [
-        "module.exports = () => {\n  return 'a';\n};\n",
-        "module.exports = () => {\n  return 'b';\n};\n",
-      ],
+      sourcesContent: [fileOneContent, fileTwoContent],
       names: [],
       version: 3,
       file: 'bundle.js.map',
@@ -65,7 +64,7 @@ describe('SourceMap - Inline Sources', () => {
     assert.deepEqual(stringifiedMap, {
       mappings: 'AAAA;AAAA,EAAA,OAAO,CAAC,GAAR,CAAY,aAAZ,CAAA,CAAA;AAAA',
       sources: ['../a.js', './b.js'],
-      sourcesContent: ["module.exports = () => {\n  return 'a';\n};\n", null],
+      sourcesContent: [fileOneContent, null],
       names: [],
       version: 3,
       file: 'bundle.js.map',
@@ -94,7 +93,7 @@ describe('SourceMap - Inline Sources', () => {
     assert.deepEqual(stringifiedMap, {
       mappings: 'AAAA;AAAA,EAAA,OAAO,CAAC,GAAR,CAAY,aAAZ,CAAA,CAAA;AAAA',
       sources: ['../a.js', './b.js'],
-      sourcesContent: ["module.exports = () => {\n  return 'a';\n};\n", 'b-content'],
+      sourcesContent: [fileOneContent, 'b-content'],
       names: [],
       version: 3,
       file: 'bundle.js.map',
