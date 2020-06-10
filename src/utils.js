@@ -49,17 +49,17 @@ export async function partialVlqMapToSourceMap(
     resultMap.sourcesContent.push(...new Array(resultMap.sources.length - resultMap.sourcesContent.length).fill(null));
   }
 
-  if (inlineSources && fs) {
+  if (fs) {
     resultMap.sourcesContent = await Promise.all(
       resultMap.sourcesContent.map(async (content, index): Promise<string | null> => {
-        if (content) {
-          let sourceName = map.sources[index];
+        let sourceName = map.sources[index];
+        if (!content && (inlineSources || sourceName.startsWith('..'))) {
           try {
             return await fs.readFile(path.resolve(root, sourceName), 'utf-8');
           } catch (e) {}
         }
 
-        return null;
+        return content;
       })
     );
   }
