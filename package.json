@@ -1,6 +1,6 @@
 {
   "name": "@parcel/source-map",
-  "version": "2.0.0-alpha.4.11",
+  "version": "2.0.0-alpha.4.12",
   "main": "./dist/node.js",
   "browser": "./dist/wasm-browser.js",
   "license": "MIT",
@@ -63,6 +63,7 @@
     "cross-env": "^7.0.2",
     "flow-bin": "^0.123.0",
     "flow-copy-source": "^2.0.9",
+    "fs-extra": "^9.0.1",
     "husky": "^4.2.5",
     "lint-staged": "^10.2.9",
     "mocha": "^7.1.2",

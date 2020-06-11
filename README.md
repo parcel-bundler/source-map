@@ -16,9 +16,9 @@ You can create a sourcemap from another sourcemap or by creating it one mapping 
 
 #### Creating from existing sourcemap
 
-To create a sourcemap from an existing sourcemap you have to ensure it is a JS Object first by asking for the object version from whichever transpiler you're running or by parsing the serialised map using `JSON.parse`.
+To create a sourcemap from an existing sourcemap you have to ensure it is a JS Object first by asking for the object version from whichever transpiler you're running or by parsing the serialised map using `JSON.parse` or any other JSON parser.
 
-After this you can call the function `addRawMappings(mappings, sources, names, lineOffset, columnOffset)` this function takes in the parameters `mappings`, `sources`, `names`, `lineOffset` and `columnOffset`. These correspond to the mappings, sources and names fields in the sourcemap object. The line and column offset are optional parameters used for offsetting the generated line and column. (this can be used when post-processing or wrapping the code linked to the sourcemap, in Parcel this is used when combining maps).
+After this you can call the function `addRawMappings(map, lineOffset, columnOffset)` this function takes in the parameters `map`, `lineOffset` and `columnOffset`. The map argument corresponds to the sourcemap object. The line and column offset are optional parameters used for offsetting the generated line and column. (this can be used when post-processing or wrapping the code linked to the sourcemap, in Parcel this is used when combining maps).
 
 Example:
 
@@ -34,7 +34,7 @@ const RAW_SOURCEMAP = {
 };
 
 let sourcemap = new SourceMap();
-sourcemap.addRawMappings(RAW_SOURCEMAP.mappings, RAW_SOURCEMAP.sources, RAW_SOURCEMAP.names);
+sourcemap.addRawMappings(RAW_SOURCEMAP);
 
 // This function removes the underlying references in the native code
 sourcemap.delete();

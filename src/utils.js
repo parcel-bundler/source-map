@@ -49,17 +49,19 @@ export async function partialVlqMapToSourceMap(
     resultMap.sourcesContent.push(...new Array(resultMap.sources.length - resultMap.sourcesContent.length).fill(null));
   }
 
-  if (inlineSources && fs) {
+  if (fs) {
     resultMap.sourcesContent = await Promise.all(
       resultMap.sourcesContent.map(async (content, index): Promise<string | null> => {
-        if (content) {
-          let sourceName = map.sources[index];
+        let sourceName = map.sources[index];
+        // If sourceName starts with `..` it is outside rootDir, in this case we likely cannot access this file from the browser or packaged node_module
+        // Because of this we have to include the sourceContent to ensure you can always see the sourcecontent for each mapping.
+        if (!content && (inlineSources || sourceName.startsWith('..'))) {
           try {
             return await fs.readFile(path.resolve(root, sourceName), 'utf-8');
           } catch (e) {}
         }
 
-        return null;
+        return content;
       })
     );
   }
