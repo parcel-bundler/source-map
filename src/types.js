@@ -22,7 +22,7 @@ export type ParsedMap = {|
 export type VLQMap = {
   +sources: $ReadOnlyArray<string>,
   +sourcesContent?: $ReadOnlyArray<string | null>,
-  +names: Array<string>,
+  +names: $ReadOnlyArray<string>,
   +mappings: string,
   +version?: number,
   +file?: string,
