@@ -179,8 +179,8 @@ export default class SourceMap {
    * Set the sourceContent for a certain file
    * this is optional and is only recommended for files that we cannot read in at the end when we serialise the sourcemap
    *
-   * @param {string} sourceName the path of the sourceFile
-   * @param {string} sourceContent the content of the sourceFile
+   * @param sourceName the path of the sourceFile
+   * @param sourceContent the content of the sourceFile
    */
   setSourceContent(sourceName: string, sourceContent: string): void {
     return this.sourceMapInstance.setSourceContent(sourceName, sourceContent);
@@ -189,7 +189,7 @@ export default class SourceMap {
   /**
    * Get the content of a source file if it is inlined as part of the source-map
    *
-   * @param {string} sourceName
+   * @param sourceName filename
    */
   getSourceContent(sourceName: string): string {
     return this.sourceMapInstance.getSourceContent(sourceName);
