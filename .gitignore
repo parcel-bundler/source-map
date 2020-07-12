@@ -11,3 +11,4 @@ dist
 prebuilds
 wasm-node
 wasm-browser
+yarn.lock
