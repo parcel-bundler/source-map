@@ -52,7 +52,7 @@
     "node": ">= 10"
   },
   "dependencies": {
-    "node-addon-api": "^2.0.0",
+    "node-addon-api": "^3.0.0",
     "node-gyp-build": "^4.2.2"
   },
   "devDependencies": {
@@ -67,7 +67,7 @@
     "husky": "^4.2.5",
     "lint-staged": "^10.2.9",
     "mocha": "^7.1.2",
-    "prebuildify": "^3.0.4",
+    "prebuildify": "^4.0.0",
     "prettier": "^2.0.5",
     "source-map": "^0.7.3",
     "tiny-benchy": "^1.0.0"
