@@ -2,7 +2,7 @@
 import type { ParsedMap, VLQMap, SourceMapStringifyOptions, IndexedMapping } from './types';
 
 import path from 'path';
-import { generateInlineMap, partialVlqMapToSourceMap } from './utils';
+import { generateInlineMap, partialVlqMapToSourceMap, normalisePath } from './utils';
 
 export default class SourceMap {
   /**
@@ -45,7 +45,7 @@ export default class SourceMap {
     }
     this.sourceMapInstance.addRawMappings(
       mappings,
-      sources,
+      sources.map((source) => (source ? normalisePath(source) : '')),
       sourcesContent.map((content) => (content ? content : '')),
       names,
       lineOffset,
@@ -90,7 +90,7 @@ export default class SourceMap {
       hasValidOriginal ? mapping.original.line - 1 : -1,
       // $FlowFixMe
       hasValidOriginal ? mapping.original.column : -1,
-      mapping.source || '',
+      mapping.source ? normalisePath(mapping.source) : '',
       mapping.name || ''
     );
   }
@@ -144,7 +144,7 @@ export default class SourceMap {
    * @returns the index of the added source filepath in the sources array
    */
   addSource(source: string): number {
-    return this.sourceMapInstance.addSource(source);
+    return this.sourceMapInstance.addSource(normalisePath(source));
   }
 
   /**
@@ -163,7 +163,7 @@ export default class SourceMap {
    * @param source the filepath of the source file
    */
   getSourceIndex(source: string): number {
-    return this.sourceMapInstance.getSourceIndex(source);
+    return this.sourceMapInstance.getSourceIndex(normalisePath(source));
   }
 
   /**
@@ -183,7 +183,7 @@ export default class SourceMap {
    * @param sourceContent the content of the sourceFile
    */
   setSourceContent(sourceName: string, sourceContent: string): void {
-    return this.sourceMapInstance.setSourceContent(sourceName, sourceContent);
+    return this.sourceMapInstance.setSourceContent(normalisePath(sourceName), sourceContent);
   }
 
   /**
@@ -192,7 +192,7 @@ export default class SourceMap {
    * @param sourceName filename
    */
   getSourceContent(sourceName: string): string {
-    return this.sourceMapInstance.getSourceContent(sourceName);
+    return this.sourceMapInstance.getSourceContent(normalisePath(sourceName));
   }
 
   /**

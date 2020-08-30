@@ -4,13 +4,13 @@ const SourceMap = require('.').default;
 const SIMPLE_SOURCE_MAP = {
   version: 3,
   file: 'helloworld.js',
-  sources: ['helloworld.coffee'],
+  sources: ['./helloworld.coffee'],
   names: [],
   mappings: 'AAAA;AAAA,EAAA,OAAO,CAAC,GAAR,CAAY,aAAZ,CAAA,CAAA;AAAA',
 };
 
 let expectedResultOne = {
-  sources: ['helloworld.coffee'],
+  sources: ['./helloworld.coffee'],
   sourcesContent: [''],
   names: [],
   mappings: [
@@ -128,7 +128,7 @@ let expectedResultOne = {
 };
 
 let expectedResultTwo = {
-  sources: ['helloworld.coffee'],
+  sources: ['./helloworld.coffee'],
   sourcesContent: [''],
   names: [],
   mappings: [

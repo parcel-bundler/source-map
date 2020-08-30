@@ -35,7 +35,7 @@ describe('SourceMap - Basics', () => {
     });
 
     assert.deepEqual(map.getMap(), {
-      sources: ['helloworld.coffee'],
+      sources: ['./helloworld.coffee'],
       sourcesContent: [''],
       names: [],
       mappings: [
@@ -292,7 +292,7 @@ describe('SourceMap - Basics', () => {
       names: SIMPLE_SOURCE_MAP.names,
     });
 
-    assert.equal(map.getSource(0), 'helloworld.coffee');
+    assert.equal(map.getSource(0), './helloworld.coffee');
     assert.equal(map.getSource(1), '');
   });
 

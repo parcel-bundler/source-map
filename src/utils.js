@@ -7,8 +7,15 @@ export function generateInlineMap(map: string): string {
   return `data:application/json;charset=utf-8;base64,${Buffer.from(map).toString('base64')}`;
 }
 
-function normalisePath(filepath: string): string {
-  return filepath.replace(/\\/g, '/');
+export function normalisePath(filepath: string): string {
+  filepath = filepath.replace(/\\/g, '/');
+
+  // Prefix relative paths with ./ as it makes it more clear and probably prevents issues
+  if (filepath[0] !== '.' && filepath[0] !== '/') {
+    filepath = `./${filepath}`;
+  }
+
+  return filepath;
 }
 
 function relatifyPath(filepath: string, rootDir: string): string {
@@ -18,11 +25,6 @@ function relatifyPath(filepath: string, rootDir: string): string {
   // Make root paths relative to the rootDir
   if (filepath[0] === '/') {
     filepath = normalisePath(path.relative(rootDir, filepath));
-  }
-
-  // Prefix relative paths with ./ as it makes it more clear and probably prevents issues
-  if (filepath[0] !== '.') {
-    filepath = `./${filepath}`;
   }
 
   return filepath;
