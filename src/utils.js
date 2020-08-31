@@ -11,7 +11,7 @@ export function normalisePath(filepath: string): string {
   filepath = filepath.replace(/\\/g, '/');
 
   // Prefix relative paths with ./ as it makes it more clear and probably prevents issues
-  if (!path.isAbsolute(filepath)) {
+  if (filepath.length > 0 && filepath[0] !== '.' && !path.isAbsolute(filepath)) {
     filepath = `./${filepath}`;
   }
 
