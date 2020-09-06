@@ -11,7 +11,7 @@ const SIMPLE_SOURCE_MAP = {
 
 describe('SourceMap - Basics', () => {
   it('Should be able to instantiate a SourceMap with vlq mappings', async () => {
-    let map = new SourceMap();
+    let map = new SourceMap('/test-root');
     map.addRawMappings({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
@@ -27,7 +27,7 @@ describe('SourceMap - Basics', () => {
   });
 
   it('Should be able to output the processed mappings as JS Objects', () => {
-    let map = new SourceMap();
+    let map = new SourceMap('/test-root');
     map.addRawMappings({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
@@ -35,7 +35,7 @@ describe('SourceMap - Basics', () => {
     });
 
     assert.deepEqual(map.getMap(), {
-      sources: ['helloworld.coffee'],
+      sources: ['./helloworld.coffee'],
       sourcesContent: [''],
       names: [],
       mappings: [
@@ -99,7 +99,7 @@ describe('SourceMap - Basics', () => {
   });
 
   it('Should be able to instantiate a SourceMap with processed mappings', async () => {
-    let map = new SourceMap();
+    let map = new SourceMap('/test-root');
 
     map.addIndexedMappings([
       {
@@ -134,7 +134,7 @@ describe('SourceMap - Basics', () => {
   });
 
   it('Should be able to handle undefined name field using addIndexedMappings', async () => {
-    let map = new SourceMap();
+    let map = new SourceMap('/test-root');
 
     map.addIndexedMappings([
       {
@@ -169,7 +169,7 @@ describe('SourceMap - Basics', () => {
   });
 
   it('Should be able to handle undefined name and source field using addIndexedMappings', async () => {
-    let map = new SourceMap();
+    let map = new SourceMap('/test-root');
 
     map.addIndexedMappings([
       {
@@ -201,7 +201,7 @@ describe('SourceMap - Basics', () => {
   });
 
   it('Should be able to create a SourceMap buffer and construct a new SourceMap from it', async () => {
-    let map = new SourceMap();
+    let map = new SourceMap('/test-root');
     map.addRawMappings({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
@@ -230,7 +230,7 @@ describe('SourceMap - Basics', () => {
   });
 
   it('Should be able to add sources to a sourcemap', () => {
-    let map = new SourceMap();
+    let map = new SourceMap('/test-root');
     map.addRawMappings({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
@@ -244,7 +244,7 @@ describe('SourceMap - Basics', () => {
   });
 
   it('Should be able to add names to a sourcemap', () => {
-    let map = new SourceMap();
+    let map = new SourceMap('/test-root');
     map.addRawMappings({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
@@ -258,7 +258,7 @@ describe('SourceMap - Basics', () => {
   });
 
   it('Should be able to return source index', () => {
-    let map = new SourceMap();
+    let map = new SourceMap('/test-root');
     map.addRawMappings({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
@@ -272,7 +272,7 @@ describe('SourceMap - Basics', () => {
   });
 
   it('Should be able to return name index', () => {
-    let map = new SourceMap();
+    let map = new SourceMap('/test-root');
     map.addRawMappings({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
@@ -285,19 +285,19 @@ describe('SourceMap - Basics', () => {
   });
 
   it('Should be able to return source for a certain index', () => {
-    let map = new SourceMap();
+    let map = new SourceMap('/test-root');
     map.addRawMappings({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
       names: SIMPLE_SOURCE_MAP.names,
     });
 
-    assert.equal(map.getSource(0), 'helloworld.coffee');
+    assert.equal(map.getSource(0), './helloworld.coffee');
     assert.equal(map.getSource(1), '');
   });
 
   it('Should be able to return name for a certain index', () => {
-    let map = new SourceMap();
+    let map = new SourceMap('/test-root');
     map.addRawMappings({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
@@ -310,7 +310,7 @@ describe('SourceMap - Basics', () => {
   });
 
   it('Should be able to store and return sourceContents', async () => {
-    let map = new SourceMap();
+    let map = new SourceMap('/test-root');
     map.addRawMappings({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,

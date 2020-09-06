@@ -1,7 +1,8 @@
 // @flow
-import type { ParsedMap, VLQMap, SourceMapStringifyOptions, IndexedMapping } from './types';
+import type { ParsedMap, VLQMap, SourceMapStringifyOptions, IndexedMapping, GenerateEmptyMapOptions } from './types';
 import path from 'path';
 import SourceMap from './SourceMap';
+import {relatifyPath} from './utils';
 
 let Module;
 
@@ -36,14 +37,19 @@ function arrayToEmbind(Type, from): any {
 }
 
 export default class WasmSourceMap extends SourceMap {
-  constructor() {
-    super();
+  constructor(projectRoot: string = '/') {
+    super(projectRoot);
     this.sourceMapInstance = new Module.SourceMap();
   }
 
-  static generateEmptyMap(sourceName: string, sourceContent: string, lineOffset: number = 0): WasmSourceMap {
-    let map = new WasmSourceMap();
-    map.addEmptyMap(sourceName, sourceContent, lineOffset);
+  static generateEmptyMap({
+    projectRoot,
+    sourceName,
+    sourceContent,
+    lineOffset = 0,
+  }: GenerateEmptyMapOptions): WasmSourceMap {
+    let map = new WasmSourceMap(projectRoot);
+    map.addEmptyMap(relatifyPath(sourceName, projectRoot), sourceContent, lineOffset);
     return map;
   }
 
@@ -53,6 +59,7 @@ export default class WasmSourceMap extends SourceMap {
     columnOffset: number = 0
   ) {
     let { sourcesContent, sources = [], mappings, names = [] } = map;
+    sources = sources.map((source) => (source ? relatifyPath(source, this.projectRoot) : ''));
     if (!sourcesContent) {
       sourcesContent = sources.map(() => '');
     } else {

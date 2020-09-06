@@ -17,7 +17,7 @@ const fileTwoContent = fs.readFileSync(path.join(ROOT_DIR, SIMPLE_SOURCE_MAP.sou
 
 describe('SourceMap - Inline Sources', () => {
   it('Should be able to inline sources', async () => {
-    let map = new SourceMap();
+    let map = new SourceMap(ROOT_DIR);
     map.addRawMappings({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
@@ -29,7 +29,6 @@ describe('SourceMap - Inline Sources', () => {
       sourceRoot: '/',
       format: 'object',
       fs,
-      rootDir: ROOT_DIR,
       inlineSources: true,
     });
 
@@ -45,7 +44,7 @@ describe('SourceMap - Inline Sources', () => {
   });
 
   it('Should always inline sources outside the root', async () => {
-    let map = new SourceMap();
+    let map = new SourceMap(ROOT_DIR);
     map.addRawMappings({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
@@ -57,7 +56,6 @@ describe('SourceMap - Inline Sources', () => {
       sourceRoot: '/',
       format: 'object',
       fs,
-      rootDir: ROOT_DIR,
       inlineSources: false,
     });
 
@@ -73,7 +71,7 @@ describe('SourceMap - Inline Sources', () => {
   });
 
   it('Should not overwrite existing sourceContent when inlining is true', async () => {
-    let map = new SourceMap();
+    let map = new SourceMap(ROOT_DIR);
     map.addRawMappings({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
@@ -86,7 +84,6 @@ describe('SourceMap - Inline Sources', () => {
       sourceRoot: '/',
       format: 'object',
       fs,
-      rootDir: ROOT_DIR,
       inlineSources: true,
     });
 
@@ -102,7 +99,7 @@ describe('SourceMap - Inline Sources', () => {
   });
 
   it('Should not overwrite existing sourceContent when inlining is false', async () => {
-    let map = new SourceMap();
+    let map = new SourceMap(ROOT_DIR);
     map.addRawMappings({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
@@ -115,7 +112,6 @@ describe('SourceMap - Inline Sources', () => {
       sourceRoot: '/',
       format: 'object',
       fs,
-      rootDir: ROOT_DIR,
       inlineSources: false,
     });
 

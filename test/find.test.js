@@ -3,7 +3,7 @@ const SourceMap = require('.').default;
 
 describe('SourceMap - Find', () => {
   it('Should be able to find closest mapping to a generated position', async () => {
-    let map = new SourceMap();
+    let map = new SourceMap('/test-root');
     map.addRawMappings({
       mappings: 'AAAA;AAAA,EAAA,OAAO,CAAC,GAAR,CAAY,aAAZ,CAAA,CAAA;AAAA',
       sources: ['helloworld.coffee'],
@@ -14,14 +14,14 @@ describe('SourceMap - Find', () => {
     assert.deepEqual(mapping, {
       generated: { line: 2, column: 14 },
       original: { line: 1, column: 12 },
-      source: 'helloworld.coffee',
+      source: './helloworld.coffee',
     });
 
     mapping = map.findClosestMapping(2, 12);
     assert.deepEqual(mapping, {
       generated: { line: 2, column: 13 },
       original: { line: 1, column: 0 },
-      source: 'helloworld.coffee',
+      source: './helloworld.coffee',
     });
   });
 });

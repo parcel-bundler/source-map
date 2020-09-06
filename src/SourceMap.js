@@ -1,8 +1,8 @@
 // @flow
-import type { ParsedMap, VLQMap, SourceMapStringifyOptions, IndexedMapping } from './types';
+import type { ParsedMap, VLQMap, SourceMapStringifyOptions, IndexedMapping, GenerateEmptyMapOptions } from './types';
 
 import path from 'path';
-import { generateInlineMap, partialVlqMapToSourceMap } from './utils';
+import { generateInlineMap, partialVlqMapToSourceMap, relatifyPath, normalizePath } from './utils';
 
 export default class SourceMap {
   /**
@@ -11,13 +11,32 @@ export default class SourceMap {
   sourceMapInstance: any;
 
   /**
+   * @private
+   */
+  projectRoot: string;
+
+  /**
+   * Construct a SourceMap instance
+   *
+   * @param projectRoot root directory of the project, this is to ensure all source paths are relative to this path
+   */
+  constructor(projectRoot: string = '/') {
+    this.projectRoot = normalizePath(projectRoot);
+  }
+
+  /**
    * Generates an empty map from the provided fileName and sourceContent
    *
    * @param sourceName path of the source file
    * @param sourceContent content of the source file
    * @param lineOffset an offset that gets added to the sourceLine index of each mapping
    */
-  static generateEmptyMap(sourceName: string, sourceContent: string, lineOffset: number = 0): SourceMap {
+  static generateEmptyMap({
+    projectRoot,
+    sourceName,
+    sourceContent,
+    lineOffset = 0,
+  }: GenerateEmptyMapOptions): SourceMap {
     throw new Error('SourceMap.generateEmptyMap() must be implemented when extending SourceMap');
   }
 
@@ -37,21 +56,7 @@ export default class SourceMap {
    * Appends raw VLQ mappings to the sourcemaps
    */
   addRawMappings(map: VLQMap, lineOffset: number = 0, columnOffset: number = 0): SourceMap {
-    let { sourcesContent, sources = [], mappings, names = [] } = map;
-    if (!sourcesContent) {
-      sourcesContent = sources.map(() => '');
-    } else {
-      sourcesContent = sourcesContent.map((content) => (content ? content : ''));
-    }
-    this.sourceMapInstance.addRawMappings(
-      mappings,
-      sources,
-      sourcesContent.map((content) => (content ? content : '')),
-      names,
-      lineOffset,
-      columnOffset
-    );
-    return this;
+    throw new Error('SourceMap.addRawMappings() must be implemented when extending SourceMap');
   }
 
   /**
@@ -90,7 +95,7 @@ export default class SourceMap {
       hasValidOriginal ? mapping.original.line - 1 : -1,
       // $FlowFixMe
       hasValidOriginal ? mapping.original.column : -1,
-      mapping.source || '',
+      mapping.source ? relatifyPath(mapping.source, this.projectRoot) : '',
       mapping.name || ''
     );
   }
@@ -144,7 +149,7 @@ export default class SourceMap {
    * @returns the index of the added source filepath in the sources array
    */
   addSource(source: string): number {
-    return this.sourceMapInstance.addSource(source);
+    return this.sourceMapInstance.addSource(relatifyPath(source, this.projectRoot));
   }
 
   /**
@@ -163,7 +168,7 @@ export default class SourceMap {
    * @param source the filepath of the source file
    */
   getSourceIndex(source: string): number {
-    return this.sourceMapInstance.getSourceIndex(source);
+    return this.sourceMapInstance.getSourceIndex(relatifyPath(source, this.projectRoot));
   }
 
   /**
@@ -183,7 +188,7 @@ export default class SourceMap {
    * @param sourceContent the content of the sourceFile
    */
   setSourceContent(sourceName: string, sourceContent: string): void {
-    return this.sourceMapInstance.setSourceContent(sourceName, sourceContent);
+    return this.sourceMapInstance.setSourceContent(relatifyPath(sourceName, this.projectRoot), sourceContent);
   }
 
   /**
@@ -192,7 +197,7 @@ export default class SourceMap {
    * @param sourceName filename
    */
   getSourceContent(sourceName: string): string {
-    return this.sourceMapInstance.getSourceContent(sourceName);
+    return this.sourceMapInstance.getSourceContent(relatifyPath(sourceName, this.projectRoot));
   }
 
   /**
@@ -299,6 +304,9 @@ export default class SourceMap {
    * @param options options used for formatting the serialised map
    */
   async stringify(options: SourceMapStringifyOptions): Promise<string | VLQMap> {
-    return partialVlqMapToSourceMap(this.toVLQ(), options);
+    return partialVlqMapToSourceMap(this.toVLQ(), {
+      ...options,
+      rootDir: this.projectRoot || options.rootDir,
+    });
   }
 }
