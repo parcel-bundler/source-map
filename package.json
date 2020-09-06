@@ -16,6 +16,7 @@
     "prebuild": "prebuildify -t 10.20.1 --napi --strip --tag-libc",
     "build:dev": "node-gyp rebuild --debug",
     "rebuild": "rm -rf build && yarn build:dev",
+    "rebuild-all": "yarn transpile && yarn compile-wasm && yarn rebuild",
     "install": "node-gyp-build",
     "prepublish": "npm run transpile",
     "lint": "prettier --write bench/run.js src/*.js",

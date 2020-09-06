@@ -33,9 +33,20 @@ export type VLQMap = {
 export type SourceMapStringifyOptions = {
   file?: string,
   sourceRoot?: string,
-  rootDir?: string,
   inlineSources?: boolean,
   fs?: { readFile(path: string, encoding: string): Promise<string>, ... },
   format?: 'inline' | 'string' | 'object',
+  /**
+   * @private
+   */
+  rootDir?: string,
+  ...
+};
+
+export type GenerateEmptyMapOptions = {
+  projectRoot: string,
+  sourceName: string,
+  sourceContent: string,
+  lineOffset?: number,
   ...
 };

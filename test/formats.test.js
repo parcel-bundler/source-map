@@ -11,7 +11,7 @@ const SIMPLE_SOURCE_MAP = {
 
 describe('SourceMap - Formats', () => {
   it('Should return a base64 encoded inline map when format is inline', async () => {
-    let map = new SourceMap();
+    let map = new SourceMap('/test-root');
     map.addRawMappings({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
@@ -28,7 +28,7 @@ describe('SourceMap - Formats', () => {
   });
 
   it('Should return a stringified map when format is string', async () => {
-    let map = new SourceMap();
+    let map = new SourceMap('/test-root');
     map.addRawMappings({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
@@ -45,7 +45,7 @@ describe('SourceMap - Formats', () => {
   });
 
   it('Should return an object map when format is object', async () => {
-    let map = new SourceMap();
+    let map = new SourceMap('/test-root');
     map.addRawMappings({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
@@ -62,7 +62,7 @@ describe('SourceMap - Formats', () => {
   });
 
   it('Should make all sourcePaths relative to rootDir', async () => {
-    let map = new SourceMap();
+    let map = new SourceMap('/Users/test');
     map.addRawMappings({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: ['/Users/test/helloworld.coffee'],
@@ -71,7 +71,6 @@ describe('SourceMap - Formats', () => {
 
     let stringifiedMap = await map.stringify({
       file: 'index.js.map',
-      rootDir: '/Users/test/',
       sourceRoot: '/',
       format: 'object',
     });
@@ -80,7 +79,7 @@ describe('SourceMap - Formats', () => {
   });
 
   it('Should make all sourcePaths web friendly aka no windows backslashes', async () => {
-    let map = new SourceMap();
+    let map = new SourceMap('\\Users\\test\\');
     map.addRawMappings({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: ['\\Users\\test\\helloworld.coffee'],
@@ -89,7 +88,6 @@ describe('SourceMap - Formats', () => {
 
     let stringifiedMap = await map.stringify({
       file: 'index.js.map',
-      rootDir: '\\Users\\test\\',
       sourceRoot: '/',
       format: 'object',
     });

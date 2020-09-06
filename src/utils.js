@@ -7,7 +7,7 @@ export function generateInlineMap(map: string): string {
   return `data:application/json;charset=utf-8;base64,${Buffer.from(map).toString('base64')}`;
 }
 
-export function normalisePath(filepath: string): string {
+export function normalizePath(filepath: string): string {
   filepath = filepath.replace(/\\/g, '/');
 
   // Prefix relative paths with ./ as it makes it more clear and probably prevents issues
@@ -18,13 +18,13 @@ export function normalisePath(filepath: string): string {
   return filepath;
 }
 
-function relatifyPath(filepath: string, rootDir: string): string {
+export function relatifyPath(filepath: string, rootDir: string): string {
   // Sourcemaps are made for web, so replace backslashes with regular slashes
-  filepath = normalisePath(filepath);
+  filepath = normalizePath(filepath);
 
   // Make root paths relative to the rootDir
   if (filepath[0] === '/') {
-    filepath = normalisePath(path.relative(rootDir, filepath));
+    filepath = normalizePath(path.relative(rootDir, filepath));
   }
 
   return filepath;
@@ -34,7 +34,6 @@ export async function partialVlqMapToSourceMap(
   map: VLQMap,
   { fs, file, sourceRoot, inlineSources, rootDir, format = 'string' }: SourceMapStringifyOptions
 ): Promise<VLQMap | string> {
-  let root = normalisePath(rootDir || '/');
   let resultMap = {
     ...map,
     sourcesContent: map.sourcesContent ? map.sourcesContent.map((content) => (content ? content : null)) : [],
@@ -42,10 +41,6 @@ export async function partialVlqMapToSourceMap(
     file,
     sourceRoot,
   };
-
-  resultMap.sources = resultMap.sources.map((sourceFilePath) => {
-    return relatifyPath(sourceFilePath, root);
-  });
 
   if (resultMap.sourcesContent.length < resultMap.sources.length) {
     resultMap.sourcesContent.push(...new Array(resultMap.sources.length - resultMap.sourcesContent.length).fill(null));
@@ -59,7 +54,7 @@ export async function partialVlqMapToSourceMap(
         // Because of this we have to include the sourceContent to ensure you can always see the sourcecontent for each mapping.
         if (!content && (inlineSources || sourceName.startsWith('..'))) {
           try {
-            return await fs.readFile(path.resolve(root, sourceName), 'utf-8');
+            return await fs.readFile(path.resolve(rootDir || '/', sourceName), 'utf-8');
           } catch (e) {}
         }
 

@@ -1,14 +1,33 @@
 // @flow
-import type { ParsedMap, VLQMap, SourceMapStringifyOptions, IndexedMapping } from './types';
+import type { ParsedMap, VLQMap, SourceMapStringifyOptions, IndexedMapping, GenerateEmptyMapOptions } from './types';
 import path from 'path';
 import SourceMap from './SourceMap';
+import { relatifyPath } from './utils';
 
 const bindings = require('node-gyp-build')(path.join(__dirname, '..'));
 
 export default class NodeSourceMap extends SourceMap {
-  constructor() {
-    super();
+  constructor(projectRoot: string = '/') {
+    super(projectRoot);
     this.sourceMapInstance = new bindings.SourceMap();
+  }
+
+  addRawMappings(map: VLQMap, lineOffset: number = 0, columnOffset: number = 0): SourceMap {
+    let { sourcesContent, sources = [], mappings, names = [] } = map;
+    if (!sourcesContent) {
+      sourcesContent = sources.map(() => '');
+    } else {
+      sourcesContent = sourcesContent.map((content) => (content ? content : ''));
+    }
+    this.sourceMapInstance.addRawMappings(
+      mappings,
+      sources.map((source) => (source ? relatifyPath(source, this.projectRoot) : '')),
+      sourcesContent.map((content) => (content ? content : '')),
+      names,
+      lineOffset,
+      columnOffset
+    );
+    return this;
   }
 
   toBuffer(): Buffer {
@@ -23,9 +42,14 @@ export default class NodeSourceMap extends SourceMap {
 
   delete() {}
 
-  static generateEmptyMap(sourceName: string, sourceContent: string, lineOffset: number = 0): NodeSourceMap {
-    let map = new NodeSourceMap();
-    map.addEmptyMap(sourceName, sourceContent, lineOffset);
+  static generateEmptyMap({
+    projectRoot,
+    sourceName,
+    sourceContent,
+    lineOffset = 0,
+  }: GenerateEmptyMapOptions): NodeSourceMap {
+    let map = new NodeSourceMap(projectRoot);
+    map.addEmptyMap(relatifyPath(sourceName, projectRoot), sourceContent, lineOffset);
     return map;
   }
 }

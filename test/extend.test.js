@@ -3,7 +3,7 @@ const SourceMap = require('.').default;
 
 describe('SourceMap - Extend Map', () => {
   it('Basic extending', async function () {
-    let originalMap = new SourceMap();
+    let originalMap = new SourceMap('/test-root');
     originalMap.addIndexedMappings([
       {
         source: 'index.js',
@@ -19,7 +19,7 @@ describe('SourceMap - Extend Map', () => {
       },
     ]);
 
-    let newMap = new SourceMap();
+    let newMap = new SourceMap('/test-root');
     newMap.addIndexedMappings([
       {
         source: 'index.js',
@@ -72,7 +72,7 @@ describe('SourceMap - Extend Map', () => {
   });
 
   it('Extending null mappings', async function () {
-    let originalMap = new SourceMap();
+    let originalMap = new SourceMap('/test-root');
 
     originalMap.addIndexedMappings([
       {
@@ -95,7 +95,7 @@ describe('SourceMap - Extend Map', () => {
       },
     ]);
 
-    let newMap = new SourceMap();
+    let newMap = new SourceMap('/test-root');
 
     newMap.addIndexedMappings([
       {
@@ -167,7 +167,7 @@ describe('SourceMap - Extend Map', () => {
   });
 
   it('Basic extending w/ sourceContents', async function () {
-    let originalMap = new SourceMap();
+    let originalMap = new SourceMap('/test-root');
     originalMap.addIndexedMappings([
       {
         source: 'index.js',
@@ -185,7 +185,7 @@ describe('SourceMap - Extend Map', () => {
 
     originalMap.setSourceContent('index.js', '() => "test"');
 
-    let newMap = new SourceMap();
+    let newMap = new SourceMap('/test-root');
     newMap.addIndexedMappings([
       {
         source: 'index.js',

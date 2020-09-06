@@ -247,7 +247,7 @@ let expectedResultTwo = {
 
 describe('SourceMap - Append Mappings', () => {
   it('Append buffer mappings with line offset', () => {
-    let map = new SourceMap();
+    let map = new SourceMap('/test-root');
     map.addRawMappings({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
@@ -259,7 +259,7 @@ describe('SourceMap - Append Mappings', () => {
   });
 
   it('Append buffer mappings with line and column offset', () => {
-    let map = new SourceMap();
+    let map = new SourceMap('/test-root');
     map.addRawMappings({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
@@ -271,7 +271,7 @@ describe('SourceMap - Append Mappings', () => {
   });
 
   it('Append vlq mappings with line offset', () => {
-    let map = new SourceMap();
+    let map = new SourceMap('/test-root');
     map.addRawMappings({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
@@ -289,7 +289,7 @@ describe('SourceMap - Append Mappings', () => {
   });
 
   it('Append vlq mappings with line and column offset', () => {
-    let map = new SourceMap();
+    let map = new SourceMap('/test-root');
     map.addRawMappings({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
@@ -309,7 +309,7 @@ describe('SourceMap - Append Mappings', () => {
 
   it('Merge map with null mappings', async () => {
     const MAP_OFFSET = 24;
-    let map = new SourceMap();
+    let map = new SourceMap('/test-root');
 
     map.addIndexedMappings([
       {
@@ -446,7 +446,7 @@ describe('SourceMap - Append Mappings', () => {
   });
 
   it('Should be able to handle all variations of indexedmappings', async () => {
-    let map = new SourceMap();
+    let map = new SourceMap('/test-root');
 
     map.addIndexedMappings([
       {
