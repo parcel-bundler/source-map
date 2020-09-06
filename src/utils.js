@@ -29,8 +29,8 @@ export function relatifyPath(filepath: string, rootDir: string): string {
     filepath = path.relative(rootDir, filepath);
   }
 
+  // Prefix relative paths with ./ as it makes it more clear and probably prevents issues
   if (filepath[0] !== '.') {
-    // Prefix relative paths with ./ as it makes it more clear and probably prevents issues
     filepath = `./${filepath}`;
   }
 
