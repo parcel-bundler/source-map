@@ -25,14 +25,12 @@ export function relatifyPath(filepath: string, rootDir: string): string {
   filepath = normalizePath(filepath);
 
   // Make root paths relative to the rootDir
-  if (isAbsolute(filepath)) {
+  if (filepath[0] === '/') {
     filepath = path.relative(rootDir, filepath);
   }
 
-  filepath = filepath.replace(/\\/g, '/');
-
-  // Prefix relative paths with ./ as it makes it more clear and probably prevents issues
   if (filepath[0] !== '.') {
+    // Prefix relative paths with ./ as it makes it more clear and probably prevents issues
     filepath = `./${filepath}`;
   }
 
