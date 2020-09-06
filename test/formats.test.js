@@ -1,5 +1,5 @@
-const assert = require('assert');
-const SourceMap = require('.').default;
+import assert from 'assert';
+import SourceMap from '.';
 
 const SIMPLE_SOURCE_MAP = {
   version: 3,
@@ -79,10 +79,10 @@ describe('SourceMap - Formats', () => {
   });
 
   it('Should make all sourcePaths web friendly aka no windows backslashes', async () => {
-    let map = new SourceMap('\\Users\\test\\');
+    let map = new SourceMap('C:\\Users\\test\\');
     map.addRawMappings({
       mappings: SIMPLE_SOURCE_MAP.mappings,
-      sources: ['\\Users\\test\\helloworld.coffee'],
+      sources: ['C:\\Users\\test\\helloworld.coffee'],
       names: SIMPLE_SOURCE_MAP.names,
     });
 

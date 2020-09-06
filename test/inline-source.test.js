@@ -1,7 +1,7 @@
-const assert = require('assert');
-const fs = require('fs-extra');
-const path = require('path');
-const SourceMap = require('.').default;
+import assert from 'assert';
+import fs from 'fs-extra';
+import path from 'path';
+import SourceMap from '.';
 
 const SIMPLE_SOURCE_MAP = {
   version: 3,

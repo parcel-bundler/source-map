@@ -21,7 +21,7 @@ export default class SourceMap {
    * @param projectRoot root directory of the project, this is to ensure all source paths are relative to this path
    */
   constructor(projectRoot: string = '/') {
-    this.projectRoot = normalizePath(projectRoot);
+    this.projectRoot = projectRoot;
   }
 
   /**
