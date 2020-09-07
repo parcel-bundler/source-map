@@ -1,5 +1,5 @@
-const assert = require('assert');
-const SourceMap = require('.').default;
+import assert from 'assert';
+import SourceMap from '.';
 
 describe('SourceMap - Find', () => {
   it('Should be able to find closest mapping to a generated position', async () => {

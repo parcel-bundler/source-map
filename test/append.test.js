@@ -1,5 +1,5 @@
-const assert = require('assert');
-const SourceMap = require('.').default;
+import assert from 'assert';
+import SourceMap from '.';
 
 const SIMPLE_SOURCE_MAP = {
   version: 3,
