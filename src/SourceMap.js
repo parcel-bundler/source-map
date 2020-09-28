@@ -278,6 +278,28 @@ export default class SourceMap {
   }
 
   /**
+   * Offset mapping lines from a certain position
+   *
+   * @param line the line in the generated code (starts at 1)
+   * @param column the column in the generated code (starts at 0)
+   * @param lineOffset the amount of lines to offset mappings by
+   */
+  offsetLines(line: number, column: number, lineOffset: number): ?IndexedMapping<string> {
+    this.sourceMapInstance.offsetLines(line, column, lineOffset);
+  }
+
+  /**
+   * Offset mapping columns from a certain position
+   *
+   * @param line the line in the generated code (starts at 1)
+   * @param column the column in the generated code (starts at 0)
+   * @param columnOffset the amount of columns to offset mappings by
+   */
+  offsetColumns(line: number, column: number, columnOffset: number): ?IndexedMapping<string> {
+    this.sourceMapInstance.offsetColumns(line, column, columnOffset);
+  }
+
+  /**
    * Returns a flatbuffer that represents this sourcemap, used for caching
    */
   toBuffer(): Buffer {

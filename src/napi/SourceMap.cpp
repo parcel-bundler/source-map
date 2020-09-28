@@ -413,12 +413,38 @@ Napi::Value SourceMapBinding::findClosestMapping(const Napi::CallbackInfo &info)
     Napi::HandleScope scope(env);
 
     if (info.Length() < 2 || !info[0].IsNumber() || !info[1].IsNumber()) {
-        Napi::TypeError::New(env, "Expected 1 parameter of type buffer").ThrowAsJavaScriptException();
+        Napi::TypeError::New(env, "Expected 2 parameters of type number").ThrowAsJavaScriptException();
         return env.Null();
     }
 
     Mapping m = _mapping_container.findClosestMapping(info[0].As<Napi::Number>().Int32Value() - 1,
                                                       info[1].As<Napi::Number>().Int32Value());
+    return _mappingToObject(env, m);
+}
+
+void SourceMapBinding::offsetLines(const Napi::CallbackInfo &info) {
+    Napi::Env env = info.Env();
+    Napi::HandleScope scope(env);
+
+    if (info.Length() < 3 || !info[0].IsNumber() || !info[1].IsNumber() || !info[2].IsNumber()) {
+        Napi::TypeError::New(env, "3 parameters of type number").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    Mapping m = _mapping_container.offsetLines(info[0].As<Napi::Number>().Int32Value(), info[1].As<Napi::Number>().Int32Value(), info[2].As<Napi::Number>().Int32Value());
+    return _mappingToObject(env, m);
+}
+
+void SourceMapBinding::offsetColumns(const Napi::CallbackInfo &info) {
+    Napi::Env env = info.Env();
+    Napi::HandleScope scope(env);
+
+    if (info.Length() < 3 || !info[0].IsNumber() || !info[1].IsNumber() || !info[2].IsNumber()) {
+        Napi::TypeError::New(env, "3 parameters of type number").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+
+    Mapping m = _mapping_container.offsetColumns(info[0].As<Napi::Number>().Int32Value(), info[1].As<Napi::Number>().Int32Value(), info[2].As<Napi::Number>().Int32Value());
     return _mappingToObject(env, m);
 }
 
@@ -443,6 +469,8 @@ Napi::Object SourceMapBinding::Init(Napi::Env env, Napi::Object exports) {
             InstanceMethod("extends", &SourceMapBinding::extends),
             InstanceMethod("addEmptyMap", &SourceMapBinding::addEmptyMap),
             InstanceMethod("findClosestMapping", &SourceMapBinding::findClosestMapping),
+            InstanceMethod("offsetLines", &SourceMapBinding::offsetLines),
+            InstanceMethod("offsetColumns", &SourceMapBinding::offsetColumns),
     });
 
     exports.Set("SourceMap", func);

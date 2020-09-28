@@ -504,3 +504,11 @@ void MappingContainer::addIndexedMapping(int generatedLine, int generatedColumn,
 
     addMapping(generatedPosition, originalPosition, sourceIndex, nameIndex);
 }
+
+void MappingContainer::offsetLines(int line, int column, int lineOffset) {
+    // TODO: Write this function
+}
+
+void MappingContainer::offsetColumns(int line, int column, int columnOffset) {
+    // TODO: Write this function
+}
