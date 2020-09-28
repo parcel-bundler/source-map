@@ -7,6 +7,8 @@ public:
 
     void addMapping(Mapping m);
 
+    void setLineNumber(int newLineNumber);
+
     void sort();
 
     bool isSorted();
