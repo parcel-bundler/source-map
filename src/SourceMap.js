@@ -285,7 +285,11 @@ export default class SourceMap {
    * @param lineOffset the amount of lines to offset mappings by
    */
   offsetLines(line: number, column: number, lineOffset: number): ?IndexedMapping<string> {
-    this.sourceMapInstance.offsetLines(line, column, lineOffset);
+    if (line < 1 || column < 0 || line + lineOffset < 1) {
+      throw new Error('Line and Column has to be positive');
+    }
+
+    this.sourceMapInstance.offsetLines(line - 1, column, lineOffset);
   }
 
   /**
@@ -296,7 +300,11 @@ export default class SourceMap {
    * @param columnOffset the amount of columns to offset mappings by
    */
   offsetColumns(line: number, column: number, columnOffset: number): ?IndexedMapping<string> {
-    this.sourceMapInstance.offsetColumns(line, column, columnOffset);
+    if (line < 1 || column < 0 || column + columnOffset < 0) {
+      throw new Error('Line and Column has to be positive');
+    }
+
+    this.sourceMapInstance.offsetColumns(line - 1, column, columnOffset);
   }
 
   /**

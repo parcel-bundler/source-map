@@ -428,11 +428,10 @@ void SourceMapBinding::offsetLines(const Napi::CallbackInfo &info) {
 
     if (info.Length() < 3 || !info[0].IsNumber() || !info[1].IsNumber() || !info[2].IsNumber()) {
         Napi::TypeError::New(env, "3 parameters of type number").ThrowAsJavaScriptException();
-        return env.Null();
+        return;
     }
 
-    Mapping m = _mapping_container.offsetLines(info[0].As<Napi::Number>().Int32Value(), info[1].As<Napi::Number>().Int32Value(), info[2].As<Napi::Number>().Int32Value());
-    return _mappingToObject(env, m);
+    _mapping_container.offsetLines(info[0].As<Napi::Number>().Int32Value(), info[1].As<Napi::Number>().Int32Value(), info[2].As<Napi::Number>().Int32Value());
 }
 
 void SourceMapBinding::offsetColumns(const Napi::CallbackInfo &info) {
@@ -441,11 +440,10 @@ void SourceMapBinding::offsetColumns(const Napi::CallbackInfo &info) {
 
     if (info.Length() < 3 || !info[0].IsNumber() || !info[1].IsNumber() || !info[2].IsNumber()) {
         Napi::TypeError::New(env, "3 parameters of type number").ThrowAsJavaScriptException();
-        return env.Null();
+        return;
     }
 
-    Mapping m = _mapping_container.offsetColumns(info[0].As<Napi::Number>().Int32Value(), info[1].As<Napi::Number>().Int32Value(), info[2].As<Napi::Number>().Int32Value());
-    return _mappingToObject(env, m);
+    _mapping_container.offsetColumns(info[0].As<Napi::Number>().Int32Value(), info[1].As<Napi::Number>().Int32Value(), info[2].As<Napi::Number>().Int32Value());
 }
 
 Napi::Object SourceMapBinding::Init(Napi::Env env, Napi::Object exports) {
