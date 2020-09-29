@@ -34,6 +34,9 @@ public:
 
     Mapping findClosestMapping(int line, int column);
 
+    void offsetLines(int line, int lineOffset);
+    void offsetColumns(int line, int column, int columnOffset);
+
 private:
     MappingContainer _mapping_container;
 };

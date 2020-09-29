@@ -129,6 +129,14 @@ Mapping SourceMap::findClosestMapping(int line, int column) {
     return _mapping_container.findClosestMapping(line - 1, column);
 }
 
+void SourceMap::offsetLines(int line, int lineOffset) {
+    _mapping_container.offsetLines(line, lineOffset);
+}
+
+void SourceMap::offsetColumns(int line, int column, int columnOffset) {
+    _mapping_container.offsetColumns(line, column, columnOffset);
+}
+
 EMSCRIPTEN_BINDINGS(my_class_example) {
     emscripten::register_vector<std::string>("VectorString");
     emscripten::register_vector<Mapping>("VectorMapping");
@@ -157,6 +165,8 @@ EMSCRIPTEN_BINDINGS(my_class_example) {
         .function("addEmptyMap", &SourceMap::addEmptyMap)
         .function("extends", &SourceMap::extends)
         .function("findClosestMapping", &SourceMap::findClosestMapping)
+        .function("offsetLines", &SourceMap::offsetLines)
+        .function("offsetColumns", &SourceMap::offsetColumns)
         ;
 
     emscripten::value_object<Mapping>("Mapping")
