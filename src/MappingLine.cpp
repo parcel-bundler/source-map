@@ -34,3 +34,7 @@ int MappingLine::lineNumber() {
     return _line_number;
 }
 
+void MappingLine::clearMappings() {
+    this->_segments.clear();
+    this->_last_column = 0;
+}

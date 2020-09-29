@@ -86,4 +86,154 @@ describe('SourceMap - Offset Utils', () => {
       ],
     });
   });
+
+  it('Positive line offset', () => {
+    let map = new SourceMap('/test-root');
+
+    map.addRawMappings({
+      mappings: SIMPLE_SOURCE_MAP.mappings,
+      sources: SIMPLE_SOURCE_MAP.sources,
+      names: SIMPLE_SOURCE_MAP.names,
+    });
+
+    map.offsetLines(1, 2);
+
+    assert.deepEqual(map.getMap(), {
+      sources: ['./helloworld.coffee'],
+      sourcesContent: [''],
+      names: [],
+      mappings: [
+        {
+          generated: { line: 3, column: 0 },
+          original: { line: 1, column: 0 },
+          source: 0,
+        },
+        {
+          generated: { line: 4, column: 0 },
+          original: { line: 1, column: 0 },
+          source: 0,
+        },
+        {
+          generated: { line: 4, column: 2 },
+          original: { line: 1, column: 0 },
+          source: 0,
+        },
+        {
+          generated: { line: 4, column: 9 },
+          original: { line: 1, column: 7 },
+          source: 0,
+        },
+        {
+          generated: { line: 4, column: 10 },
+          original: { line: 1, column: 8 },
+          source: 0,
+        },
+        {
+          generated: { line: 4, column: 13 },
+          original: { line: 1, column: 0 },
+          source: 0,
+        },
+        {
+          generated: { line: 4, column: 14 },
+          original: { line: 1, column: 12 },
+          source: 0,
+        },
+        {
+          generated: { line: 4, column: 27 },
+          original: { line: 1, column: 0 },
+          source: 0,
+        },
+        {
+          generated: { line: 4, column: 28 },
+          original: { line: 1, column: 0 },
+          source: 0,
+        },
+        {
+          generated: { line: 4, column: 29 },
+          original: { line: 1, column: 0 },
+          source: 0,
+        },
+        {
+          generated: { line: 5, column: 0 },
+          original: { line: 1, column: 0 },
+          source: 0,
+        },
+      ],
+    });
+  });
+
+  it('Negative line offset', () => {
+    let map = new SourceMap('/test-root');
+
+    map.addRawMappings({
+      mappings: SIMPLE_SOURCE_MAP.mappings,
+      sources: SIMPLE_SOURCE_MAP.sources,
+      names: SIMPLE_SOURCE_MAP.names,
+    });
+
+    map.offsetLines(2, -1);
+
+    assert.deepEqual(map.getMap(), {
+      sources: ['./helloworld.coffee'],
+      sourcesContent: [''],
+      names: [],
+      mappings: [
+        {
+          generated: { line: 1, column: 0 },
+          original: { line: 1, column: 0 },
+          source: 0,
+        },
+        {
+          generated: { line: 1, column: 0 },
+          original: { line: 1, column: 0 },
+          source: 0,
+        },
+        {
+          generated: { line: 1, column: 2 },
+          original: { line: 1, column: 0 },
+          source: 0,
+        },
+        {
+          generated: { line: 1, column: 9 },
+          original: { line: 1, column: 7 },
+          source: 0,
+        },
+        {
+          generated: { line: 1, column: 10 },
+          original: { line: 1, column: 8 },
+          source: 0,
+        },
+        {
+          generated: { line: 1, column: 13 },
+          original: { line: 1, column: 0 },
+          source: 0,
+        },
+        {
+          generated: { line: 1, column: 14 },
+          original: { line: 1, column: 12 },
+          source: 0,
+        },
+        {
+          generated: { line: 1, column: 27 },
+          original: { line: 1, column: 0 },
+          source: 0,
+        },
+        {
+          generated: { line: 1, column: 28 },
+          original: { line: 1, column: 0 },
+          source: 0,
+        },
+        {
+          generated: { line: 1, column: 29 },
+          original: { line: 1, column: 0 },
+          source: 0,
+        },
+        {
+          generated: { line: 2, column: 0 },
+          original: { line: 1, column: 0 },
+          source: 0,
+        },
+      ],
+    });
+  });
 });

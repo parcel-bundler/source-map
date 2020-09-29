@@ -505,32 +505,38 @@ void MappingContainer::addIndexedMapping(int generatedLine, int generatedColumn,
     addMapping(generatedPosition, originalPosition, sourceIndex, nameIndex);
 }
 
-void MappingContainer::offsetLines(int line, int column, int lineOffset) {
-    // TODO: Finetune this function as it's pretty complex with our current data structure
-    // If lineOffset is less than 0, remove lines...
-    // If lineOffset is more than 0, insert extra lines...
-    // If column is not 0 and matches any mappings, than it should split up into 2 line instances...
+// TODO: This can be improved performance wise, by not having line stored in both MappingLine and Mapping
+void MappingContainer::offsetLines(int line, int lineOffset) {
+    int lineCount = this->_mapping_lines.size();
 
-    auto linesCount = this->_mapping_lines.size();
-    for (int lineIndex = line; lineIndex < linesCount; ++lineIndex) {
-        auto mappingsCount = this->_mapping_lines[lineIndex]._segments.size();
-        this->_mapping_lines[lineIndex].setLineNumber(lineIndex + lineOffset);
-        for (int mappingIndex = 0; mappingIndex < mappingsCount; ++mappingsCount) {
-            if (lineIndex == line && this->_mapping_lines[lineIndex]._segments[mappingIndex].generated.column < column) {
-                continue;
+    if (lineOffset > 0) {
+        this->createLinesIfUndefined(lineCount + lineOffset);
+
+        for (int lineIndex = lineCount - 1; lineIndex >= line; --lineIndex) {
+            std::vector<Mapping> mappings = this->_mapping_lines[lineIndex]._segments;
+            for (int mappingIndex = 0; mappingIndex < mappings.size(); ++mappingIndex) {
+                Mapping &mapping = mappings[mappingIndex];
+                Position generatedPosition = Position{mapping.generated.line + lineOffset, mapping.generated.column};
+                _mapping_lines[generatedPosition.line].addMapping(Mapping{generatedPosition, mapping.original, mapping.source, mapping.name});
             }
 
-            // TODO: Optimise code to exclude lineIndex in Generated Position? As the MappingLine already contains this data?
-            this->_mapping_lines[lineIndex]._segments[mappingIndex].generated.line += lineOffset;
+            this->_mapping_lines[lineIndex].clearMappings();
+        }
+    } else {
+        for (int lineIndex = line; lineIndex < lineCount; ++lineIndex) {
+            std::vector<Mapping> mappings = this->_mapping_lines[lineIndex]._segments;
+            for (int mappingIndex = 0; mappingIndex < mappings.size(); ++mappingIndex) {
+                Mapping &mapping = mappings[mappingIndex];
+                Position generatedPosition = Position{mapping.generated.line + lineOffset, mapping.generated.column};
+                _mapping_lines[generatedPosition.line].addMapping(Mapping{generatedPosition, mapping.original, mapping.source, mapping.name});
+            }
+
+            this->_mapping_lines[lineIndex].clearMappings();
         }
     }
-
-    // TODO: Resort lines and fill any created voids in the lines vector
 }
 
 void MappingContainer::offsetColumns(int line, int column, int columnOffset) {
-    this->_mapping_lines[line].sort();
-
     auto mappingsCount = this->_mapping_lines[line]._segments.size();
     for (int i = 0; i < mappingsCount; ++i) {
         if (this->_mapping_lines[line]._segments[i].generated.column < column) {

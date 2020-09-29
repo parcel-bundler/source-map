@@ -426,12 +426,12 @@ void SourceMapBinding::offsetLines(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
 
-    if (info.Length() < 3 || !info[0].IsNumber() || !info[1].IsNumber() || !info[2].IsNumber()) {
-        Napi::TypeError::New(env, "3 parameters of type number").ThrowAsJavaScriptException();
+    if (info.Length() < 2 || !info[0].IsNumber() || !info[1].IsNumber()) {
+        Napi::TypeError::New(env, "2 parameters of type number").ThrowAsJavaScriptException();
         return;
     }
 
-    _mapping_container.offsetLines(info[0].As<Napi::Number>().Int32Value(), info[1].As<Napi::Number>().Int32Value(), info[2].As<Napi::Number>().Int32Value());
+    _mapping_container.offsetLines(info[0].As<Napi::Number>().Int32Value(), info[1].As<Napi::Number>().Int32Value());
 }
 
 void SourceMapBinding::offsetColumns(const Napi::CallbackInfo &info) {

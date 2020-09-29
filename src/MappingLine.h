@@ -7,7 +7,7 @@ public:
 
     void addMapping(Mapping m);
 
-    void setLineNumber(int newLineNumber);
+    void clearMappings();
 
     void sort();
 

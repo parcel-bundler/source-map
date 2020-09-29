@@ -60,7 +60,7 @@ public:
 
     void addBufferMappings(const void *buf, int lineOffset = 0, int columnOffset = 0);
 
-    void offsetLines(int line, int column, int lineOffset);
+    void offsetLines(int line, int lineOffset);
 
     void offsetColumns(int line, int column, int columnOffset);
 

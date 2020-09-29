@@ -281,15 +281,18 @@ export default class SourceMap {
    * Offset mapping lines from a certain position
    *
    * @param line the line in the generated code (starts at 1)
-   * @param column the column in the generated code (starts at 0)
    * @param lineOffset the amount of lines to offset mappings by
    */
-  offsetLines(line: number, column: number, lineOffset: number): ?IndexedMapping<string> {
-    if (line < 1 || column < 0 || line + lineOffset < 1) {
-      throw new Error('Line and Column has to be positive');
+  offsetLines(line: number, lineOffset: number): ?IndexedMapping<string> {
+    if (line < 1 || line + lineOffset < 1) {
+      throw new Error('Line has to be positive');
     }
 
-    this.sourceMapInstance.offsetLines(line - 1, column, lineOffset);
+    if (lineOffset === 0) {
+      return;
+    }
+
+    this.sourceMapInstance.offsetLines(line - 1, lineOffset);
   }
 
   /**
@@ -302,6 +305,10 @@ export default class SourceMap {
   offsetColumns(line: number, column: number, columnOffset: number): ?IndexedMapping<string> {
     if (line < 1 || column < 0 || column + columnOffset < 0) {
       throw new Error('Line and Column has to be positive');
+    }
+
+    if (columnOffset === 0) {
+      return;
     }
 
     this.sourceMapInstance.offsetColumns(line - 1, column, columnOffset);
