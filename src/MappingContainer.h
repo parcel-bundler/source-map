@@ -52,13 +52,17 @@ public:
 
     Mapping findClosestMapping(int line, int column);
 
-    void addEmptyMap(std::string& sourceName, std::string &sourceContent, int lineOffset = 0);
+    void addEmptyMap(std::string &sourceName, std::string &sourceContent, int lineOffset = 0);
 
     flatbuffers::FlatBufferBuilder toBuffer();
 
     void extends(const void *buf);
 
     void addBufferMappings(const void *buf, int lineOffset = 0, int columnOffset = 0);
+
+    void offsetLines(int line, int lineOffset);
+
+    void offsetColumns(int line, int column, int columnOffset);
 
     void addIndexedMapping(int generatedLine, int generatedColumn, int originalLine, int originalColumn, std::string source, std::string name);
 

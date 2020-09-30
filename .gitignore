@@ -12,3 +12,4 @@ prebuilds
 wasm-node
 wasm-browser
 yarn.lock
+.vscode/settings

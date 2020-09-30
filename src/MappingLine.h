@@ -7,6 +7,8 @@ public:
 
     void addMapping(Mapping m);
 
+    void clearMappings();
+
     void sort();
 
     bool isSorted();

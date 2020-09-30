@@ -504,3 +504,45 @@ void MappingContainer::addIndexedMapping(int generatedLine, int generatedColumn,
 
     addMapping(generatedPosition, originalPosition, sourceIndex, nameIndex);
 }
+
+// TODO: This can be improved performance wise, by not having line stored in both MappingLine and Mapping
+void MappingContainer::offsetLines(int line, int lineOffset) {
+    int lineCount = this->_mapping_lines.size();
+
+    if (lineOffset > 0) {
+        this->createLinesIfUndefined(lineCount + lineOffset);
+
+        for (int lineIndex = lineCount - 1; lineIndex >= line; --lineIndex) {
+            std::vector<Mapping> mappings = this->_mapping_lines[lineIndex]._segments;
+            for (int mappingIndex = 0; mappingIndex < mappings.size(); ++mappingIndex) {
+                Mapping &mapping = mappings[mappingIndex];
+                Position generatedPosition = Position{mapping.generated.line + lineOffset, mapping.generated.column};
+                _mapping_lines[generatedPosition.line].addMapping(Mapping{generatedPosition, mapping.original, mapping.source, mapping.name});
+            }
+
+            this->_mapping_lines[lineIndex].clearMappings();
+        }
+    } else {
+        for (int lineIndex = line; lineIndex < lineCount; ++lineIndex) {
+            std::vector<Mapping> mappings = this->_mapping_lines[lineIndex]._segments;
+            for (int mappingIndex = 0; mappingIndex < mappings.size(); ++mappingIndex) {
+                Mapping &mapping = mappings[mappingIndex];
+                Position generatedPosition = Position{mapping.generated.line + lineOffset, mapping.generated.column};
+                _mapping_lines[generatedPosition.line].addMapping(Mapping{generatedPosition, mapping.original, mapping.source, mapping.name});
+            }
+
+            this->_mapping_lines[lineIndex].clearMappings();
+        }
+    }
+}
+
+void MappingContainer::offsetColumns(int line, int column, int columnOffset) {
+    auto mappingsCount = this->_mapping_lines[line]._segments.size();
+    for (int i = 0; i < mappingsCount; ++i) {
+        if (this->_mapping_lines[line]._segments[i].generated.column < column) {
+            continue;
+        }
+
+        this->_mapping_lines[line]._segments[i].generated.column += columnOffset;
+    }
+}

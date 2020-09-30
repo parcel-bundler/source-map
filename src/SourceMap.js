@@ -278,6 +278,43 @@ export default class SourceMap {
   }
 
   /**
+   * Offset mapping lines from a certain position
+   *
+   * @param line the line in the generated code (starts at 1)
+   * @param lineOffset the amount of lines to offset mappings by
+   */
+  offsetLines(line: number, lineOffset: number): ?IndexedMapping<string> {
+    if (line < 1 || line + lineOffset < 1) {
+      throw new Error('Line has to be positive');
+    }
+
+    if (lineOffset === 0) {
+      return;
+    }
+
+    this.sourceMapInstance.offsetLines(line - 1, lineOffset);
+  }
+
+  /**
+   * Offset mapping columns from a certain position
+   *
+   * @param line the line in the generated code (starts at 1)
+   * @param column the column in the generated code (starts at 0)
+   * @param columnOffset the amount of columns to offset mappings by
+   */
+  offsetColumns(line: number, column: number, columnOffset: number): ?IndexedMapping<string> {
+    if (line < 1 || column < 0 || column + columnOffset < 0) {
+      throw new Error('Line and Column has to be positive');
+    }
+
+    if (columnOffset === 0) {
+      return;
+    }
+
+    this.sourceMapInstance.offsetColumns(line - 1, column, columnOffset);
+  }
+
+  /**
    * Returns a flatbuffer that represents this sourcemap, used for caching
    */
   toBuffer(): Buffer {
