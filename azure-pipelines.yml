@@ -29,6 +29,12 @@ jobs:
       name: Windows
       vmImage: vs2017-win2016
 
+  - template: azure-pipelines-template.yml
+    parameters:
+      name: Windowsx86
+      vmImage: vs2017-win2016
+      is32bit: true
+
   - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/tags/v') }}:
       - job: Publish
         condition: succeeded()
