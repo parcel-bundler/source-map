@@ -507,6 +507,10 @@ void MappingContainer::addIndexedMapping(int generatedLine, int generatedColumn,
 
 // TODO: This can be improved performance wise, by not having line stored in both MappingLine and Mapping
 void MappingContainer::offsetLines(int line, int lineOffset) {
+    if (_generated_lines < line) {
+        return;
+    }
+    
     int lineCount = this->_mapping_lines.size();
 
     if (lineOffset > 0) {
@@ -537,6 +541,10 @@ void MappingContainer::offsetLines(int line, int lineOffset) {
 }
 
 void MappingContainer::offsetColumns(int line, int column, int columnOffset) {
+    if (_generated_lines < line) {
+        return;
+    }
+
     auto mappingsCount = this->_mapping_lines[line]._segments.size();
     for (int i = 0; i < mappingsCount; ++i) {
         if (this->_mapping_lines[line]._segments[i].generated.column < column) {

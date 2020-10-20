@@ -87,6 +87,20 @@ describe('SourceMap - Offset Utils', () => {
     });
   });
 
+  it('Column offset empty map', () => {
+    let map = new SourceMap('/');
+
+    map.offsetColumns(1, 0, 2);
+    map.offsetColumns(2, 15, -4);
+
+    assert.deepEqual(map.getMap(), {
+      sources: [],
+      sourcesContent: [],
+      names: [],
+      mappings: [],
+    });
+  });
+
   it('Positive line offset', () => {
     let map = new SourceMap('/test-root');
 
@@ -234,6 +248,20 @@ describe('SourceMap - Offset Utils', () => {
           source: 0,
         },
       ],
+    });
+  });
+
+  it('Line offset empty map', () => {
+    let map = new SourceMap('/');
+
+    map.offsetLines(1, 2);
+    map.offsetLines(2, 5);
+
+    assert.deepEqual(map.getMap(), {
+      sources: [],
+      sourcesContent: [],
+      names: [],
+      mappings: [],
     });
   });
 });
