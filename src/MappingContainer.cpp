@@ -537,6 +537,10 @@ void MappingContainer::offsetLines(int line, int lineOffset) {
 }
 
 void MappingContainer::offsetColumns(int line, int column, int columnOffset) {
+    if (_generated_lines < line) {
+        return;
+    }
+
     auto mappingsCount = this->_mapping_lines[line]._segments.size();
     for (int i = 0; i < mappingsCount; ++i) {
         if (this->_mapping_lines[line]._segments[i].generated.column < column) {
