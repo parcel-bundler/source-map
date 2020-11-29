@@ -49,7 +49,7 @@ export default class NodeSourceMap extends SourceMap {
     lineOffset = 0,
   }: GenerateEmptyMapOptions): NodeSourceMap {
     let map = new NodeSourceMap(projectRoot);
-    map.addEmptyMap(relatifyPath(sourceName, projectRoot), sourceContent, lineOffset);
+    map.addEmptyMap(sourceName, sourceContent, lineOffset);
     return map;
   }
 }
