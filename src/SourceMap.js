@@ -48,7 +48,7 @@ export default class SourceMap {
    * @param lineOffset an offset that gets added to the sourceLine index of each mapping
    */
   addEmptyMap(sourceName: string, sourceContent: string, lineOffset: number = 0): SourceMap {
-    this.sourceMapInstance.addEmptyMap(sourceName, sourceContent, lineOffset);
+    this.sourceMapInstance.addEmptyMap(relatifyPath(sourceName, this.projectRoot), sourceContent, lineOffset);
     return this;
   }
 
