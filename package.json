@@ -51,7 +51,7 @@
     ]
   },
   "engines": {
-    "node": ">= 10"
+    "node": "^10 || ^12.18.3 || >=14"
   },
   "dependencies": {
     "node-addon-api": "^3.0.0",
