@@ -30,6 +30,40 @@ export default class NodeSourceMap extends SourceMap {
     return this;
   }
 
+  addIndexedMappings(
+    mappings: Array<IndexedMapping<string>>,
+    lineOffset?: number = 0,
+    columnOffset?: number = 0
+  ): SourceMap {
+    // Encode all mappings into a single typed array and make one call
+    // to C++ instead of one for each mapping to improve performance.
+    let mappingBuffer = new Int32Array(mappings.length * 4);
+    let sources = [];
+    let names = [];
+    let i = 0;
+    for (let mapping of mappings) {
+      let hasValidOriginal =
+        mapping.original &&
+        typeof mapping.original.line === 'number' &&
+        !isNaN(mapping.original.line) &&
+        typeof mapping.original.column === 'number' &&
+        !isNaN(mapping.original.column);
+
+      mappingBuffer[i++] = mapping.generated.line + lineOffset - 1;
+      mappingBuffer[i++] = mapping.generated.column + columnOffset;
+      // $FlowFixMe
+      mappingBuffer[i++] = hasValidOriginal ? mapping.original.line - 1 : -1;
+      // $FlowFixMe
+      mappingBuffer[i++] = hasValidOriginal ? mapping.original.column : -1;
+      sources.push(mapping.source ? relatifyPath(mapping.source, this.projectRoot) : '');
+      names.push(mapping.name || '');
+    }
+
+    this.sourceMapInstance.addIndexedMappings(mappingBuffer, sources, names);
+
+    return this;
+  }
+
   toBuffer(): Buffer {
     return this.sourceMapInstance.toBuffer();
   }

@@ -244,6 +244,54 @@ void SourceMapBinding::addIndexedMapping(const Napi::CallbackInfo &info) {
     _mapping_container.addIndexedMapping(generatedLine, generatedColumn, originalLine, originalColumn, source, name);
 }
 
+void SourceMapBinding::addIndexedMappings(const Napi::CallbackInfo &info) {
+    Napi::Env env = info.Env();
+    Napi::HandleScope scope(env);
+
+    if (info.Length() < 3) {
+        Napi::TypeError::New(env, "Expected 4-5 parameters").ThrowAsJavaScriptException();
+        return;
+    }
+
+    if (!info[0].IsTypedArray()) {
+        Napi::TypeError::New(env, "Expected a typed array for the first parameter").ThrowAsJavaScriptException();
+        return;
+    }
+
+    if (!info[1].IsArray() || !info[2].IsArray()) {
+        Napi::TypeError::New(env,
+                             "Second, and third parameter should be an array of strings").ThrowAsJavaScriptException();
+        return;
+    }
+    auto buffer = info[0].As<Napi::TypedArrayOf<int32_t>>();
+    Napi::Array sources = info[1].As<Napi::Array>();
+    Napi::Array names = info[2].As<Napi::Array>();
+
+    unsigned int length = buffer.ElementLength();
+    if (sources.Length() < length / 4) {
+        Napi::TypeError::New(env, "Not enough sources").ThrowAsJavaScriptException();
+    }
+
+    if (names.Length() < length / 4) {
+        Napi::TypeError::New(env, "Not enough names").ThrowAsJavaScriptException();
+    }
+
+    for (unsigned int i = 0; i < length; i += 4) {
+        unsigned int mappingIndex = i / 4;
+        std::string source = sources.Get(mappingIndex).As<Napi::String>().Utf8Value();
+        std::string name = names.Get(mappingIndex).As<Napi::String>().Utf8Value();
+
+        _mapping_container.addIndexedMapping(
+            buffer[i],
+            buffer[i + 1],
+            buffer[i + 2],
+            buffer[i + 3],
+            source,
+            name
+        );
+    }
+}
+
 Napi::Value SourceMapBinding::getSourceIndex(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
@@ -456,6 +504,7 @@ Napi::Object SourceMapBinding::Init(Napi::Env env, Napi::Object exports) {
             InstanceMethod("toBuffer", &SourceMapBinding::toBuffer),
             InstanceMethod("getMap", &SourceMapBinding::getMap),
             InstanceMethod("addIndexedMapping", &SourceMapBinding::addIndexedMapping),
+            InstanceMethod("addIndexedMappings", &SourceMapBinding::addIndexedMappings),
             InstanceMethod("addName", &SourceMapBinding::addName),
             InstanceMethod("addSource", &SourceMapBinding::addSource),
             InstanceMethod("setSourceContent", &SourceMapBinding::setSourceContent),
