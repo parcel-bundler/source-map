@@ -78,20 +78,32 @@ describe('SourceMap - Formats', () => {
     assert.deepEqual(stringifiedMap.sources, ['./helloworld.coffee']);
   });
 
-  it('Should make all sourcePaths web friendly aka no windows backslashes', async () => {
-    let map = new SourceMap('C:\\Users\\test\\');
-    map.addRawMappings({
-      mappings: SIMPLE_SOURCE_MAP.mappings,
-      sources: ['C:\\Users\\test\\helloworld.coffee'],
-      names: SIMPLE_SOURCE_MAP.names,
+  describe('win32', function () {
+    let platform = process.platform;
+
+    before(() => {
+      Object.defineProperty(process, 'platform', { value: 'win32' });
     });
 
-    let stringifiedMap = await map.stringify({
-      file: 'index.js.map',
-      sourceRoot: '/',
-      format: 'object',
+    after(() => {
+      Object.defineProperty(process, 'platform', { value: platform });
     });
 
-    assert.deepEqual(stringifiedMap.sources, ['./helloworld.coffee']);
+    it('Should make all sourcePaths web friendly aka no windows backslashes', async () => {
+      let map = new SourceMap('C:\\Users\\test\\');
+      map.addRawMappings({
+        mappings: SIMPLE_SOURCE_MAP.mappings,
+        sources: ['C:\\Users\\test\\helloworld.coffee'],
+        names: SIMPLE_SOURCE_MAP.names,
+      });
+
+      let stringifiedMap = await map.stringify({
+        file: 'index.js.map',
+        sourceRoot: '/',
+        format: 'object',
+      });
+
+      assert.deepEqual(stringifiedMap.sources, ['./helloworld.coffee']);
+    });
   });
 });

@@ -2,15 +2,15 @@ import assert from 'assert';
 import { normalizePath, relatifyPath } from '../src/utils';
 
 describe('Utilities', () => {
-  describe('win32', function() {
+  describe('win32', function () {
     let platform = process.platform;
 
     before(() => {
-      Object.defineProperty(process, 'platform', {value: 'win32'});
+      Object.defineProperty(process, 'platform', { value: 'win32' });
     });
 
     after(() => {
-      Object.defineProperty(process, 'platform', {value: platform});
+      Object.defineProperty(process, 'platform', { value: platform });
     });
 
     it('Relative path', async () => {
