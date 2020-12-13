@@ -490,6 +490,12 @@ void MappingContainer::addIndexedMapping(int generatedLine, int generatedColumn,
                                          int sourceIndex, int nameIndex) {
     Position generatedPosition = Position{generatedLine, generatedColumn};
     Position originalPosition = Position{originalLine, originalColumn};
+    
+    if (originalPosition.line < 0) {
+        sourceIndex = -1;
+        nameIndex = -1;
+    }
+
     addMapping(generatedPosition, originalPosition, sourceIndex, nameIndex);
 }
 

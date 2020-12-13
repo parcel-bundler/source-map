@@ -81,23 +81,9 @@ export default class SourceMap {
    * @param columnOffset  an offset that gets added to the sourceColumn index of each mapping
    */
   addIndexedMapping(mapping: IndexedMapping<string>, lineOffset?: number = 0, columnOffset?: number = 0): void {
-    let hasValidOriginal =
-      mapping.original &&
-      typeof mapping.original.line === 'number' &&
-      !isNaN(mapping.original.line) &&
-      typeof mapping.original.column === 'number' &&
-      !isNaN(mapping.original.column);
-
-    this.sourceMapInstance.addIndexedMapping(
-      mapping.generated.line + lineOffset - 1,
-      mapping.generated.column + columnOffset,
-      // $FlowFixMe
-      hasValidOriginal ? mapping.original.line - 1 : -1,
-      // $FlowFixMe
-      hasValidOriginal ? mapping.original.column : -1,
-      mapping.source ? relatifyPath(mapping.source, this.projectRoot) : '',
-      mapping.name || ''
-    );
+    // Not sure if it'll be worth it to add this back to C++, wrapping it in an array probably doesn't do that much harm in JS?
+    // Also we barely use this function anyway...
+    this.addIndexedMappings([mapping], lineOffset, columnOffset);
   }
 
   /**
@@ -116,9 +102,48 @@ export default class SourceMap {
     lineOffset?: number = 0,
     columnOffset?: number = 0
   ): SourceMap {
+    // Encode all mappings into a single typed array and make one call
+    // to C++ instead of one for each mapping to improve performance.
+    let mappingBuffer = new Int32Array(mappings.length * 6);
+    let sources: Map<string, number> = new Map();
+    let names: Map<string, number> = new Map();
+    let i = 0;
     for (let mapping of mappings) {
-      this.addIndexedMapping(mapping, lineOffset, columnOffset);
+      let hasValidOriginal =
+        mapping.original &&
+        typeof mapping.original.line === 'number' &&
+        !isNaN(mapping.original.line) &&
+        typeof mapping.original.column === 'number' &&
+        !isNaN(mapping.original.column);
+
+      mappingBuffer[i++] = mapping.generated.line + lineOffset - 1;
+      mappingBuffer[i++] = mapping.generated.column + columnOffset;
+      // $FlowFixMe
+      mappingBuffer[i++] = hasValidOriginal ? mapping.original.line - 1 : -1;
+      // $FlowFixMe
+      mappingBuffer[i++] = hasValidOriginal ? mapping.original.column : -1;
+
+      let sourceIndex = mapping.source ? sources.get(mapping.source) : -1;
+      if (sourceIndex == null) {
+        // $FlowFixMe
+        sourceIndex = this.addSource(mapping.source);
+        // $FlowFixMe
+        sources.set(mapping.source, sourceIndex);
+      }
+      mappingBuffer[i++] = sourceIndex;
+
+      let nameIndex = mapping.name ? names.get(mapping.name) : -1;
+      if (nameIndex == null) {
+        // $FlowFixMe
+        nameIndex = this.addName(mapping.name);
+        // $FlowFixMe
+        names.set(mapping.name, nameIndex);
+      }
+      mappingBuffer[i++] = nameIndex;
     }
+
+    this.sourceMapInstance.addIndexedMappings(mappingBuffer);
+
     return this;
   }
 
