@@ -30,6 +30,16 @@ export default class NodeSourceMap extends SourceMap {
     return this;
   }
 
+  addIndexedMappings(
+    mappings: Array<IndexedMapping<string>>,
+    lineOffset?: number = 0,
+    columnOffset?: number = 0
+  ): SourceMap {
+    let mappingBuffer = this._indexedMappingsToInt32Array(mappings, lineOffset, columnOffset);
+    this.sourceMapInstance.addIndexedMappings(mappingBuffer);
+    return this;
+  }
+
   toBuffer(): Buffer {
     return this.sourceMapInstance.toBuffer();
   }

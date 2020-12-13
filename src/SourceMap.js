@@ -86,22 +86,11 @@ export default class SourceMap {
     this.addIndexedMappings([mapping], lineOffset, columnOffset);
   }
 
-  /**
-   * Appends an array of Mapping objects to this sourcemap
-   * This is useful when improving performance if a library provides the non-serialised mappings
-   *
-   * Note: This is only faster if they generate the serialised map lazily
-   * Note: line numbers start at 1 due to mozilla's source-map library
-   *
-   * @param mappings an array of mapping objects
-   * @param lineOffset an offset that gets added to the sourceLine index of each mapping
-   * @param columnOffset  an offset that gets added to the sourceColumn index of each mapping
-   */
-  addIndexedMappings(
+  _indexedMappingsToInt32Array(
     mappings: Array<IndexedMapping<string>>,
     lineOffset?: number = 0,
     columnOffset?: number = 0
-  ): SourceMap {
+  ) {
     // Encode all mappings into a single typed array and make one call
     // to C++ instead of one for each mapping to improve performance.
     let mappingBuffer = new Int32Array(mappings.length * 6);
@@ -142,9 +131,26 @@ export default class SourceMap {
       mappingBuffer[i++] = nameIndex;
     }
 
-    this.sourceMapInstance.addIndexedMappings(mappingBuffer);
+    return mappingBuffer;
+  }
 
-    return this;
+  /**
+   * Appends an array of Mapping objects to this sourcemap
+   * This is useful when improving performance if a library provides the non-serialised mappings
+   *
+   * Note: This is only faster if they generate the serialised map lazily
+   * Note: line numbers start at 1 due to mozilla's source-map library
+   *
+   * @param mappings an array of mapping objects
+   * @param lineOffset an offset that gets added to the sourceLine index of each mapping
+   * @param columnOffset  an offset that gets added to the sourceColumn index of each mapping
+   */
+  addIndexedMappings(
+    mappings: Array<IndexedMapping<string>>,
+    lineOffset?: number = 0,
+    columnOffset?: number = 0
+  ): SourceMap {
+    throw new Error('Should be implemented by child class');
   }
 
   /**

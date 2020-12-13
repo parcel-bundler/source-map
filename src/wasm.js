@@ -28,8 +28,8 @@ function patchMapping(mapping: any): any {
   return mapping;
 }
 
-function arrayToEmbind(Type, from): any {
-  let arr = new Module.VectorString();
+function arrayToEmbind(VectorType, from): any {
+  let arr = new VectorType();
   for (let v of from) {
     arr.push_back(v);
   }
@@ -79,6 +79,18 @@ export default class WasmSourceMap extends SourceMap {
     sourcesVector.delete();
     sourcesContentVector.delete();
     namesVector.delete();
+    return this;
+  }
+
+  addIndexedMappings(
+    mappings: Array<IndexedMapping<string>>,
+    lineOffset?: number = 0,
+    columnOffset?: number = 0
+  ): SourceMap {
+    let mappingBuffer = this._indexedMappingsToInt32Array(mappings, lineOffset, columnOffset);
+    let mappingBufferArray = arrayToEmbind(Module.VectorInt, mappingBuffer);
+    this.sourceMapInstance.addIndexedMappings(mappingBufferArray);
+    mappingBufferArray.delete();
     return this;
   }
 
