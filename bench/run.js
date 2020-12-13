@@ -8,7 +8,7 @@ const ITERATIONS = 250;
 init.then(() => {
   const suite = new Benchmark(ITERATIONS);
 
-  let mappings = new Array(10000).fill('').map((item, index) => {
+  let mappings = new Array(100).fill('').map((item, index) => {
     return {
       source: 'index.js',
       name: 'A',
@@ -28,7 +28,7 @@ init.then(() => {
   let sourcemapBuffer = sourcemapInstance.toBuffer();
   let rawSourceMap = sourcemapInstance.toVLQ();
 
-  /*suite.add('consume vlq mappings', async () => {
+  suite.add('consume vlq mappings', async () => {
     let map = new SourceMap();
     map.addRawMappings({
       mappings: rawSourceMap.mappings,
@@ -42,7 +42,7 @@ init.then(() => {
     let map = new SourceMap();
     map.addBufferMappings(sourcemapBuffer);
     map.delete();
-  });*/
+  });
 
   suite.add('consume JS Mappings', async () => {
     let map = new SourceMap();
@@ -50,7 +50,7 @@ init.then(() => {
     map.delete();
   });
 
-  /*suite.add('JS Mappings => vlq (mozilla source-map) => buffer', async () => {
+  suite.add('JS Mappings => vlq (mozilla source-map) => buffer', async () => {
     let map = new MozillaSourceMap.SourceMapGenerator({
       sourceRoot: '/',
     });
@@ -123,7 +123,7 @@ init.then(() => {
       format: 'object',
     });
     map.delete();
-  });*/
+  });
 
   suite.run();
 });
