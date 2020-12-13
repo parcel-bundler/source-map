@@ -62,9 +62,21 @@ std::vector<Mapping> SourceMap::getMappings(){
     return mappings;
 }
 
-// addIndexedMapping(generatedLine, generatedColumn, originalLine, originalColumn, source, name)
-void SourceMap::addIndexedMapping(int generatedLine, int generatedColumn, int originalLine, int originalColumn, std::string source, std::string name) {
-    _mapping_container.addIndexedMapping(generatedLine, generatedColumn, originalLine, originalColumn, source, name);
+// addIndexedMappings(mappings: Vector<Int32>)
+void SourceMap::addIndexedMappings(std::vector<int> buffer) {
+    unsigned int length = buffer.size();
+    for (unsigned int i = 0; i < length; i += 6) {
+        unsigned int mappingIndex = i / 6;
+
+        _mapping_container.addIndexedMapping(
+                buffer[i],
+                buffer[i + 1],
+                buffer[i + 2],
+                buffer[i + 3],
+                buffer[i + 4],
+                buffer[i + 5]
+        );
+    }
 }
 
 int SourceMap::getSourceIndex(std::string source) {
@@ -147,7 +159,7 @@ EMSCRIPTEN_BINDINGS(my_class_example) {
         .constructor<>()
         .function("addRawMappings", &SourceMap::addRawMappings)
         .function("addBufferMappings", &SourceMap::addBufferMappings)
-        .function("addIndexedMapping", &SourceMap::addIndexedMapping)
+        .function("addIndexedMappings", &SourceMap::addIndexedMappings)
         .function("getVLQMappings", &SourceMap::getVLQMappings)
         .function("getMappings", &SourceMap::getMappings)
         .function("getSources", &SourceMap::getSources)

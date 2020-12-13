@@ -224,24 +224,34 @@ Napi::Value SourceMapBinding::getMap(const Napi::CallbackInfo &info) {
     return obj;
 }
 
-// addIndexedMapping(generatedLine, generatedColumn, originalLine, originalColumn, source, name)
-void SourceMapBinding::addIndexedMapping(const Napi::CallbackInfo &info) {
+void SourceMapBinding::addIndexedMappings(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
 
-    if (info.Length() < 6) {
-        Napi::TypeError::New(env, "Expected 6 parameters").ThrowAsJavaScriptException();
+    if (info.Length() < 1) {
+        Napi::TypeError::New(env, "Expected 1 Parameter").ThrowAsJavaScriptException();
         return;
     }
 
-    int generatedLine = info[0].As<Napi::Number>().Int32Value();
-    int generatedColumn = info[1].As<Napi::Number>().Int32Value();
-    int originalLine = info[2].As<Napi::Number>().Int32Value();
-    int originalColumn = info[3].As<Napi::Number>().Int32Value();
-    std::string source = info[4].As<Napi::String>().Utf8Value();
-    std::string name = info[5].As<Napi::String>().Utf8Value();
+    if (!info[0].IsTypedArray()) {
+        Napi::TypeError::New(env, "Expected a typed array for the first parameter").ThrowAsJavaScriptException();
+        return;
+    }
 
-    _mapping_container.addIndexedMapping(generatedLine, generatedColumn, originalLine, originalColumn, source, name);
+    auto buffer = info[0].As<Napi::TypedArrayOf<int32_t>>();
+    unsigned int length = buffer.ElementLength();
+    for (unsigned int i = 0; i < length; i += 6) {
+        unsigned int mappingIndex = i / 6;
+
+        _mapping_container.addIndexedMapping(
+            buffer[i],
+            buffer[i + 1],
+            buffer[i + 2],
+            buffer[i + 3],
+            buffer[i + 4],
+            buffer[i + 5]
+        );
+    }
 }
 
 Napi::Value SourceMapBinding::getSourceIndex(const Napi::CallbackInfo &info) {
@@ -455,7 +465,7 @@ Napi::Object SourceMapBinding::Init(Napi::Env env, Napi::Object exports) {
             InstanceMethod("stringify", &SourceMapBinding::stringify),
             InstanceMethod("toBuffer", &SourceMapBinding::toBuffer),
             InstanceMethod("getMap", &SourceMapBinding::getMap),
-            InstanceMethod("addIndexedMapping", &SourceMapBinding::addIndexedMapping),
+            InstanceMethod("addIndexedMappings", &SourceMapBinding::addIndexedMappings),
             InstanceMethod("addName", &SourceMapBinding::addName),
             InstanceMethod("addSource", &SourceMapBinding::addSource),
             InstanceMethod("setSourceContent", &SourceMapBinding::setSourceContent),

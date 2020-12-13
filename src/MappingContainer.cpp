@@ -487,19 +487,13 @@ void MappingContainer::addBufferMappings(const void *buf, int lineOffset, int co
 }
 
 void MappingContainer::addIndexedMapping(int generatedLine, int generatedColumn, int originalLine, int originalColumn,
-                                         std::string source, std::string name) {
+                                         int sourceIndex, int nameIndex) {
     Position generatedPosition = Position{generatedLine, generatedColumn};
     Position originalPosition = Position{originalLine, originalColumn};
-    int sourceIndex = -1;
-    int nameIndex = -1;
-    if (originalPosition.line > -1) {
-        if (!source.empty()) {
-            sourceIndex = addSource(source);
-        }
-
-        if (!name.empty()) {
-            nameIndex = addName(name);
-        }
+    
+    if (originalPosition.line < 0) {
+        sourceIndex = -1;
+        nameIndex = -1;
     }
 
     addMapping(generatedPosition, originalPosition, sourceIndex, nameIndex);

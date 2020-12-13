@@ -17,7 +17,11 @@ export function isAbsolute(filepath: string): boolean {
 }
 
 export function normalizePath(filepath: string): string {
-  return filepath.replace(ABSOLUTE_PATH_REGEX, '/').replace(PATH_SEPARATOR_REGEX, '/');
+  if (process.platform === 'win32') {
+    return filepath.replace(ABSOLUTE_PATH_REGEX, '/').replace(PATH_SEPARATOR_REGEX, '/');
+  }
+
+  return filepath;
 }
 
 export function relatifyPath(filepath: string, rootDir: string): string {

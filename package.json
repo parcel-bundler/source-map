@@ -1,6 +1,6 @@
 {
   "name": "@parcel/source-map",
-  "version": "2.0.0-alpha.4.18",
+  "version": "2.0.0-alpha.4.19",
   "main": "./dist/node.js",
   "types": "index.d.ts",
   "browser": "./dist/wasm-browser.js",
@@ -23,7 +23,8 @@
     "lint": "prettier --write bench/run.js src/*.js",
     "typecheck": "flow",
     "format": "prettier --write \"./**/*.{js,md,mdx}\"",
-    "compile-schema": "./flatc --cpp -o ./src ./src/sourcemap-schema.fbs"
+    "compile-schema": "./flatc --cpp -o ./src ./src/sourcemap-schema.fbs",
+    "clean": "rm -rf dist build"
   },
   "husky": {
     "hooks": {
