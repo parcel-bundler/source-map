@@ -15,8 +15,6 @@ private:
 
     void addBufferMappings(const Napi::CallbackInfo &info);
 
-    void addIndexedMapping(const Napi::CallbackInfo &info);
-
     void addIndexedMappings(const Napi::CallbackInfo &info);
 
     void extends(const Napi::CallbackInfo &info);

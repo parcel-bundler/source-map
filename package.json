@@ -23,7 +23,8 @@
     "lint": "prettier --write bench/run.js src/*.js",
     "typecheck": "flow",
     "format": "prettier --write \"./**/*.{js,md,mdx}\"",
-    "compile-schema": "./flatc --cpp -o ./src ./src/sourcemap-schema.fbs"
+    "compile-schema": "./flatc --cpp -o ./src ./src/sourcemap-schema.fbs",
+    "clean": "rm -rf dist build"
   },
   "husky": {
     "hooks": {

@@ -224,32 +224,12 @@ Napi::Value SourceMapBinding::getMap(const Napi::CallbackInfo &info) {
     return obj;
 }
 
-// addIndexedMapping(generatedLine, generatedColumn, originalLine, originalColumn, source, name)
-void SourceMapBinding::addIndexedMapping(const Napi::CallbackInfo &info) {
-    Napi::Env env = info.Env();
-    Napi::HandleScope scope(env);
-
-    if (info.Length() < 6) {
-        Napi::TypeError::New(env, "Expected 6 parameters").ThrowAsJavaScriptException();
-        return;
-    }
-
-    int generatedLine = info[0].As<Napi::Number>().Int32Value();
-    int generatedColumn = info[1].As<Napi::Number>().Int32Value();
-    int originalLine = info[2].As<Napi::Number>().Int32Value();
-    int originalColumn = info[3].As<Napi::Number>().Int32Value();
-    std::string source = info[4].As<Napi::String>().Utf8Value();
-    std::string name = info[5].As<Napi::String>().Utf8Value();
-
-    _mapping_container.addIndexedMapping(generatedLine, generatedColumn, originalLine, originalColumn, source, name);
-}
-
 void SourceMapBinding::addIndexedMappings(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
 
-    if (info.Length() < 3) {
-        Napi::TypeError::New(env, "Expected 4-5 parameters").ThrowAsJavaScriptException();
+    if (info.Length() < 1) {
+        Napi::TypeError::New(env, "Expected 1 Parameter").ThrowAsJavaScriptException();
         return;
     }
 
@@ -258,36 +238,18 @@ void SourceMapBinding::addIndexedMappings(const Napi::CallbackInfo &info) {
         return;
     }
 
-    if (!info[1].IsArray() || !info[2].IsArray()) {
-        Napi::TypeError::New(env,
-                             "Second, and third parameter should be an array of strings").ThrowAsJavaScriptException();
-        return;
-    }
     auto buffer = info[0].As<Napi::TypedArrayOf<int32_t>>();
-    Napi::Array sources = info[1].As<Napi::Array>();
-    Napi::Array names = info[2].As<Napi::Array>();
-
     unsigned int length = buffer.ElementLength();
-    if (sources.Length() < length / 4) {
-        Napi::TypeError::New(env, "Not enough sources").ThrowAsJavaScriptException();
-    }
-
-    if (names.Length() < length / 4) {
-        Napi::TypeError::New(env, "Not enough names").ThrowAsJavaScriptException();
-    }
-
-    for (unsigned int i = 0; i < length; i += 4) {
-        unsigned int mappingIndex = i / 4;
-        std::string source = sources.Get(mappingIndex).As<Napi::String>().Utf8Value();
-        std::string name = names.Get(mappingIndex).As<Napi::String>().Utf8Value();
+    for (unsigned int i = 0; i < length; i += 6) {
+        unsigned int mappingIndex = i / 6;
 
         _mapping_container.addIndexedMapping(
             buffer[i],
             buffer[i + 1],
             buffer[i + 2],
             buffer[i + 3],
-            source,
-            name
+            buffer[i + 4],
+            buffer[i + 5]
         );
     }
 }
@@ -503,7 +465,6 @@ Napi::Object SourceMapBinding::Init(Napi::Env env, Napi::Object exports) {
             InstanceMethod("stringify", &SourceMapBinding::stringify),
             InstanceMethod("toBuffer", &SourceMapBinding::toBuffer),
             InstanceMethod("getMap", &SourceMapBinding::getMap),
-            InstanceMethod("addIndexedMapping", &SourceMapBinding::addIndexedMapping),
             InstanceMethod("addIndexedMappings", &SourceMapBinding::addIndexedMappings),
             InstanceMethod("addName", &SourceMapBinding::addName),
             InstanceMethod("addSource", &SourceMapBinding::addSource),

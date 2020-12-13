@@ -64,7 +64,7 @@ public:
 
     void offsetColumns(int line, int column, int columnOffset);
 
-    void addIndexedMapping(int generatedLine, int generatedColumn, int originalLine, int originalColumn, std::string source, std::string name);
+    void addIndexedMapping(int generatedLine, int generatedColumn, int originalLine, int originalColumn, int sourceIndex, int nameIndex);
 
 private:
     // Processed mappings, for all kinds of modifying within the sourcemap
