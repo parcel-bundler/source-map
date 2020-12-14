@@ -65,6 +65,10 @@ jobs:
       - script: npm run prebuild
         displayName: Test prebuild
 
+      - script: npm run prebuild-ia32
+        displayName: Test prebuild-ia32
+        condition: eq('${{ parameters.is32bit }}', 'true')
+
       - task: PublishBuildArtifacts@1
         displayName: Publish Native Artifacts
         condition: and(succeeded(), eq(variables['publish_artifacts'], 'true'))
