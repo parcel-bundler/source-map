@@ -15,8 +15,9 @@
     "compile-wasm": "make clean && make -j4",
     "transpile": "babel ./src/*.js --out-dir ./dist && flow-copy-source -v src dist",
     "prebuild": "prebuildify -t 10.20.1 --napi --strip --tag-libc",
+    "prebuild-ia32": "prebuildify -t 12.13.0 --napi --strip --tag-libc --arch=ia32",
     "build:dev": "node-gyp rebuild --debug",
-    "rebuild": "rm -rf build && yarn build:dev",
+    "rebuild": "shx rm -rf build && yarn build:dev",
     "rebuild-all": "yarn transpile && yarn compile-wasm && yarn rebuild",
     "install": "node-gyp-build",
     "prepublish": "npm run transpile",
@@ -24,7 +25,7 @@
     "typecheck": "flow",
     "format": "prettier --write \"./**/*.{js,md,mdx}\"",
     "compile-schema": "./flatc --cpp -o ./src ./src/sourcemap-schema.fbs",
-    "clean": "rm -rf dist build"
+    "clean": "shx rm -rf dist build"
   },
   "husky": {
     "hooks": {
@@ -56,7 +57,7 @@
   },
   "dependencies": {
     "node-addon-api": "^3.0.0",
-    "node-gyp-build": "^4.2.2"
+    "node-gyp-build": "^4.2.3"
   },
   "devDependencies": {
     "@babel/cli": "^7.8.4",
@@ -71,8 +72,9 @@
     "husky": "4.2.5",
     "lint-staged": "^10.2.9",
     "mocha": "^7.1.2",
-    "prebuildify": "^4.0.0",
+    "prebuildify": "^4.1.1",
     "prettier": "^2.0.5",
+    "shx": "^0.3.3",
     "source-map": "^0.7.3",
     "tiny-benchy": "^1.0.0"
   }

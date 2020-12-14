@@ -111,19 +111,21 @@ init.then(() => {
     map.delete();
   });
 
-  suite.add('combine 1000 maps using flatbuffers and stringify', async () => {
-    let map = new SourceMap();
-    for (let i = 0; i < 1000; i++) {
-      map.addBufferMappings(sourcemapBuffer, i * 4);
-    }
-    await map.stringify({
-      file: 'index.js.map',
-      sourceRoot: '/',
-      // We don't wanna benchmark JSON.stringify...
-      format: 'object',
+  if (!(process.platform === 'win32' && process.arch === 'ia32')) {
+    suite.add('combine 1000 maps using flatbuffers and stringify', async () => {
+      let map = new SourceMap();
+      for (let i = 0; i < 1000; i++) {
+        map.addBufferMappings(sourcemapBuffer, i * 4);
+      }
+      await map.stringify({
+        file: 'index.js.map',
+        sourceRoot: '/',
+        // We don't wanna benchmark JSON.stringify...
+        format: 'object',
+      });
+      map.delete();
     });
-    map.delete();
-  });
+  }
 
   suite.run();
 });
