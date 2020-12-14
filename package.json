@@ -57,7 +57,7 @@
   },
   "dependencies": {
     "node-addon-api": "^3.0.0",
-    "node-gyp-build": "^4.2.2"
+    "node-gyp-build": "^4.2.3"
   },
   "devDependencies": {
     "@babel/cli": "^7.8.4",
@@ -72,7 +72,7 @@
     "husky": "4.2.5",
     "lint-staged": "^10.2.9",
     "mocha": "^7.1.2",
-    "prebuildify": "^4.0.0",
+    "prebuildify": "^4.1.1",
     "prettier": "^2.0.5",
     "source-map": "^0.7.3",
     "tiny-benchy": "^1.0.0"
