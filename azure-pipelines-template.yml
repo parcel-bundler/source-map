@@ -6,9 +6,9 @@ parameters:
 - name: 'container'
   type: string
   default: ''
-- name: 'is32bit'
+- name: 'arch'
   type: string
-  default: 'false'
+  default: ''
 
 jobs:
   - job: ${{ parameters.name }}
@@ -28,7 +28,7 @@ jobs:
       - task: NodeTool@0
         inputs:
           versionSpec: $(node_version)
-          force32bit: ${{ parameters.is32bit }}
+          force32bit: eq('${{ parameters.arch }}', 'ia32')
         displayName: "Install Node.js"
       - script: npm install --build-from-source
         displayName: Install dependencies
@@ -64,10 +64,11 @@ jobs:
 
       - script: npm run prebuild
         displayName: Test prebuild
+        condition: eq('${{ parameters.arch }}', '')
 
-      - script: npm run prebuild-ia32
-        displayName: Test prebuild-ia32
-        condition: eq('${{ parameters.is32bit }}', 'true')
+      - script: npm run prebuild --arch=${{ parameters.arch }}
+        displayName: Test prebuild for specific architecture
+        condition: ne('${{ parameters.arch }}', '')
 
       - task: PublishBuildArtifacts@1
         displayName: Publish Native Artifacts

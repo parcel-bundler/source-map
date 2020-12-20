@@ -14,6 +14,12 @@ jobs:
 
   - template: azure-pipelines-template.yml
     parameters:
+      name: macOS Apple Silicon
+      vmImage: macOS-10.15
+      arch: aarch64-apple-darwin
+
+  - template: azure-pipelines-template.yml
+    parameters:
       name: Alpine
       vmImage: ubuntu-16.04
       container: jasperdm/alpine-watchman:latest
@@ -33,7 +39,7 @@ jobs:
     parameters:
       name: Windowsx86
       vmImage: vs2017-win2016
-      is32bit: true
+      arch: ia32
 
   - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/tags/v') }}:
       - job: Publish
