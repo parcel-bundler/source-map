@@ -30,6 +30,8 @@ jobs:
           versionSpec: $(node_version)
           force32bit: eq('${{ parameters.arch }}', 'ia32')
         displayName: "Install Node.js"
+      - script: npm install -g yarn
+        displayName: Install yarn
       - script: yarn install --build-from-source
         displayName: Install dependencies
       - script: yarn run transpile
