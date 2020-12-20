@@ -1,20 +1,20 @@
 parameters:
-- name: 'name'
-  type: string
-- name: 'vmImage'
-  type: string
-- name: 'container'
-  type: string
-  default: ''
-- name: 'arch'
-  type: string
-  default: ''
+  - name: 'name'
+    type: string
+  - name: 'vmImage'
+    type: string
+  - name: 'container'
+    type: string
+    default: ''
+  - name: 'arch'
+    type: string
+    default: ''
 
 jobs:
   - job: ${{ parameters.name }}
     pool:
       vmImage: ${{ parameters.vmImage }}
-    ${{ if or(eq(parameters.name, 'Alpine'), eq(parameters.name, 'CentOS7')) }}:
+    ${{ if ne('${{ parameters.container }}', '') }}:
       container: ${{ parameters.container }}
     strategy:
       matrix:
@@ -29,7 +29,7 @@ jobs:
         inputs:
           versionSpec: $(node_version)
           force32bit: eq('${{ parameters.arch }}', 'ia32')
-        displayName: "Install Node.js"
+        displayName: 'Install Node.js'
       - script: npm install -g yarn
         displayName: Install yarn
       - script: yarn install --build-from-source
@@ -77,17 +77,16 @@ jobs:
         condition: and(succeeded(), eq(variables['publish_artifacts'], 'true'))
         inputs:
           artifactName: prebuilds
-          pathtoPublish: "$(System.DefaultWorkingDirectory)/prebuilds"
+          pathtoPublish: '$(System.DefaultWorkingDirectory)/prebuilds'
       - task: PublishBuildArtifacts@1
         displayName: Publish wasm-node Artifacts
         condition: and(succeeded(), eq(variables['publish_artifacts'], 'true'), eq('${{ parameters.name }}', 'macOS'))
         inputs:
           artifactName: wasm-node
-          pathtoPublish: "$(System.DefaultWorkingDirectory)/wasm-node"
+          pathtoPublish: '$(System.DefaultWorkingDirectory)/wasm-node'
       - task: PublishBuildArtifacts@1
         displayName: Publish wasm-browser Artifacts
         condition: and(succeeded(), eq(variables['publish_artifacts'], 'true'), eq('${{ parameters.name }}', 'macOS'))
         inputs:
           artifactName: wasm-browser
-          pathtoPublish: "$(System.DefaultWorkingDirectory)/wasm-browser"
-          
+          pathtoPublish: '$(System.DefaultWorkingDirectory)/wasm-browser'
