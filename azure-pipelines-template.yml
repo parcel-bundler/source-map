@@ -31,7 +31,8 @@ jobs:
           force32bit: eq('${{ parameters.arch }}', 'ia32')
         displayName: 'Install Node.js'
       - script: npm install -g yarn
-        displayName: Install yarn
+        displayName: 'Install yarn'
+        condition: eq('${{ parameters.name }}', 'CentOS7')
       - script: yarn install --build-from-source
         displayName: Install dependencies
       - script: yarn run transpile
