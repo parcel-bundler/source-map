@@ -16,7 +16,7 @@ jobs:
     parameters:
       name: macOS_Apple_Silicon
       vmImage: macOS-10.15
-      arch: aarch64-apple-darwin
+      arch: aarch64
 
   - template: azure-pipelines-template.yml
     parameters:

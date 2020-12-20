@@ -30,9 +30,9 @@ jobs:
           versionSpec: $(node_version)
           force32bit: eq('${{ parameters.arch }}', 'ia32')
         displayName: "Install Node.js"
-      - script: npm install --build-from-source
+      - script: yarn install --build-from-source
         displayName: Install dependencies
-      - script: npm run transpile
+      - script: yarn run transpile
         displayName: Transpile and Generate Typings
       - task: Bash@3
         displayName: Install Emscripten
@@ -45,28 +45,28 @@ jobs:
             ./emsdk activate latest
             cd ..
         condition: eq('${{ parameters.name }}', 'macOS')
-      - script: npm run compile-wasm
+      - script: yarn run compile-wasm
         displayName: Compile wasm
         env:
           PATH: $(PATH):$(System.DefaultWorkingDirectory)/emsdk/bin:$(System.DefaultWorkingDirectory)/emsdk/upstream/emscripten
         condition: eq('${{ parameters.name }}', 'macOS')
 
-      - script: npm run test:node
+      - script: yarn run test:node
         displayName: Run tests (node)
-      - script: npm run benchmark:node
+      - script: yarn run benchmark:node
         displayName: Run benchmark (node)
-      - script: npm run test:wasm
+      - script: yarn run test:wasm
         displayName: Run tests (wasm)
         condition: eq('${{ parameters.name }}', 'macOS')
-      - script: npm run benchmark:wasm
+      - script: yarn run benchmark:wasm
         displayName: Run benchmark (wasm)
         condition: eq('${{ parameters.name }}', 'macOS')
 
-      - script: npm run prebuild
+      - script: yarn run prebuild
         displayName: Test prebuild
         condition: eq('${{ parameters.arch }}', '')
 
-      - script: npm run prebuild --arch=${{ parameters.arch }}
+      - script: yarn run prebuild --arch=${{ parameters.arch }}
         displayName: Test prebuild for specific architecture
         condition: ne('${{ parameters.arch }}', '')
 
