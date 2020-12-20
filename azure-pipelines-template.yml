@@ -18,8 +18,8 @@ jobs:
       container: ${{ parameters.container }}
     strategy:
       matrix:
-        node_12_x:
-          node_version: 12.20.x
+        node_10_x:
+          node_version: 10.x
           publish_artifacts: false
         node_14_x:
           node_version: 14.x
