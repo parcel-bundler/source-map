@@ -53,7 +53,7 @@
     ]
   },
   "engines": {
-    "node": "^10 || ^12.18.3 || >=14"
+    "node": "^12.18.3 || >=14"
   },
   "dependencies": {
     "node-addon-api": "^3.0.0",
