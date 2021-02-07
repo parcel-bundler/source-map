@@ -1,7 +1,7 @@
 import assert from 'assert';
 import SourceMap from '.';
 
-describe.only('SourceMap - Find', () => {
+describe('SourceMap - Find', () => {
   it('Should be able to find closest mapping to a generated position', async () => {
     let map = new SourceMap('/test-root');
     map.addRawMappings({
@@ -10,7 +10,14 @@ describe.only('SourceMap - Find', () => {
       names: [],
     });
 
-    let mapping = map.findClosestMapping(2, 14);
+    let mapping = map.findClosestMapping(2, 8);
+    assert.deepEqual(mapping, {
+      generated: { line: 2, column: 9 },
+      original: { line: 1, column: 7 },
+      source: './helloworld.coffee',
+    });
+
+    mapping = map.findClosestMapping(2, 14);
     assert.deepEqual(mapping, {
       generated: { line: 2, column: 14 },
       original: { line: 1, column: 12 },
