@@ -23,5 +23,15 @@ describe('SourceMap - Find', () => {
       original: { line: 1, column: 0 },
       source: './helloworld.coffee',
     });
+
+    mapping = map.findClosestMapping(3, 15);
+    assert.deepEqual(mapping, {
+      generated: { line: 3, column: 0 },
+      original: { line: 1, column: 0 },
+      source: './helloworld.coffee',
+    });
+
+    mapping = map.findClosestMapping(50, 15);
+    assert.equal(mapping, null);
   });
 });
