@@ -15,10 +15,16 @@ public:
 
     int lineNumber();
 
+    int lastColumn();
+
+    Mapping findClosestMapping(int columnIndex);
+
     std::vector<Mapping> _segments;
 
 private:
     bool _is_sorted = false;
     int _line_number = 0;
     int _last_column = 0;
+
+    int binarySearchColumn(int startIndex, int endIndex, int columnIndex);
 };

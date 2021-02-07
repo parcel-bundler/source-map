@@ -1,7 +1,7 @@
 import assert from 'assert';
 import SourceMap from '.';
 
-describe('SourceMap - Find', () => {
+describe.only('SourceMap - Find', () => {
   it('Should be able to find closest mapping to a generated position', async () => {
     let map = new SourceMap('/test-root');
     map.addRawMappings({
