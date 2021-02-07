@@ -1,38 +1,41 @@
 parameters:
-- name: 'name'
-  type: string
-- name: 'vmImage'
-  type: string
-- name: 'container'
-  type: string
-  default: ''
-- name: 'is32bit'
-  type: string
-  default: 'false'
+  - name: 'name'
+    type: string
+  - name: 'vmImage'
+    type: string
+  - name: 'container'
+    type: string
+    default: ''
+  - name: 'arch'
+    type: string
+    default: ''
 
 jobs:
   - job: ${{ parameters.name }}
     pool:
       vmImage: ${{ parameters.vmImage }}
-    ${{ if or(eq(parameters.name, 'Alpine'), eq(parameters.name, 'CentOS7')) }}:
+    ${{ if ne(parameters.container, '') }}:
       container: ${{ parameters.container }}
     strategy:
       matrix:
-        node_10_x:
+        node_12_x:
           node_version: 12.x
           publish_artifacts: false
-        node_12_x:
+        node_14_x:
           node_version: 14.x
           publish_artifacts: true
     steps:
       - task: NodeTool@0
         inputs:
           versionSpec: $(node_version)
-          force32bit: ${{ parameters.is32bit }}
-        displayName: "Install Node.js"
-      - script: npm install --build-from-source
+          force32bit: eq('${{ parameters.arch }}', 'ia32')
+        displayName: 'Install Node.js'
+      - script: npm install -g yarn
+        displayName: 'Install yarn'
+        condition: eq('${{ parameters.name }}', 'CentOS7')
+      - script: yarn install --build-from-source
         displayName: Install dependencies
-      - script: npm run transpile
+      - script: yarn run transpile
         displayName: Transpile and Generate Typings
       - task: Bash@3
         displayName: Install Emscripten
@@ -45,46 +48,46 @@ jobs:
             ./emsdk activate latest
             cd ..
         condition: eq('${{ parameters.name }}', 'macOS')
-      - script: npm run compile-wasm
+      - script: yarn run compile-wasm
         displayName: Compile wasm
         env:
           PATH: $(PATH):$(System.DefaultWorkingDirectory)/emsdk/bin:$(System.DefaultWorkingDirectory)/emsdk/upstream/emscripten
         condition: eq('${{ parameters.name }}', 'macOS')
 
-      - script: npm run test:node
+      - script: yarn run test:node
         displayName: Run tests (node)
-      - script: npm run benchmark:node
+      - script: yarn run benchmark:node
         displayName: Run benchmark (node)
-      - script: npm run test:wasm
+      - script: yarn run test:wasm
         displayName: Run tests (wasm)
         condition: eq('${{ parameters.name }}', 'macOS')
-      - script: npm run benchmark:wasm
+      - script: yarn run benchmark:wasm
         displayName: Run benchmark (wasm)
         condition: eq('${{ parameters.name }}', 'macOS')
 
-      - script: npm run prebuild
+      - script: yarn run prebuild
         displayName: Test prebuild
+        condition: eq('${{ parameters.arch }}', '')
 
-      - script: npm run prebuild-ia32
-        displayName: Test prebuild-ia32
-        condition: eq('${{ parameters.is32bit }}', 'true')
+      - script: yarn run prebuild --arch=${{ parameters.arch }}
+        displayName: Test prebuild for specific architecture
+        condition: ne('${{ parameters.arch }}', '')
 
       - task: PublishBuildArtifacts@1
         displayName: Publish Native Artifacts
         condition: and(succeeded(), eq(variables['publish_artifacts'], 'true'))
         inputs:
           artifactName: prebuilds
-          pathtoPublish: "$(System.DefaultWorkingDirectory)/prebuilds"
+          pathtoPublish: '$(System.DefaultWorkingDirectory)/prebuilds'
       - task: PublishBuildArtifacts@1
         displayName: Publish wasm-node Artifacts
         condition: and(succeeded(), eq(variables['publish_artifacts'], 'true'), eq('${{ parameters.name }}', 'macOS'))
         inputs:
           artifactName: wasm-node
-          pathtoPublish: "$(System.DefaultWorkingDirectory)/wasm-node"
+          pathtoPublish: '$(System.DefaultWorkingDirectory)/wasm-node'
       - task: PublishBuildArtifacts@1
         displayName: Publish wasm-browser Artifacts
         condition: and(succeeded(), eq(variables['publish_artifacts'], 'true'), eq('${{ parameters.name }}', 'macOS'))
         inputs:
           artifactName: wasm-browser
-          pathtoPublish: "$(System.DefaultWorkingDirectory)/wasm-browser"
-          
+          pathtoPublish: '$(System.DefaultWorkingDirectory)/wasm-browser'
