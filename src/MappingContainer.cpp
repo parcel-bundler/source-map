@@ -197,7 +197,7 @@ Mapping MappingContainer::findClosestMapping(int lineIndex, int columnIndex) {
         int stopIndex = segmentsCount - 1;
         int middleIndex = ((stopIndex + startIndex) / 2);
         while (startIndex < stopIndex) {
-            Mapping &mapping = segments[middleIndex];
+            Mapping &mapping = segments.at(middleIndex);
             int diff = mapping.generated.column - columnIndex;
             if (diff > 0) {
                 --stopIndex;
@@ -210,7 +210,7 @@ Mapping MappingContainer::findClosestMapping(int lineIndex, int columnIndex) {
             middleIndex = ((stopIndex + startIndex) / 2);
         }
 
-        return segments[middleIndex];
+        return segments.at(middleIndex);
     }
 
     return Mapping{Position{-1, -1}, Position{-1, -1}, -1, -1};
