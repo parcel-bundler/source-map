@@ -47,8 +47,21 @@ Mapping MappingLine::findClosestMapping(int columnIndex) {
         std::vector<Mapping>::iterator low = std::lower_bound(_segments.begin(), _segments.end(), searchValue, [](const Mapping& mappingA, const Mapping& mappingB){
             return mappingA.generated.column < mappingB.generated.column;
         });
+
         if (low != _segments.end()) {
-            return *low;
+            Mapping currMapping = *low;
+            if (++low != _segments.end()) {
+                Mapping nextMapping = *low;
+
+                int nextMappingDiff = nextMapping.generated.column - columnIndex;
+                int currMappingDiff = columnIndex - currMapping.generated.column;
+
+                if (nextMappingDiff < currMappingDiff) {
+                    return nextMapping;
+                }
+            }
+
+            return currMapping;
         } else {
             return _segments.at(0);
         }
