@@ -31,7 +31,14 @@ describe('SourceMap - Find', () => {
       source: './helloworld.coffee',
     });
 
+    // Edge cases
     mapping = map.findClosestMapping(50, 15);
     assert.equal(mapping, null);
+
+    mapping = map.findClosestMapping(0, 0);
+    assert.deepEqual(mapping, null);
+
+    mapping = map.findClosestMapping(-2, -6);
+    assert.deepEqual(mapping, null);
   });
 });

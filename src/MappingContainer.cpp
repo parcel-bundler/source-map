@@ -188,7 +188,7 @@ std::string MappingContainer::toVLQMappings() {
 }
 
 Mapping MappingContainer::findClosestMapping(int lineIndex, int columnIndex) {
-    if (lineIndex <= _generated_lines) {
+    if (lineIndex <= _generated_lines && lineIndex >= 0) {
         auto &line = _mapping_lines.at(lineIndex);
         auto &segments = line._segments;
         unsigned int segmentsCount = segments.size();
