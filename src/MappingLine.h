@@ -15,6 +15,10 @@ public:
 
     int lineNumber();
 
+    int lastColumn();
+
+    Mapping findClosestMapping(int columnIndex);
+
     std::vector<Mapping> _segments;
 
 private:
