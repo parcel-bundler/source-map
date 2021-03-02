@@ -234,7 +234,7 @@ export default class SourceMap {
    *
    * @param sourceName filename
    */
-  getSourceContent(sourceName: string): string {
+  getSourceContent(sourceName: string): string | null {
     return this.sourceMapInstance.getSourceContent(relatifyPath(sourceName, this.projectRoot));
   }
 
@@ -243,6 +243,19 @@ export default class SourceMap {
    */
   getSourcesContent(): Array<string | null> {
     return this.sourceMapInstance.getSourcesContent();
+  }
+
+  /**
+   * Get a map of the source and it's corresponding source content
+   */
+  getSourcesContentMap(): { [key: string]: string | null } {
+    let sources = this.getSources();
+    let sourcesContent = this.getSourcesContent();
+    let results = {};
+    for (let i = 0; i < sources.length; i++) {
+      results[sources[i]] = sourcesContent[i] || null;
+    }
+    return results;
   }
 
   /**

@@ -324,6 +324,28 @@ describe('SourceMap - Basics', () => {
     assert.deepEqual(map.getSources(), ['./helloworld.coffee', './b.jsx', './c.ts']);
   });
 
+  it('Should be able to return a map of all sources and their content', () => {
+    let map = new SourceMap('/test-root');
+    map.addRawMappings({
+      mappings: SIMPLE_SOURCE_MAP.mappings,
+      sources: SIMPLE_SOURCE_MAP.sources,
+      names: SIMPLE_SOURCE_MAP.names,
+    });
+
+    map.setSourceContent('./helloworld.coffee', 'hello-world');
+    map.addSource('./b.jsx');
+    map.setSourceContent('/test-root/b.jsx', 'content-b');
+    map.addSource('/test-root/c.ts');
+    map.setSourceContent('/test-root/d.tsx', 'tsx-content-d');
+
+    assert.deepEqual(map.getSourcesContentMap(), {
+      './helloworld.coffee': 'hello-world',
+      './b.jsx': 'content-b',
+      './c.ts': null,
+      './d.tsx': 'tsx-content-d',
+    });
+  });
+
   it('Should be able to return name for a certain index', () => {
     let map = new SourceMap('/test-root');
     map.addRawMappings({
