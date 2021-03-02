@@ -9,6 +9,69 @@ const SIMPLE_SOURCE_MAP = {
   mappings: 'AAAA;AAAA,EAAA,OAAO,CAAC,GAAR,CAAY,aAAZ,CAAA,CAAA;AAAA',
 };
 
+const PROCESSED_MAP = {
+  sources: ['./helloworld.coffee'],
+  sourcesContent: [''],
+  names: [],
+  mappings: [
+    {
+      generated: { line: 1, column: 0 },
+      original: { line: 1, column: 0 },
+      source: 0,
+    },
+    {
+      generated: { line: 2, column: 0 },
+      original: { line: 1, column: 0 },
+      source: 0,
+    },
+    {
+      generated: { line: 2, column: 2 },
+      original: { line: 1, column: 0 },
+      source: 0,
+    },
+    {
+      generated: { line: 2, column: 9 },
+      original: { line: 1, column: 7 },
+      source: 0,
+    },
+    {
+      generated: { line: 2, column: 10 },
+      original: { line: 1, column: 8 },
+      source: 0,
+    },
+    {
+      generated: { line: 2, column: 13 },
+      original: { line: 1, column: 0 },
+      source: 0,
+    },
+    {
+      generated: { line: 2, column: 14 },
+      original: { line: 1, column: 12 },
+      source: 0,
+    },
+    {
+      generated: { line: 2, column: 27 },
+      original: { line: 1, column: 0 },
+      source: 0,
+    },
+    {
+      generated: { line: 2, column: 28 },
+      original: { line: 1, column: 0 },
+      source: 0,
+    },
+    {
+      generated: { line: 2, column: 29 },
+      original: { line: 1, column: 0 },
+      source: 0,
+    },
+    {
+      generated: { line: 3, column: 0 },
+      original: { line: 1, column: 0 },
+      source: 0,
+    },
+  ],
+};
+
 describe('SourceMap - Basics', () => {
   it('Should be able to instantiate a SourceMap with vlq mappings', async () => {
     let map = new SourceMap('/test-root');
@@ -26,6 +89,17 @@ describe('SourceMap - Basics', () => {
     assert.equal(stringifiedMap.mappings, SIMPLE_SOURCE_MAP.mappings);
   });
 
+  it('Should be able to output the processed map as a JS Object', () => {
+    let map = new SourceMap('/test-root');
+    map.addRawMappings({
+      mappings: SIMPLE_SOURCE_MAP.mappings,
+      sources: SIMPLE_SOURCE_MAP.sources,
+      names: SIMPLE_SOURCE_MAP.names,
+    });
+
+    assert.deepEqual(map.getMap(), PROCESSED_MAP);
+  });
+
   it('Should be able to output the processed mappings as JS Objects', () => {
     let map = new SourceMap('/test-root');
     map.addRawMappings({
@@ -34,68 +108,7 @@ describe('SourceMap - Basics', () => {
       names: SIMPLE_SOURCE_MAP.names,
     });
 
-    assert.deepEqual(map.getMap(), {
-      sources: ['./helloworld.coffee'],
-      sourcesContent: [''],
-      names: [],
-      mappings: [
-        {
-          generated: { line: 1, column: 0 },
-          original: { line: 1, column: 0 },
-          source: 0,
-        },
-        {
-          generated: { line: 2, column: 0 },
-          original: { line: 1, column: 0 },
-          source: 0,
-        },
-        {
-          generated: { line: 2, column: 2 },
-          original: { line: 1, column: 0 },
-          source: 0,
-        },
-        {
-          generated: { line: 2, column: 9 },
-          original: { line: 1, column: 7 },
-          source: 0,
-        },
-        {
-          generated: { line: 2, column: 10 },
-          original: { line: 1, column: 8 },
-          source: 0,
-        },
-        {
-          generated: { line: 2, column: 13 },
-          original: { line: 1, column: 0 },
-          source: 0,
-        },
-        {
-          generated: { line: 2, column: 14 },
-          original: { line: 1, column: 12 },
-          source: 0,
-        },
-        {
-          generated: { line: 2, column: 27 },
-          original: { line: 1, column: 0 },
-          source: 0,
-        },
-        {
-          generated: { line: 2, column: 28 },
-          original: { line: 1, column: 0 },
-          source: 0,
-        },
-        {
-          generated: { line: 2, column: 29 },
-          original: { line: 1, column: 0 },
-          source: 0,
-        },
-        {
-          generated: { line: 3, column: 0 },
-          original: { line: 1, column: 0 },
-          source: 0,
-        },
-      ],
-    });
+    assert.deepEqual(map.getMappings(), PROCESSED_MAP.mappings);
   });
 
   it('Should be able to instantiate a SourceMap with processed mappings', async () => {
@@ -296,6 +309,21 @@ describe('SourceMap - Basics', () => {
     assert.equal(map.getSource(1), '');
   });
 
+  it('Should be able to return all sources', () => {
+    let map = new SourceMap('/test-root');
+    map.addRawMappings({
+      mappings: SIMPLE_SOURCE_MAP.mappings,
+      sources: SIMPLE_SOURCE_MAP.sources,
+      names: SIMPLE_SOURCE_MAP.names,
+    });
+
+    assert.deepEqual(map.getSources(), ['./helloworld.coffee']);
+
+    map.addSource('./b.jsx');
+    map.addSource('/test-root/c.ts');
+    assert.deepEqual(map.getSources(), ['./helloworld.coffee', './b.jsx', './c.ts']);
+  });
+
   it('Should be able to return name for a certain index', () => {
     let map = new SourceMap('/test-root');
     map.addRawMappings({
@@ -307,6 +335,22 @@ describe('SourceMap - Basics', () => {
     map.addNames(['test']);
     assert.equal(map.getName(0), 'test');
     assert.equal(map.getName(1), '');
+  });
+
+  it('Should be able to return all names', () => {
+    let map = new SourceMap('/test-root');
+    map.addRawMappings({
+      mappings: SIMPLE_SOURCE_MAP.mappings,
+      sources: SIMPLE_SOURCE_MAP.sources,
+      names: SIMPLE_SOURCE_MAP.names,
+    });
+
+    map.addName('test');
+    assert.deepEqual(map.getNames(), ['test']);
+
+    map.addName('test-two');
+    map.addName('test-three');
+    assert.deepEqual(map.getNames(), ['test', 'test-two', 'test-three']);
   });
 
   it('Should be able to store and return sourceContents', async () => {
