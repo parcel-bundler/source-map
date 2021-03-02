@@ -104,15 +104,20 @@ export default class WasmSourceMap extends SourceMap {
     }
   }
 
-  getMap(): ParsedMap {
-    let mappings = arrayFromEmbind(this.sourceMapInstance.getMappings(), patchMapping);
+  getSourcesContent(): Array<string | null> {
+    return arrayFromEmbind(this.sourceMapInstance.getSourcesContent());
+  }
 
-    return {
-      mappings,
-      sources: arrayFromEmbind(this.sourceMapInstance.getSources()),
-      sourcesContent: arrayFromEmbind(this.sourceMapInstance.getSourcesContent()),
-      names: arrayFromEmbind(this.sourceMapInstance.getNames()),
-    };
+  getSources(): Array<string> {
+    return arrayFromEmbind(this.sourceMapInstance.getSources());
+  }
+
+  getNames(): Array<string> {
+    return arrayFromEmbind(this.sourceMapInstance.getNames());
+  }
+
+  getMappings(): Array<IndexedMapping<number>> {
+    return arrayFromEmbind(this.sourceMapInstance.getMappings(), patchMapping);
   }
 
   toVLQ(): VLQMap {

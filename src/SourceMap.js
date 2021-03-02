@@ -212,6 +212,13 @@ export default class SourceMap {
   }
 
   /**
+   * Get a list of all sources
+   */
+  getSources(): Array<string> {
+    return this.sourceMapInstance.getSources();
+  }
+
+  /**
    * Set the sourceContent for a certain file
    * this is optional and is only recommended for files that we cannot read in at the end when we serialise the sourcemap
    *
@@ -232,6 +239,13 @@ export default class SourceMap {
   }
 
   /**
+   * Get a list of all sources
+   */
+  getSourcesContent(): Array<string | null> {
+    return this.sourceMapInstance.getSourcesContent();
+  }
+
+  /**
    * Get the index in the names array for a certain name
    *
    * @param name the name you want to find the index of
@@ -247,6 +261,20 @@ export default class SourceMap {
    */
   getName(index: number): string {
     return this.sourceMapInstance.getName(index);
+  }
+
+  /**
+   * Get a list of all names
+   */
+  getNames(): Array<string> {
+    return this.sourceMapInstance.getNames();
+  }
+
+  /**
+   * Get a list of all mappings
+   */
+  getMappings(): Array<IndexedMapping<number>> {
+    return this.sourceMapInstance.getMappings();
   }
 
   /**
@@ -295,7 +323,12 @@ export default class SourceMap {
    * Note: This is a fairly slow operation
    */
   getMap(): ParsedMap {
-    return this.sourceMapInstance.getMap();
+    return {
+      mappings: this.getMappings(),
+      sources: this.getSources(),
+      sourcesContent: this.getSourcesContent(),
+      names: this.getNames(),
+    };
   }
 
   /**
