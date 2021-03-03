@@ -35,8 +35,6 @@ private:
 
     Napi::Value addName(const Napi::CallbackInfo &info);
 
-    Napi::Value getMap(const Napi::CallbackInfo &info);
-
     Napi::Value stringify(const Napi::CallbackInfo &info);
 
     Napi::Value toBuffer(const Napi::CallbackInfo &info);
@@ -45,11 +43,19 @@ private:
 
     Napi::Value getSource(const Napi::CallbackInfo &info);
 
+    Napi::Value getSources(const Napi::CallbackInfo &info);
+
     Napi::Value getSourceContent(const Napi::CallbackInfo &info);
+
+    Napi::Value getSourcesContent(const Napi::CallbackInfo &info);
 
     Napi::Value getNameIndex(const Napi::CallbackInfo &info);
 
     Napi::Value getName(const Napi::CallbackInfo &info);
+
+    Napi::Value getNames(const Napi::CallbackInfo &info);
+
+    Napi::Value getMappings(const Napi::CallbackInfo &info);
 
     Napi::Value findClosestMapping(const Napi::CallbackInfo &info);
 

@@ -270,6 +270,29 @@ describe('SourceMap - Append Mappings', () => {
     assert.deepEqual(map.getMap(), expectedResultTwo);
   });
 
+  it('Append buffer mappings with sourceContent', () => {
+    let originalMap = new SourceMap('/test-root');
+    originalMap.addRawMappings({
+      mappings: SIMPLE_SOURCE_MAP.mappings,
+      sources: SIMPLE_SOURCE_MAP.sources,
+      names: SIMPLE_SOURCE_MAP.names,
+      sourcesContent: ['a-content'],
+    });
+    let buffer = originalMap.toBuffer();
+
+    let newMap = new SourceMap('/test-root');
+    newMap.addRawMappings({
+      mappings: SIMPLE_SOURCE_MAP.mappings,
+      sources: SIMPLE_SOURCE_MAP.sources,
+      names: SIMPLE_SOURCE_MAP.names,
+    });
+    newMap.addBufferMappings(buffer, 10);
+    assert.deepEqual(newMap.getMap(), {
+      ...expectedResultOne,
+      sourcesContent: ['a-content'],
+    });
+  });
+
   it('Append vlq mappings with line offset', () => {
     let map = new SourceMap('/test-root');
     map.addRawMappings({

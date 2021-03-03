@@ -258,6 +258,7 @@ std::string MappingContainer::getSourceContent(int sourceIndex) {
 
 void MappingContainer::addEmptyMap(std::string& sourceName, std::string& sourceContent, int lineOffset) {
     int sourceIndex = addSource(sourceName);
+    setSourceContent(sourceIndex, sourceContent);
     int currLine = 0;
     auto end = sourceContent.end();
     for (auto it = sourceContent.begin(); it != end; ++it) {

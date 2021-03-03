@@ -3,20 +3,21 @@ import SourceMap from '.';
 
 describe('SourceMap - Empty Map', () => {
   it('Should be able to create a 1 to 1 map from a sourcefile', async () => {
-    let map = SourceMap.generateEmptyMap({
-      projectRoot: '/test-root',
-      sourceName: '/test-root/index.js',
-      sourceContent: `
+    let sourceContent = `
       function test() {
         return "hello world!";
       }
-    `,
+    `;
+    let map = SourceMap.generateEmptyMap({
+      projectRoot: '/test-root',
+      sourceName: '/test-root/index.js',
+      sourceContent: sourceContent,
     });
 
     let mapContent = map.getMap();
     assert.deepEqual(mapContent, {
       sources: ['./index.js'],
-      sourcesContent: [],
+      sourcesContent: [sourceContent],
       names: [],
       mappings: [
         {
@@ -44,21 +45,22 @@ describe('SourceMap - Empty Map', () => {
   });
 
   it('Should be able to create a 1 to 1 map from a sourcefile with a lineOffset', async () => {
+    let sourceContent = `
+    function test() {
+      return "hello world!";
+    }
+  `;
     let map = SourceMap.generateEmptyMap({
       projectRoot: '/test-root',
       sourceName: 'index.js',
-      sourceContent: `
-      function test() {
-        return "hello world!";
-      }
-    `,
+      sourceContent,
       lineOffset: 10,
     });
 
     let mapContent = map.getMap();
     assert.deepEqual(mapContent, {
       sources: ['./index.js'],
-      sourcesContent: [],
+      sourcesContent: [sourceContent],
       names: [],
       mappings: [
         {
