@@ -42,7 +42,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "parcel_sourcemap_wasm"
+name = "parcel_sourcemap_node"
 version = "0.1.0"
 dependencies = [
  "parcel_sourcemap",
