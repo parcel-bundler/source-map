@@ -13,4 +13,5 @@ wasm-node
 wasm-browser
 yarn.lock
 *-lock.json
-.vscode/settings
+.vscode
+target
