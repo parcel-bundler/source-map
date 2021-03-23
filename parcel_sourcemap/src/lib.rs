@@ -1,8 +1,9 @@
+pub mod mapping;
 pub mod mapping_line;
 pub mod sourcemap_error;
 pub mod vlq_utils;
 
-use mapping_line::mapping::{Mapping, OriginalLocation};
+use mapping::{Mapping, OriginalLocation};
 use mapping_line::MappingLine;
 use sourcemap_error::{SourceMapError, SourceMapErrorType};
 use std::collections::BTreeMap;
@@ -212,23 +213,13 @@ mod tests {
         source_map.add_mapping(super::Mapping::new(
             12,
             7,
-            Some(super::mapping_line::mapping::OriginalLocation::new(
-                0,
-                5,
-                0,
-                Some(0),
-            )),
+            Some(super::mapping::OriginalLocation::new(0, 5, 0, Some(0))),
         ));
         source_map.add_mapping(super::Mapping::new(25, 12, None));
         source_map.add_mapping(super::Mapping::new(
             15,
             9,
-            Some(super::mapping_line::mapping::OriginalLocation::new(
-                0,
-                5,
-                1,
-                Some(0),
-            )),
+            Some(super::mapping::OriginalLocation::new(0, 5, 1, Some(0))),
         ));
 
         let mut output = vec![];

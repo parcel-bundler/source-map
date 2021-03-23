@@ -1,8 +1,5 @@
+use crate::mapping::Mapping;
 use std::collections::BTreeMap;
-
-pub mod mapping;
-
-use mapping::Mapping;
 
 pub struct MappingLine {
     pub mappings: BTreeMap<u32, Mapping>,
