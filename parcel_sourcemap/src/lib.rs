@@ -113,6 +113,13 @@ impl SourceMap {
         };
     }
 
+    pub fn add_sources(&mut self, sources: Vec<String>) -> Vec<u32> {
+        return sources
+            .iter()
+            .map(|s| self.add_source(s.to_string()))
+            .collect();
+    }
+
     pub fn add_name(&mut self, name: String) -> u32 {
         return match self.names.iter().position(|s| name.eq(s)) {
             Some(i) => i as u32,
@@ -121,6 +128,13 @@ impl SourceMap {
                 (self.names.len() - 1) as u32
             }
         };
+    }
+
+    pub fn add_names(&mut self, names: Vec<String>) -> Vec<u32> {
+        return names
+            .iter()
+            .map(|n| self.add_name(n.to_string()))
+            .collect();
     }
 
     pub fn add_vql_mappings(
@@ -136,11 +150,8 @@ impl SourceMap {
         let mut source = 0;
         let mut name = 0;
 
-        let source_indexes: Vec<u32> = sources
-            .iter()
-            .map(|s| self.add_source(s.to_string()))
-            .collect();
-        let name_indexes: Vec<u32> = names.iter().map(|n| self.add_name(n.to_string())).collect();
+        let source_indexes: Vec<u32> = self.add_sources(sources);
+        let name_indexes: Vec<u32> = self.add_names(names);
 
         let mut input = input.iter().cloned().peekable();
         while let Some(byte) = input.peek().cloned() {
