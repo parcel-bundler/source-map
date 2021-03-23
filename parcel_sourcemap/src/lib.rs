@@ -4,7 +4,7 @@ pub mod vlq_utils;
 
 use mapping_line::mapping::{Mapping, OriginalLocation};
 use mapping_line::MappingLine;
-use sourcemap_error::SourceMapError;
+use sourcemap_error::{SourceMapError, SourceMapErrorType};
 use std::collections::BTreeMap;
 use std::io;
 use vlq;
@@ -102,6 +102,26 @@ impl SourceMap {
         return Ok(());
     }
 
+    pub fn add_source(&mut self, source: String) -> u32 {
+        return match self.sources.iter().position(|s| source.eq(s)) {
+            Some(i) => i as u32,
+            None => {
+                self.sources.push(source);
+                (self.sources.len() - 1) as u32
+            }
+        };
+    }
+
+    pub fn add_name(&mut self, name: String) -> u32 {
+        return match self.names.iter().position(|s| name.eq(s)) {
+            Some(i) => i as u32,
+            None => {
+                self.names.push(name);
+                (self.names.len() - 1) as u32
+            }
+        };
+    }
+
     pub fn add_vql_mappings(
         &mut self,
         input: &[u8],
@@ -115,8 +135,13 @@ impl SourceMap {
         let mut source = 0;
         let mut name = 0;
 
-        let mut input = input.iter().cloned().peekable();
+        let source_indexes: Vec<u32> = sources
+            .iter()
+            .map(|s| self.add_source(s.to_string()))
+            .collect();
+        let name_indexes: Vec<u32> = names.iter().map(|n| self.add_name(n.to_string())).collect();
 
+        let mut input = input.iter().cloned().peekable();
         while let Some(byte) = input.peek().cloned() {
             match byte {
                 b';' => {
@@ -142,12 +167,28 @@ impl SourceMap {
                         Some(OriginalLocation::new(
                             original_line,
                             original_column,
-                            source,
+                            match source_indexes.get(source as usize) {
+                                Some(v) => *v,
+                                None => {
+                                    return Err(SourceMapError::new(
+                                        SourceMapErrorType::SourceOutOfRange,
+                                        None,
+                                    ));
+                                }
+                            },
                             if input.peek().cloned().map_or(true, is_mapping_separator) {
                                 None
                             } else {
                                 read_relative_vlq(&mut name, &mut input)?;
-                                Some(name)
+                                Some(match name_indexes.get(name as usize) {
+                                    Some(v) => *v,
+                                    None => {
+                                        return Err(SourceMapError::new(
+                                            SourceMapErrorType::NameOutOfRange,
+                                            None,
+                                        ));
+                                    }
+                                })
                             },
                         ))
                     };
@@ -179,12 +220,22 @@ mod tests {
             )),
         ));
         source_map.add_mapping(super::Mapping::new(25, 12, None));
+        source_map.add_mapping(super::Mapping::new(
+            15,
+            9,
+            Some(super::mapping_line::mapping::OriginalLocation::new(
+                0,
+                5,
+                1,
+                Some(0),
+            )),
+        ));
 
         let mut output = vec![];
         match source_map.write_vlq(&mut output) {
             Ok(()) => {
                 let vlq_string = str::from_utf8(&output).unwrap();
-                assert_eq!(vlq_string, ";;;;;;;;;;;;OAAKA;;;;;;;;;;;;;Y");
+                assert_eq!(vlq_string, ";;;;;;;;;;;;OAAKA;;;SCAAA;;;;;;;;;;Y");
             }
             Err(err) => {
                 panic!(err);
@@ -194,8 +245,8 @@ mod tests {
 
     #[test]
     fn read_vlq_mappings() {
-        let vlq_mappings = b";;;;;;;;;;;;OAAKA;;;;;;;;;;;;;Y";
-        let sources = vec![String::from("index.js")];
+        let vlq_mappings = b";;;;;;;;;;;;OAAKA;;;SCAAA;;;;;;;;;;Y";
+        let sources = vec![String::from("a.js"), String::from("b.js")];
         let names = vec![String::from("test")];
         let mut source_map = super::SourceMap::new();
 
@@ -209,7 +260,7 @@ mod tests {
         match source_map.write_vlq(&mut output) {
             Ok(()) => {
                 let vlq_string = str::from_utf8(&output).unwrap();
-                assert_eq!(vlq_string, ";;;;;;;;;;;;OAAKA;;;;;;;;;;;;;Y");
+                assert_eq!(vlq_string, ";;;;;;;;;;;;OAAKA;;;SCAAA;;;;;;;;;;Y");
             }
             Err(err) => {
                 panic!(err);

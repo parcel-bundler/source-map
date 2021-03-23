@@ -23,6 +23,12 @@ pub enum SourceMapErrorType {
 
     // General IO Error
     IOError = 6,
+
+    // Name out of range
+    NameOutOfRange = 7,
+
+    // Source out of range
+    SourceOutOfRange = 8,
 }
 
 pub struct SourceMapError {
