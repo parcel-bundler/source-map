@@ -1,28 +1,33 @@
-pub struct Position {
-    pub line: i32,
-    pub column: i32,
+pub struct OriginalLocation {
+    pub original_line: u32,
+    pub original_column: u32,
+    pub source: u32,
+    pub name: Option<u32>,
 }
 
-impl Position {
-    pub fn new(line: i32, column: i32) -> Self {
-        Self { line, column }
+impl OriginalLocation {
+    pub fn new(original_line: u32, original_column: u32, source: u32, name: Option<u32>) -> Self {
+        Self {
+            original_line,
+            original_column,
+            source,
+            name,
+        }
     }
 }
 
 pub struct Mapping {
-    pub original: Position,
-    pub generated: Position,
-    pub source: i32,
-    pub name: i32,
+    pub generated_line: u32,
+    pub generated_column: u32,
+    pub original: Option<OriginalLocation>,
 }
 
 impl Mapping {
-    pub fn new(generated: Position, original: Position, source: i32, name: i32) -> Self {
+    pub fn new(generated_line: u32, generated_column: u32, original: Option<OriginalLocation>) -> Self {
         Self {
+            generated_line,
+            generated_column,
             original,
-            generated,
-            source,
-            name,
         }
     }
 }

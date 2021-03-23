@@ -10,7 +10,7 @@ pub struct SourceMap {
     _sources: Vec<String>,
     _sources_content: Vec<String>,
     _names: Vec<String>,
-    _mapping_lines: BTreeMap<i32, MappingLine>,
+    _mapping_lines: BTreeMap<u32, MappingLine>,
 }
 
 impl SourceMap {
@@ -26,8 +26,8 @@ impl SourceMap {
     pub fn add_mapping(&mut self, mapping: Mapping) {
         let line = self
             ._mapping_lines
-            .entry(mapping.generated.line)
-            .or_insert(MappingLine::new(mapping.generated.line));
+            .entry(mapping.generated_line)
+            .or_insert(MappingLine::new(mapping.generated_line));
         line.add_mapping(mapping);
     }
 
@@ -35,14 +35,15 @@ impl SourceMap {
     where
         W: io::Write,
     {
-        let mut last_line_index: i32 = 0;
-        let mut previous_source: i32 = 0;
-        let mut previous_original_line: i32 = 0;
-        let mut previous_original_column: i32 = 0;
-        let mut previous_name: i32 = 0;
+        let mut last_line_index: u32 = 0;
+        let mut previous_source: u32 = 0;
+        let mut previous_original_line: u32 = 0;
+        let mut previous_original_column: u32 = 0;
+        let mut previous_name: u32 = 0;
+
         for (line_index, line_content) in &self._mapping_lines {
-            let mut previous_generated_column: i32 = 0;
-            let cloned_line_index = *line_index;
+            let mut previous_generated_column: u32 = 0;
+            let cloned_line_index = *line_index as u32;
             if cloned_line_index > 0 {
                 // Write a ';' for each line between this and last line, way more efficient than storing empty lines or looping...
                 output.write(&b";".repeat((cloned_line_index - last_line_index) as usize))?;
@@ -55,32 +56,36 @@ impl SourceMap {
                 }
 
                 vlq::encode(
-                    (mapping.generated.column - previous_generated_column) as i64,
+                    (mapping.generated_column - previous_generated_column) as i64,
                     output,
                 )?;
-                previous_generated_column = mapping.generated.column;
+                previous_generated_column = mapping.generated_column;
 
                 // Source should only be written if there is any
-                if mapping.source > -1 {
-                    vlq::encode((mapping.source - previous_source) as i64, output)?;
-                    previous_source = mapping.source;
+                match &mapping.original {
+                    None => {}
+                    Some(original) => {
+                        vlq::encode((original.source - previous_source) as i64, output)?;
+                        previous_source = original.source;
 
-                    vlq::encode(
-                        (mapping.original.line - previous_original_line) as i64,
-                        output,
-                    )?;
-                    previous_original_line = mapping.original.line;
+                        vlq::encode(
+                            (original.original_line - previous_original_line) as i64,
+                            output,
+                        )?;
+                        previous_original_line = original.original_line;
 
-                    vlq::encode(
-                        (mapping.original.column - previous_original_column) as i64,
-                        output,
-                    )?;
-                    previous_original_column = mapping.original.column;
-
-                    // Name should not be written if there's no original location (I think?)
-                    if mapping.name > -1 {
-                        vlq::encode((mapping.name - previous_name) as i64, output)?;
-                        previous_name = mapping.name;
+                        vlq::encode(
+                            (original.original_column - previous_original_column) as i64,
+                            output,
+                        )?;
+                        previous_original_column = original.original_column;
+                        match original.name {
+                            None => {}
+                            Some(name) => {
+                                vlq::encode((name - previous_name) as i64, output)?;
+                                previous_name = name;
+                            }
+                        }
                     }
                 }
 
@@ -92,6 +97,8 @@ impl SourceMap {
 
         return Ok(());
     }
+
+    pub fn add_vql_mappings() {}
 }
 
 #[cfg(test)]
@@ -102,17 +109,16 @@ mod tests {
     fn basic_vlq_mappings() {
         let mut source_map = super::SourceMap::new();
         source_map.add_mapping(super::Mapping::new(
-            super::mapping_line::mapping::Position::new(12, 7),
-            super::mapping_line::mapping::Position::new(0, 5),
-            0,
-            0,
+            12,
+            7,
+            Some(super::mapping_line::mapping::OriginalLocation::new(
+                0,
+                5,
+                0,
+                Some(0),
+            )),
         ));
-        source_map.add_mapping(super::Mapping::new(
-            super::mapping_line::mapping::Position::new(25, 12),
-            super::mapping_line::mapping::Position::new(-1, -1),
-            -1,
-            -1,
-        ));
+        source_map.add_mapping(super::Mapping::new(25, 12, None));
 
         let mut output = vec![];
         match source_map.write_vlq(&mut output) {
