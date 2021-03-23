@@ -1,37 +1,41 @@
 pub mod mapping_line;
+pub mod sourcemap_error;
+pub mod vlq_utils;
 
-use mapping_line::mapping::Mapping;
+use mapping_line::mapping::{Mapping, OriginalLocation};
 use mapping_line::MappingLine;
+use sourcemap_error::SourceMapError;
 use std::collections::BTreeMap;
 use std::io;
 use vlq;
+use vlq_utils::{is_mapping_separator, read_relative_vlq};
 
 pub struct SourceMap {
-    _sources: Vec<String>,
-    _sources_content: Vec<String>,
-    _names: Vec<String>,
-    _mapping_lines: BTreeMap<u32, MappingLine>,
+    pub sources: Vec<String>,
+    pub sources_content: Vec<String>,
+    pub names: Vec<String>,
+    pub mapping_lines: BTreeMap<u32, MappingLine>,
 }
 
 impl SourceMap {
     pub fn new() -> Self {
         Self {
-            _sources: Vec::new(),
-            _sources_content: Vec::new(),
-            _names: Vec::new(),
-            _mapping_lines: BTreeMap::new(),
+            sources: Vec::new(),
+            sources_content: Vec::new(),
+            names: Vec::new(),
+            mapping_lines: BTreeMap::new(),
         }
     }
 
     pub fn add_mapping(&mut self, mapping: Mapping) {
         let line = self
-            ._mapping_lines
+            .mapping_lines
             .entry(mapping.generated_line)
             .or_insert(MappingLine::new(mapping.generated_line));
         line.add_mapping(mapping);
     }
 
-    pub fn write_vlq<W>(&mut self, output: &mut W) -> io::Result<()>
+    pub fn write_vlq<W>(&mut self, output: &mut W) -> Result<(), SourceMapError>
     where
         W: io::Write,
     {
@@ -41,7 +45,7 @@ impl SourceMap {
         let mut previous_original_column: u32 = 0;
         let mut previous_name: u32 = 0;
 
-        for (line_index, line_content) in &self._mapping_lines {
+        for (line_index, line_content) in &self.mapping_lines {
             let mut previous_generated_column: u32 = 0;
             let cloned_line_index = *line_index as u32;
             if cloned_line_index > 0 {
@@ -98,7 +102,63 @@ impl SourceMap {
         return Ok(());
     }
 
-    pub fn add_vql_mappings() {}
+    pub fn add_vql_mappings(
+        &mut self,
+        input: &[u8],
+        sources: Vec<String>,
+        names: Vec<String>,
+    ) -> Result<(), SourceMapError> {
+        let mut generated_line = 0;
+        let mut generated_column = 0;
+        let mut original_line = 0;
+        let mut original_column = 0;
+        let mut source = 0;
+        let mut name = 0;
+
+        let mut input = input.iter().cloned().peekable();
+
+        while let Some(byte) = input.peek().cloned() {
+            match byte {
+                b';' => {
+                    generated_line += 1;
+                    generated_column = 0;
+                    input.next().unwrap();
+                }
+                b',' => {
+                    input.next().unwrap();
+                }
+                _ => {
+                    // First is a generated column that is always present.
+                    read_relative_vlq(&mut generated_column, &mut input)?;
+
+                    // Read source, original line, and original column if the
+                    // mapping has them.
+                    let original = if input.peek().cloned().map_or(true, is_mapping_separator) {
+                        None
+                    } else {
+                        read_relative_vlq(&mut source, &mut input)?;
+                        read_relative_vlq(&mut original_line, &mut input)?;
+                        read_relative_vlq(&mut original_column, &mut input)?;
+                        Some(OriginalLocation::new(
+                            original_line,
+                            original_column,
+                            source,
+                            if input.peek().cloned().map_or(true, is_mapping_separator) {
+                                None
+                            } else {
+                                read_relative_vlq(&mut name, &mut input)?;
+                                Some(name)
+                            },
+                        ))
+                    };
+
+                    self.add_mapping(Mapping::new(generated_line, generated_column, original));
+                }
+            }
+        }
+
+        return Ok(());
+    }
 }
 
 #[cfg(test)]
@@ -106,7 +166,7 @@ mod tests {
     use std::str;
 
     #[test]
-    fn basic_vlq_mappings() {
+    fn write_vlq_mappings() {
         let mut source_map = super::SourceMap::new();
         source_map.add_mapping(super::Mapping::new(
             12,
@@ -120,6 +180,31 @@ mod tests {
         ));
         source_map.add_mapping(super::Mapping::new(25, 12, None));
 
+        let mut output = vec![];
+        match source_map.write_vlq(&mut output) {
+            Ok(()) => {
+                let vlq_string = str::from_utf8(&output).unwrap();
+                assert_eq!(vlq_string, ";;;;;;;;;;;;OAAKA;;;;;;;;;;;;;Y");
+            }
+            Err(err) => {
+                panic!(err);
+            }
+        };
+    }
+
+    #[test]
+    fn read_vlq_mappings() {
+        let vlq_mappings = b";;;;;;;;;;;;OAAKA;;;;;;;;;;;;;Y";
+        let sources = vec![String::from("index.js")];
+        let names = vec![String::from("test")];
+        let mut source_map = super::SourceMap::new();
+
+        match source_map.add_vql_mappings(vlq_mappings, sources, names) {
+            Ok(()) => {}
+            Err(err) => panic!(err),
+        }
+
+        // Should be able to write the vlq mappings again...
         let mut output = vec![];
         match source_map.write_vlq(&mut output) {
             Ok(()) => {
