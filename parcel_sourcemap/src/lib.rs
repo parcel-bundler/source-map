@@ -1,7 +1,7 @@
 pub mod mapping;
 pub mod mapping_line;
 pub mod sourcemap_error;
-pub mod vlq_utils;
+mod vlq_utils;
 
 use mapping::{Mapping, OriginalLocation};
 use mapping_line::MappingLine;
