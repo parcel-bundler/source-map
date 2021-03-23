@@ -116,7 +116,8 @@ impl SourceMap {
     pub fn add_sources(&mut self, sources: Vec<String>) -> Vec<u32> {
         return sources
             .iter()
-            .map(|s| self.add_source(s.to_string()))
+            .cloned()
+            .map(|s| self.add_source(s))
             .collect();
     }
 
@@ -131,10 +132,7 @@ impl SourceMap {
     }
 
     pub fn add_names(&mut self, names: Vec<String>) -> Vec<u32> {
-        return names
-            .iter()
-            .map(|n| self.add_name(n.to_string()))
-            .collect();
+        return names.iter().cloned().map(|n| self.add_name(n)).collect();
     }
 
     pub fn add_vql_mappings(
