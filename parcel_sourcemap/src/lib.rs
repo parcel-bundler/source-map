@@ -2,6 +2,7 @@ pub mod mapping;
 pub mod mapping_line;
 pub mod sourcemap_error;
 mod vlq_utils;
+mod schema_generated;
 
 use mapping::{Mapping, OriginalLocation};
 use mapping_line::MappingLine;
