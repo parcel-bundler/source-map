@@ -6,14 +6,14 @@ mod vlq_utils;
 use mapping::{Mapping, OriginalLocation};
 use mapping_line::MappingLine;
 use sourcemap_error::{SourceMapError, SourceMapErrorType};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::io;
 use vlq;
 use vlq_utils::{is_mapping_separator, read_relative_vlq};
 
 pub struct SourceMap {
     pub sources: Vec<String>,
-    pub sources_content: Vec<String>,
+    pub sources_content: HashMap<u32, String>,
     pub names: Vec<String>,
     pub mapping_lines: BTreeMap<u32, MappingLine>,
 }
@@ -22,7 +22,7 @@ impl SourceMap {
     pub fn new() -> Self {
         Self {
             sources: Vec::new(),
-            sources_content: Vec::new(),
+            sources_content: HashMap::new(),
             names: Vec::new(),
             mapping_lines: BTreeMap::new(),
         }
@@ -156,6 +156,23 @@ impl SourceMap {
         return names.iter().cloned().map(|n| self.add_name(n)).collect();
     }
 
+    pub fn set_source_content(
+        &mut self,
+        source_index: u32,
+        source_content: String,
+    ) -> Result<(), SourceMapError> {
+        if source_index > (self.sources.len() as u32 - 1) {
+            return Err(SourceMapError::new(
+                SourceMapErrorType::SourceOutOfRange,
+                None,
+            ));
+        }
+
+        self.sources_content.insert(source_index, source_content);
+
+        return Ok(());
+    }
+
     pub fn add_vql_mappings(
         &mut self,
         input: &[u8],
@@ -230,6 +247,36 @@ impl SourceMap {
         }
 
         return Ok(());
+    }
+
+    pub fn offset_columns(
+        &mut self,
+        generated_line: i64,
+        generated_column: i64,
+        generated_column_offset: i64,
+    ) -> Result<(), SourceMapError> {
+        if generated_line < 0 {
+            return Err(SourceMapError::new(
+                SourceMapErrorType::UnexpectedNegativeNumber,
+                Some(String::from("line cannot be negative")),
+            ));
+        }
+
+        if generated_column < 0 {
+            return Err(SourceMapError::new(
+                SourceMapErrorType::UnexpectedNegativeNumber,
+                Some(String::from("column cannot be negative")),
+            ));
+        }
+
+        match self.mapping_lines.get_mut(&(generated_line as u32)) {
+            Some(line) => {
+                return line.offset_columns(generated_column as u32, generated_column_offset);
+            }
+            None => {
+                return Ok(());
+            }
+        }
     }
 }
 
@@ -311,6 +358,67 @@ mod tests {
             Ok(()) => {
                 let vlq_string = str::from_utf8(&output).unwrap();
                 assert_eq!(vlq_string, ";;;;;;;;;;;;OAAKA;;;SCAAA;;;;;;;;;;Y");
+            }
+            Err(err) => {
+                panic!(err);
+            }
+        };
+    }
+
+    #[test]
+    fn offset_columns() {
+        let mut source_map_one = super::SourceMap::new();
+        source_map_one.add_mapping(super::Mapping::new(
+            12,
+            7,
+            Some(super::mapping::OriginalLocation::new(0, 5, 0, Some(0))),
+        ));
+        source_map_one.add_mapping(super::Mapping::new(
+            15,
+            9,
+            Some(super::mapping::OriginalLocation::new(0, 5, 1, Some(0))),
+        ));
+        source_map_one.add_mapping(super::Mapping::new(12, 2, None));
+        source_map_one.add_mapping(super::Mapping::new(
+            12,
+            15,
+            Some(super::mapping::OriginalLocation::new(0, 5, 0, Some(0))),
+        ));
+        source_map_one.add_mapping(super::Mapping::new(12, 43, None));
+
+        match source_map_one.offset_columns(12, 14, -9) {
+            Ok(_) => {}
+            Err(err) => panic!(err),
+        }
+
+        let mut source_map_two = super::SourceMap::new();
+        source_map_two.add_mapping(super::Mapping::new(12, 2, None));
+        source_map_two.add_mapping(super::Mapping::new(
+            12,
+            6,
+            Some(super::mapping::OriginalLocation::new(0, 5, 0, Some(0))),
+        ));
+        source_map_two.add_mapping(super::Mapping::new(12, 34, None));
+        source_map_two.add_mapping(super::Mapping::new(
+            15,
+            9,
+            Some(super::mapping::OriginalLocation::new(0, 5, 1, Some(0))),
+        ));
+
+        let mut output_one = vec![];
+        match source_map_one.write_vlq(&mut output_one) {
+            Ok(()) => {
+                let mut output_two = vec![];
+                match source_map_two.write_vlq(&mut output_two) {
+                    Ok(()) => {
+                        let string_one = str::from_utf8(&output_one).unwrap();
+                        let string_two = str::from_utf8(&output_two).unwrap();
+                        assert_eq!(string_one, string_two);
+                    }
+                    Err(err) => {
+                        panic!(err);
+                    }
+                };
             }
             Err(err) => {
                 panic!(err);
