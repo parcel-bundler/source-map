@@ -1,3 +1,4 @@
+#[derive(Debug, Copy, Clone)]
 pub struct OriginalLocation {
     pub original_line: u32,
     pub original_column: u32,
@@ -16,6 +17,7 @@ impl OriginalLocation {
     }
 }
 
+#[derive(Debug, Copy, Clone)]
 pub struct Mapping {
     pub generated_line: u32,
     pub generated_column: u32,

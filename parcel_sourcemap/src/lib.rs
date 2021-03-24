@@ -33,41 +33,62 @@ impl SourceMap {
             .mapping_lines
             .entry(mapping.generated_line)
             .or_insert(MappingLine::new(mapping.generated_line));
-        line.add_mapping(mapping);
+        line.add_mapping(mapping.generated_column, mapping.original);
+    }
+
+    pub fn find_closest_mapping(
+        &self,
+        generated_line: u32,
+        generated_column: u32,
+    ) -> Option<Mapping> {
+        match self.mapping_lines.get(&generated_line) {
+            Some(line) => match line.mappings.range(..generated_column).next_back() {
+                Some((column_number, original)) => {
+                    return Some(Mapping::new(generated_line, *column_number, *original));
+                }
+                None => {
+                    return None;
+                }
+            },
+            None => {
+                return None;
+            }
+        }
     }
 
     pub fn write_vlq<W>(&mut self, output: &mut W) -> Result<(), SourceMapError>
     where
         W: io::Write,
     {
-        let mut last_line_index: u32 = 0;
+        let mut last_generated_line: u32 = 0;
         let mut previous_source: u32 = 0;
         let mut previous_original_line: u32 = 0;
         let mut previous_original_column: u32 = 0;
         let mut previous_name: u32 = 0;
 
-        for (line_index, line_content) in &self.mapping_lines {
+        for (generated_line, line_content) in &self.mapping_lines {
             let mut previous_generated_column: u32 = 0;
-            let cloned_line_index = *line_index as u32;
-            if cloned_line_index > 0 {
+            let cloned_generated_line = *generated_line as u32;
+            if cloned_generated_line > 0 {
                 // Write a ';' for each line between this and last line, way more efficient than storing empty lines or looping...
-                output.write(&b";".repeat((cloned_line_index - last_line_index) as usize))?;
+                output
+                    .write(&b";".repeat((cloned_generated_line - last_generated_line) as usize))?;
             }
 
             let mut is_first_mapping: bool = true;
-            for (_mapping_index, mapping) in &line_content.mappings {
+            for (generated_column, original) in &line_content.mappings {
                 if !is_first_mapping {
                     output.write(b",")?;
                 }
 
                 vlq::encode(
-                    (mapping.generated_column - previous_generated_column) as i64,
+                    (generated_column - previous_generated_column) as i64,
                     output,
                 )?;
-                previous_generated_column = mapping.generated_column;
+                previous_generated_column = *generated_column;
 
                 // Source should only be written if there is any
-                match &mapping.original {
+                match &original {
                     None => {}
                     Some(original) => {
                         vlq::encode((original.source - previous_source) as i64, output)?;
@@ -97,7 +118,7 @@ impl SourceMap {
                 is_first_mapping = false;
             }
 
-            last_line_index = cloned_line_index;
+            last_generated_line = cloned_generated_line;
         }
 
         return Ok(());
@@ -241,6 +262,35 @@ mod tests {
                 panic!(err);
             }
         };
+
+        // Basic find closest test
+        match source_map.find_closest_mapping(12, 10) {
+            Some(mapping) => {
+                assert_eq!(mapping.generated_line, 12);
+                assert_eq!(mapping.generated_column, 7);
+                match mapping.original {
+                    Some(original) => {
+                        assert_eq!(original.original_line, 0);
+                        assert_eq!(original.original_column, 5);
+                        assert_eq!(original.source, 0);
+                        match original.name {
+                            Some(name) => {
+                                assert_eq!(name, 0);
+                            }
+                            None => {
+                                panic!("No name attached to mapping")
+                            }
+                        }
+                    }
+                    None => {
+                        panic!("No original position attached to mapping")
+                    }
+                }
+            }
+            None => {
+                panic!("Mapping not found");
+            }
+        }
     }
 
     #[test]
