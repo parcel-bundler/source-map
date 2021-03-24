@@ -283,6 +283,7 @@ impl SourceMap {
 #[cfg(test)]
 mod tests {
     use std::str;
+    use std::time::Instant;
 
     #[test]
     fn write_vlq_mappings() {
@@ -424,5 +425,42 @@ mod tests {
                 panic!(err);
             }
         };
+    }
+
+    #[test]
+    fn offset_benchmark() {
+        let start_time = Instant::now();
+        let mut source_map = super::SourceMap::new();
+
+        // Based on amount of mappings in kitchen-sink example :(
+        for mapping_id in 1..25000 {
+            source_map.add_mapping(super::Mapping::new(1, mapping_id, None));
+        }
+
+        match source_map.offset_columns(1, 500, -251) {
+            Ok(_) => {}
+            Err(err) => {
+                panic!(err)
+            }
+        }
+
+        let elapsed = start_time.elapsed().as_millis();
+        println!("Offset mappings duration: {}ms", elapsed);
+    }
+
+    #[test]
+    fn find_benchmark() {
+        let start_time = Instant::now();
+        let mut source_map = super::SourceMap::new();
+
+        // Based on amount of mappings in kitchen-sink example :(
+        for mapping_id in 1..25000 {
+            source_map.add_mapping(super::Mapping::new(1, mapping_id, None));
+        }
+
+        source_map.find_closest_mapping(1, 25000);
+
+        let elapsed = start_time.elapsed().as_millis();
+        println!("Find closest mapping duration: {}ms", elapsed);
     }
 }
