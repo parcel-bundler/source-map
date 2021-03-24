@@ -251,32 +251,53 @@ impl SourceMap {
 
     pub fn offset_columns(
         &mut self,
-        generated_line: i64,
-        generated_column: i64,
+        generated_line: u32,
+        generated_column: u32,
         generated_column_offset: i64,
     ) -> Result<(), SourceMapError> {
-        if generated_line < 0 {
-            return Err(SourceMapError::new(
-                SourceMapErrorType::UnexpectedNegativeNumber,
-                Some(String::from("line cannot be negative")),
-            ));
-        }
-
-        if generated_column < 0 {
-            return Err(SourceMapError::new(
-                SourceMapErrorType::UnexpectedNegativeNumber,
-                Some(String::from("column cannot be negative")),
-            ));
-        }
-
-        match self.mapping_lines.get_mut(&(generated_line as u32)) {
+        match self.mapping_lines.get_mut(&generated_line) {
             Some(line) => {
-                return line.offset_columns(generated_column as u32, generated_column_offset);
+                return line.offset_columns(generated_column, generated_column_offset);
             }
             None => {
                 return Ok(());
             }
         }
+    }
+
+    pub fn offset_lines(
+        &mut self,
+        generated_line: u32,
+        generated_line_offset: i64,
+    ) -> Result<(), SourceMapError> {
+        let (start_line, overflowed) = (generated_line as i64).overflowing_add(generated_line_offset);
+        if overflowed || start_line > (u32::MAX as i64) {
+            return Err(SourceMapError::new(
+                SourceMapErrorType::UnexpectedNegativeNumber,
+                Some(String::from("column + column_offset cannot be negative")),
+            ));
+        }
+
+        let part_to_remap = self.mapping_lines.split_off(&generated_line);
+
+        // Remove mappings that are within the range that'll get replaced
+        let u_start_line = start_line as u32;
+        self.mapping_lines.split_off(&u_start_line);
+
+        // re-add remapped mappings
+        let abs_offset = generated_line_offset.abs() as u32;
+        for (key, value) in part_to_remap {
+            self.mapping_lines.insert(
+                if generated_line_offset < 0 {
+                    key - abs_offset
+                } else {
+                    key + abs_offset
+                },
+                value,
+            );
+        }
+
+        return Ok(());
     }
 }
 
@@ -432,7 +453,7 @@ mod tests {
         let start_time = Instant::now();
         let mut source_map = super::SourceMap::new();
 
-        // Based on amount of mappings in kitchen-sink example :(
+        // Based on amount of mappings in kitchen-sink example
         for mapping_id in 1..25000 {
             source_map.add_mapping(super::Mapping::new(1, mapping_id, None));
         }
@@ -453,7 +474,7 @@ mod tests {
         let start_time = Instant::now();
         let mut source_map = super::SourceMap::new();
 
-        // Based on amount of mappings in kitchen-sink example :(
+        // Based on amount of mappings in kitchen-sink example
         for mapping_id in 1..25000 {
             source_map.add_mapping(super::Mapping::new(1, mapping_id, None));
         }

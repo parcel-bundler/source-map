@@ -25,7 +25,8 @@ impl MappingLine {
         generated_column: u32,
         generated_column_offset: i64,
     ) -> Result<(), SourceMapError> {
-        let (start_column, overflowed) = (generated_column as i64).overflowing_add(generated_column_offset);
+        let (start_column, overflowed) =
+            (generated_column as i64).overflowing_add(generated_column_offset);
         if overflowed || start_column > (u32::MAX as i64) {
             return Err(SourceMapError::new(
                 SourceMapErrorType::UnexpectedNegativeNumber,
@@ -36,7 +37,8 @@ impl MappingLine {
         let part_to_remap = self.mappings.split_off(&generated_column);
 
         // Remove mappings that are within the range that'll get replaced
-        self.mappings.split_off(&(start_column as u32));
+        let u_start_column = start_column as u32;
+        self.mappings.split_off(&u_start_column);
 
         // re-add remapped mappings
         let abs_offset = generated_column_offset.abs() as u32;
