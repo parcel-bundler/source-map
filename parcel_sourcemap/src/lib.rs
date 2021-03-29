@@ -1,8 +1,8 @@
 pub mod mapping;
 pub mod mapping_line;
+mod schema_generated;
 pub mod sourcemap_error;
 mod vlq_utils;
-mod schema_generated;
 
 use mapping::{Mapping, OriginalLocation};
 use mapping_line::MappingLine;
@@ -77,7 +77,7 @@ impl SourceMap {
             }
 
             let mut is_first_mapping: bool = true;
-            for (generated_column, original) in &line_content.mappings {
+            for (generated_column, original_location_option) in &line_content.mappings {
                 if !is_first_mapping {
                     output.write(b",")?;
                 }
@@ -89,30 +89,24 @@ impl SourceMap {
                 previous_generated_column = *generated_column;
 
                 // Source should only be written if there is any
-                match &original {
-                    None => {}
-                    Some(original) => {
-                        vlq::encode((original.source - previous_source) as i64, output)?;
-                        previous_source = original.source;
+                if let Some(original) = &original_location_option {
+                    vlq::encode((original.source - previous_source) as i64, output)?;
+                    previous_source = original.source;
 
-                        vlq::encode(
-                            (original.original_line - previous_original_line) as i64,
-                            output,
-                        )?;
-                        previous_original_line = original.original_line;
+                    vlq::encode(
+                        (original.original_line - previous_original_line) as i64,
+                        output,
+                    )?;
+                    previous_original_line = original.original_line;
 
-                        vlq::encode(
-                            (original.original_column - previous_original_column) as i64,
-                            output,
-                        )?;
-                        previous_original_column = original.original_column;
-                        match original.name {
-                            None => {}
-                            Some(name) => {
-                                vlq::encode((name - previous_name) as i64, output)?;
-                                previous_name = name;
-                            }
-                        }
+                    vlq::encode(
+                        (original.original_column - previous_original_column) as i64,
+                        output,
+                    )?;
+                    previous_original_column = original.original_column;
+                    if let Some(name) = original.name {
+                        vlq::encode((name - previous_name) as i64, output)?;
+                        previous_name = name;
                     }
                 }
 
@@ -125,17 +119,17 @@ impl SourceMap {
         return Ok(());
     }
 
-    pub fn add_source(&mut self, source: String) -> u32 {
+    pub fn add_source(&mut self, source: &str) -> u32 {
         return match self.sources.iter().position(|s| source.eq(s)) {
             Some(i) => i as u32,
             None => {
-                self.sources.push(source);
+                self.sources.push(String::from(source));
                 (self.sources.len() - 1) as u32
             }
         };
     }
 
-    pub fn add_sources(&mut self, sources: Vec<String>) -> Vec<u32> {
+    pub fn add_sources(&mut self, sources: Vec<&str>) -> Vec<u32> {
         return sources
             .iter()
             .cloned()
@@ -143,17 +137,17 @@ impl SourceMap {
             .collect();
     }
 
-    pub fn add_name(&mut self, name: String) -> u32 {
+    pub fn add_name(&mut self, name: &str) -> u32 {
         return match self.names.iter().position(|s| name.eq(s)) {
             Some(i) => i as u32,
             None => {
-                self.names.push(name);
+                self.names.push(String::from(name));
                 (self.names.len() - 1) as u32
             }
         };
     }
 
-    pub fn add_names(&mut self, names: Vec<String>) -> Vec<u32> {
+    pub fn add_names(&mut self, names: Vec<&str>) -> Vec<u32> {
         return names.iter().cloned().map(|n| self.add_name(n)).collect();
     }
 
@@ -177,8 +171,8 @@ impl SourceMap {
     pub fn add_vql_mappings(
         &mut self,
         input: &[u8],
-        sources: Vec<String>,
-        names: Vec<String>,
+        sources: Vec<&str>,
+        names: Vec<&str>,
     ) -> Result<(), SourceMapError> {
         let mut generated_line = 0;
         let mut generated_column = 0;
@@ -271,7 +265,8 @@ impl SourceMap {
         generated_line: u32,
         generated_line_offset: i64,
     ) -> Result<(), SourceMapError> {
-        let (start_line, overflowed) = (generated_line as i64).overflowing_add(generated_line_offset);
+        let (start_line, overflowed) =
+            (generated_line as i64).overflowing_add(generated_line_offset);
         if overflowed || start_line > (u32::MAX as i64) {
             return Err(SourceMapError::new(
                 SourceMapErrorType::UnexpectedNegativeNumber,
@@ -366,8 +361,8 @@ mod tests {
     #[test]
     fn read_vlq_mappings() {
         let vlq_mappings = b";;;;;;;;;;;;OAAKA;;;SCAAA;;;;;;;;;;Y";
-        let sources = vec![String::from("a.js"), String::from("b.js")];
-        let names = vec![String::from("test")];
+        let sources = vec!["a.js", "b.js"];
+        let names = vec!["test"];
         let mut source_map = super::SourceMap::new();
 
         match source_map.add_vql_mappings(vlq_mappings, sources, names) {
