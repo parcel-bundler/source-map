@@ -20,11 +20,10 @@ pub mod source_map_schema {
 // struct Mapping, aligned to 4
 #[repr(transparent)]
 #[derive(Clone, Copy, PartialEq, Default)]
-pub struct Mapping(pub [u8; 24]);
+pub struct Mapping(pub [u8; 20]);
 impl std::fmt::Debug for Mapping {
   fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
     f.debug_struct("Mapping")
-      .field("generated_line", &self.generated_line())
       .field("generated_column", &self.generated_column())
       .field("original_line", &self.original_line())
       .field("original_column", &self.original_column())
@@ -84,15 +83,13 @@ impl<'a> flatbuffers::Verifiable for Mapping {
 impl Mapping {
   #[allow(clippy::too_many_arguments)]
   pub fn new(
-    generated_line: u32,
     generated_column: u32,
     original_line: i32,
     original_column: i32,
     source: i32,
     name: i32,
   ) -> Self {
-    let mut s = Self([0; 24]);
-    s.set_generated_line(generated_line);
+    let mut s = Self([0; 20]);
     s.set_generated_column(generated_column);
     s.set_original_line(original_line);
     s.set_original_column(original_column);
@@ -101,34 +98,11 @@ impl Mapping {
     s
   }
 
-  pub fn generated_line(&self) -> u32 {
-    let mut mem = core::mem::MaybeUninit::<u32>::uninit();
-    unsafe {
-      core::ptr::copy_nonoverlapping(
-        self.0[0..].as_ptr(),
-        mem.as_mut_ptr() as *mut u8,
-        core::mem::size_of::<u32>(),
-      );
-      mem.assume_init()
-    }.from_little_endian()
-  }
-
-  pub fn set_generated_line(&mut self, x: u32) {
-    let x_le = x.to_little_endian();
-    unsafe {
-      core::ptr::copy_nonoverlapping(
-        &x_le as *const u32 as *const u8,
-        self.0[0..].as_mut_ptr(),
-        core::mem::size_of::<u32>(),
-      );
-    }
-  }
-
   pub fn generated_column(&self) -> u32 {
     let mut mem = core::mem::MaybeUninit::<u32>::uninit();
     unsafe {
       core::ptr::copy_nonoverlapping(
-        self.0[4..].as_ptr(),
+        self.0[0..].as_ptr(),
         mem.as_mut_ptr() as *mut u8,
         core::mem::size_of::<u32>(),
       );
@@ -141,7 +115,7 @@ impl Mapping {
     unsafe {
       core::ptr::copy_nonoverlapping(
         &x_le as *const u32 as *const u8,
-        self.0[4..].as_mut_ptr(),
+        self.0[0..].as_mut_ptr(),
         core::mem::size_of::<u32>(),
       );
     }
@@ -151,7 +125,7 @@ impl Mapping {
     let mut mem = core::mem::MaybeUninit::<i32>::uninit();
     unsafe {
       core::ptr::copy_nonoverlapping(
-        self.0[8..].as_ptr(),
+        self.0[4..].as_ptr(),
         mem.as_mut_ptr() as *mut u8,
         core::mem::size_of::<i32>(),
       );
@@ -164,7 +138,7 @@ impl Mapping {
     unsafe {
       core::ptr::copy_nonoverlapping(
         &x_le as *const i32 as *const u8,
-        self.0[8..].as_mut_ptr(),
+        self.0[4..].as_mut_ptr(),
         core::mem::size_of::<i32>(),
       );
     }
@@ -174,7 +148,7 @@ impl Mapping {
     let mut mem = core::mem::MaybeUninit::<i32>::uninit();
     unsafe {
       core::ptr::copy_nonoverlapping(
-        self.0[12..].as_ptr(),
+        self.0[8..].as_ptr(),
         mem.as_mut_ptr() as *mut u8,
         core::mem::size_of::<i32>(),
       );
@@ -187,7 +161,7 @@ impl Mapping {
     unsafe {
       core::ptr::copy_nonoverlapping(
         &x_le as *const i32 as *const u8,
-        self.0[12..].as_mut_ptr(),
+        self.0[8..].as_mut_ptr(),
         core::mem::size_of::<i32>(),
       );
     }
@@ -197,7 +171,7 @@ impl Mapping {
     let mut mem = core::mem::MaybeUninit::<i32>::uninit();
     unsafe {
       core::ptr::copy_nonoverlapping(
-        self.0[16..].as_ptr(),
+        self.0[12..].as_ptr(),
         mem.as_mut_ptr() as *mut u8,
         core::mem::size_of::<i32>(),
       );
@@ -210,7 +184,7 @@ impl Mapping {
     unsafe {
       core::ptr::copy_nonoverlapping(
         &x_le as *const i32 as *const u8,
-        self.0[16..].as_mut_ptr(),
+        self.0[12..].as_mut_ptr(),
         core::mem::size_of::<i32>(),
       );
     }
@@ -220,7 +194,7 @@ impl Mapping {
     let mut mem = core::mem::MaybeUninit::<i32>::uninit();
     unsafe {
       core::ptr::copy_nonoverlapping(
-        self.0[20..].as_ptr(),
+        self.0[16..].as_ptr(),
         mem.as_mut_ptr() as *mut u8,
         core::mem::size_of::<i32>(),
       );
@@ -233,7 +207,7 @@ impl Mapping {
     unsafe {
       core::ptr::copy_nonoverlapping(
         &x_le as *const i32 as *const u8,
-        self.0[20..].as_mut_ptr(),
+        self.0[16..].as_mut_ptr(),
         core::mem::size_of::<i32>(),
       );
     }
@@ -267,16 +241,16 @@ impl<'a> MappingLine<'a> {
         args: &'args MappingLineArgs<'args>) -> flatbuffers::WIPOffset<MappingLine<'bldr>> {
       let mut builder = MappingLineBuilder::new(_fbb);
       if let Some(x) = args.mappings { builder.add_mappings(x); }
-      builder.add_line_number(args.line_number);
+      builder.add_generated_line(args.generated_line);
       builder.finish()
     }
 
-    pub const VT_LINE_NUMBER: flatbuffers::VOffsetT = 4;
+    pub const VT_GENERATED_LINE: flatbuffers::VOffsetT = 4;
     pub const VT_MAPPINGS: flatbuffers::VOffsetT = 6;
 
   #[inline]
-  pub fn line_number(&self) -> u32 {
-    self._tab.get::<u32>(MappingLine::VT_LINE_NUMBER, Some(0)).unwrap()
+  pub fn generated_line(&self) -> u32 {
+    self._tab.get::<u32>(MappingLine::VT_GENERATED_LINE, Some(0)).unwrap()
   }
   #[inline]
   pub fn mappings(&self) -> Option<&'a [Mapping]> {
@@ -291,21 +265,21 @@ impl flatbuffers::Verifiable for MappingLine<'_> {
   ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
     use self::flatbuffers::Verifiable;
     v.visit_table(pos)?
-     .visit_field::<u32>(&"line_number", Self::VT_LINE_NUMBER, false)?
+     .visit_field::<u32>(&"generated_line", Self::VT_GENERATED_LINE, false)?
      .visit_field::<flatbuffers::ForwardsUOffset<flatbuffers::Vector<'_, Mapping>>>(&"mappings", Self::VT_MAPPINGS, false)?
      .finish();
     Ok(())
   }
 }
 pub struct MappingLineArgs<'a> {
-    pub line_number: u32,
+    pub generated_line: u32,
     pub mappings: Option<flatbuffers::WIPOffset<flatbuffers::Vector<'a, Mapping>>>,
 }
 impl<'a> Default for MappingLineArgs<'a> {
     #[inline]
     fn default() -> Self {
         MappingLineArgs {
-            line_number: 0,
+            generated_line: 0,
             mappings: None,
         }
     }
@@ -316,8 +290,8 @@ pub struct MappingLineBuilder<'a: 'b, 'b> {
 }
 impl<'a: 'b, 'b> MappingLineBuilder<'a, 'b> {
   #[inline]
-  pub fn add_line_number(&mut self, line_number: u32) {
-    self.fbb_.push_slot::<u32>(MappingLine::VT_LINE_NUMBER, line_number, 0);
+  pub fn add_generated_line(&mut self, generated_line: u32) {
+    self.fbb_.push_slot::<u32>(MappingLine::VT_GENERATED_LINE, generated_line, 0);
   }
   #[inline]
   pub fn add_mappings(&mut self, mappings: flatbuffers::WIPOffset<flatbuffers::Vector<'b , Mapping>>) {
@@ -341,7 +315,7 @@ impl<'a: 'b, 'b> MappingLineBuilder<'a, 'b> {
 impl std::fmt::Debug for MappingLine<'_> {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     let mut ds = f.debug_struct("MappingLine");
-      ds.field("line_number", &self.line_number());
+      ds.field("generated_line", &self.generated_line());
       ds.field("mappings", &self.mappings());
       ds.finish()
   }

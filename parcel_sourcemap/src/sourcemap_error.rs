@@ -29,6 +29,9 @@ pub enum SourceMapErrorType {
 
     // Source out of range
     SourceOutOfRange = 8,
+
+    // Flatbuffer is invalid
+    InvalidFlatBuffer = 9,
 }
 
 pub struct SourceMapError {
@@ -62,5 +65,13 @@ impl From<io::Error> for SourceMapError {
     fn from(_err: io::Error) -> SourceMapError {
         // TODO: Actually differentiate between IO errors, in theory none of these should ever happen though...
         return SourceMapError::new(SourceMapErrorType::IOError, None);
+    }
+}
+
+impl From<flatbuffers::InvalidFlatbuffer> for SourceMapError {
+    #[inline]
+    fn from(_err: flatbuffers::InvalidFlatbuffer) -> SourceMapError {
+        // TODO: Actually differentiate between IO errors, in theory none of these should ever happen though...
+        return SourceMapError::new(SourceMapErrorType::InvalidFlatBuffer, None);
     }
 }
