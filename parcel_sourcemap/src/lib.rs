@@ -138,11 +138,8 @@ impl SourceMap {
     }
 
     pub fn add_sources(&mut self, sources: Vec<&str>) -> Vec<u32> {
-        return sources
-            .iter()
-            .cloned()
-            .map(|s| self.add_source(s))
-            .collect();
+        self.sources.reserve(sources.len());
+        return sources.iter().map(|s| self.add_source(s)).collect();
     }
 
     pub fn add_name(&mut self, name: &str) -> u32 {
@@ -156,7 +153,8 @@ impl SourceMap {
     }
 
     pub fn add_names(&mut self, names: Vec<&str>) -> Vec<u32> {
-        return names.iter().cloned().map(|n| self.add_name(n)).collect();
+        self.names.reserve(names.len());
+        return names.iter().map(|n| self.add_name(n)).collect();
     }
 
     pub fn set_source_content(
@@ -230,19 +228,16 @@ impl SourceMap {
 
         let mut source_indexes: Vec<u32> = Vec::new();
         if let Some(sources_buffer) = buffer_map.sources() {
-            let mut sources_buffer_index: usize = 0;
             for source_str in sources_buffer {
-                let source_index = self.add_source(source_str);
-                source_indexes.push(source_index);
-                if let Some(sources_content_buffer) = buffer_map.sources() {
-                    if sources_content_buffer.len() > sources_buffer_index {
-                        self.set_source_content(
-                            source_index as usize,
-                            sources_content_buffer.get(sources_buffer_index),
-                        )?;
-                    }
+                source_indexes.push(self.add_source(source_str));
+            }
+        }
+
+        if let Some(sources_content_buffer) = buffer_map.sources() {
+            for (i, source_content_str) in sources_content_buffer.iter().enumerate() {
+                if let Some(source_index) = source_indexes.get(i) {
+                    self.set_source_content(*source_index as usize, source_content_str)?;
                 }
-                sources_buffer_index += 1;
             }
         }
 
