@@ -30,9 +30,9 @@ pub struct SourceMap {
 impl SourceMap {
     pub fn new() -> Self {
         Self {
-            sources: Vec::with_capacity(5),
-            sources_content: Vec::with_capacity(5),
-            names: Vec::with_capacity(5),
+            sources: Vec::new(),
+            sources_content: Vec::new(),
+            names: Vec::new(),
             mapping_lines: BTreeMap::new(),
         }
     }
