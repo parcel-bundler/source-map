@@ -221,6 +221,7 @@ impl SourceMap {
 
         let mut name_indexes: Vec<u32> = Vec::new();
         if let Some(names_buffer) = buffer_map.names() {
+            self.names.reserve(names_buffer.len());
             for name_str in names_buffer {
                 name_indexes.push(self.add_name(name_str));
             }
@@ -228,12 +229,14 @@ impl SourceMap {
 
         let mut source_indexes: Vec<u32> = Vec::new();
         if let Some(sources_buffer) = buffer_map.sources() {
+            self.sources.reserve(sources_buffer.len());
             for source_str in sources_buffer {
                 source_indexes.push(self.add_source(source_str));
             }
         }
 
         if let Some(sources_content_buffer) = buffer_map.sources() {
+            self.sources_content.reserve(sources_content_buffer.len());
             for (i, source_content_str) in sources_content_buffer.iter().enumerate() {
                 if let Some(source_index) = source_indexes.get(i) {
                     self.set_source_content(*source_index as usize, source_content_str)?;
