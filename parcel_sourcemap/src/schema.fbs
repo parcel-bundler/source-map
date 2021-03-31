@@ -2,6 +2,7 @@
 namespace SourceMapSchema;
 
 struct Mapping {
+  generated_line: uint32;
   generated_column: uint32;
   original_line: int32;
   original_column: int32;
@@ -9,16 +10,11 @@ struct Mapping {
   name: int32;
 }
 
-table MappingLine {
-  generated_line: uint32;
-  mappings: [Mapping];
-}
-
 table Map {
   names: [string];
   sources: [string];
   sources_content: [string];
-  lines: [MappingLine];
+  mappings: [Mapping];
 }
 
 root_type Map;

@@ -200,7 +200,7 @@ impl SourceMap {
         let sources_content_buffer_vec = builder.create_vector_of_strings(&sources_content_vec[..]);
 
         let args = source_map_schema::MapArgs {
-            lines: None,
+            mappings: None,
             names: Some(names_buffer_vec),
             sources: Some(sources_buffer_vec),
             sources_content: Some(sources_content_buffer_vec),
@@ -246,41 +246,36 @@ impl SourceMap {
             }
         }
 
-        if let Some(buffer_lines) = buffer_map.lines() {
-            for buffer_line in buffer_lines {
-                let generated_line = buffer_line.generated_line();
-                if let Some(buffer_line_mappings) = buffer_line.mappings() {
-                    for buffer_line_mapping in buffer_line_mappings {
-                        let original_line = buffer_line_mapping.original_line();
-                        let original_column = buffer_line_mapping.original_column();
-                        let source = buffer_line_mapping.source();
-                        let mut original_location = None;
-                        if original_line > -1 && original_column > -1 && source > -1 {
-                            if let Some(real_source) = source_indexes.get(source as usize) {
-                                let name = buffer_line_mapping.name();
-                                let mut real_name: Option<u32> = None;
-                                if name > -1 {
-                                    if let Some(found_name) = name_indexes.get(source as usize) {
-                                        real_name = Some(*found_name);
-                                    }
-                                }
-
-                                original_location = Some(OriginalLocation::new(
-                                    original_line as u32,
-                                    original_column as u32,
-                                    *real_source,
-                                    real_name,
-                                ));
+        if let Some(buffer_mappings) = buffer_map.mappings() {
+            for buffer_mapping in buffer_mappings {
+                let original_line = buffer_mapping.original_line();
+                let original_column = buffer_mapping.original_column();
+                let source = buffer_mapping.source();
+                let mut original_location = None;
+                if original_line > -1 && original_column > -1 && source > -1 {
+                    if let Some(real_source) = source_indexes.get(source as usize) {
+                        let name = buffer_mapping.name();
+                        let mut real_name: Option<u32> = None;
+                        if name > -1 {
+                            if let Some(found_name) = name_indexes.get(source as usize) {
+                                real_name = Some(*found_name);
                             }
                         }
 
-                        self.add_mapping(Mapping::new(
-                            generated_line,
-                            buffer_line_mapping.generated_column(),
-                            original_location,
-                        ))
+                        original_location = Some(OriginalLocation::new(
+                            original_line as u32,
+                            original_column as u32,
+                            *real_source,
+                            real_name,
+                        ));
                     }
                 }
+
+                self.add_mapping(Mapping::new(
+                    buffer_mapping.generated_line(),
+                    buffer_mapping.generated_column(),
+                    original_location,
+                ))
             }
         }
 
