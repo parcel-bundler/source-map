@@ -1,20 +1,28 @@
+extern crate flatbuffers;
+
 pub mod mapping;
 pub mod mapping_line;
-mod schema_generated;
 pub mod sourcemap_error;
 mod vlq_utils;
 
+use flatbuffers::FlatBufferBuilder;
 use mapping::{Mapping, OriginalLocation};
 use mapping_line::MappingLine;
 use sourcemap_error::{SourceMapError, SourceMapErrorType};
-use std::collections::{BTreeMap, HashMap};
+use std::collections::BTreeMap;
 use std::io;
 use vlq;
 use vlq_utils::{is_mapping_separator, read_relative_vlq};
 
+// import the generated code
+#[allow(dead_code, unused_imports)]
+#[path = "./schema_generated.rs"]
+mod schema_generated;
+pub use schema_generated::source_map_schema;
+
 pub struct SourceMap {
     pub sources: Vec<String>,
-    pub sources_content: HashMap<u32, String>,
+    pub sources_content: Vec<String>,
     pub names: Vec<String>,
     pub mapping_lines: BTreeMap<u32, MappingLine>,
 }
@@ -22,9 +30,9 @@ pub struct SourceMap {
 impl SourceMap {
     pub fn new() -> Self {
         Self {
-            sources: Vec::new(),
-            sources_content: HashMap::new(),
-            names: Vec::new(),
+            sources: Vec::with_capacity(5),
+            sources_content: Vec::with_capacity(5),
+            names: Vec::with_capacity(5),
             mapping_lines: BTreeMap::new(),
         }
     }
@@ -57,7 +65,7 @@ impl SourceMap {
         }
     }
 
-    pub fn write_vlq<W>(&mut self, output: &mut W) -> Result<(), SourceMapError>
+    pub fn write_vlq<W>(&self, output: &mut W) -> Result<(), SourceMapError>
     where
         W: io::Write,
     {
@@ -153,24 +161,65 @@ impl SourceMap {
 
     pub fn set_source_content(
         &mut self,
-        source_index: u32,
+        source_index: usize,
         source_content: &str,
     ) -> Result<(), SourceMapError> {
-        if source_index > (self.sources.len() as u32 - 1) {
+        if self.sources.len() == 0 || source_index > self.sources.len() - 1 {
             return Err(SourceMapError::new(
                 SourceMapErrorType::SourceOutOfRange,
                 None,
             ));
         }
 
-        self.sources_content
-            .insert(source_index, String::from(source_content));
+        let sources_content_len = self.sources_content.len();
+        let remaining_elements = sources_content_len - source_index;
+        if remaining_elements > 0 {
+            self.sources_content.reserve(remaining_elements);
+            for _n in (sources_content_len - 1)..(source_index - 1) {
+                self.sources_content.push(String::from(""));
+            }
+            self.sources_content.push(String::from(source_content));
+        } else {
+            self.sources_content[source_index] = String::from(source_content);
+        }
+        return Ok(());
+    }
 
+    pub fn write_to_buffer(&self, output: &mut Vec<u8>) -> Result<(), SourceMapError> {
+        output.clear();
+
+        let mut builder = FlatBufferBuilder::new_with_capacity(2048);
+
+        let names_vec: Vec<&str> = self.names.iter().map(|n| &n[..]).collect();
+        let names_buffer_vec = builder.create_vector_of_strings(&names_vec[..]);
+
+        let sources_vec: Vec<&str> = self.sources.iter().map(|n| &n[..]).collect();
+        let sources_buffer_vec = builder.create_vector_of_strings(&sources_vec[..]);
+
+        let sources_content_vec: Vec<&str> = self.sources_content.iter().map(|n| &n[..]).collect();
+        let sources_content_buffer_vec = builder.create_vector_of_strings(&sources_content_vec[..]);
+
+        let args = source_map_schema::MapArgs {
+            lines: None,
+            names: Some(names_buffer_vec),
+            sources: Some(sources_buffer_vec),
+            sources_content: Some(sources_content_buffer_vec),
+        };
+
+        let root = source_map_schema::Map::create(&mut builder, &args);
+
+        source_map_schema::finish_map_buffer(&mut builder, root);
+
+        // Copy the serialized FlatBuffers data to our own byte buffer.
+        let finished_data = builder.finished_data();
+        output.extend_from_slice(finished_data);
+
+        // Return
         return Ok(());
     }
 
     pub fn add_buffer_mappings(&mut self, buf: &[u8]) -> Result<(), SourceMapError> {
-        let buffer_map = schema_generated::source_map_schema::root_as_map(buf)?;
+        let buffer_map = source_map_schema::root_as_map(buf)?;
 
         let mut name_indexes: Vec<u32> = Vec::new();
         if let Some(names_buffer) = buffer_map.names() {
@@ -183,11 +232,12 @@ impl SourceMap {
         if let Some(sources_buffer) = buffer_map.sources() {
             let mut sources_buffer_index: usize = 0;
             for source_str in sources_buffer {
-                source_indexes.push(self.add_source(source_str));
+                let source_index = self.add_source(source_str);
+                source_indexes.push(source_index);
                 if let Some(sources_content_buffer) = buffer_map.sources() {
                     if sources_content_buffer.len() > sources_buffer_index {
                         self.set_source_content(
-                            sources_buffer_index as u32,
+                            source_index as usize,
                             sources_content_buffer.get(sources_buffer_index),
                         )?;
                     }
