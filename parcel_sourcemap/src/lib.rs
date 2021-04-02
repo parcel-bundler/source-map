@@ -37,6 +37,7 @@ impl SourceMap {
         }
     }
 
+    // TODO: Validate if source and name exist?
     pub fn add_mapping(&mut self, mapping: Mapping) {
         let line = self
             .mapping_lines
@@ -170,15 +171,16 @@ impl SourceMap {
         }
 
         let sources_content_len = self.sources_content.len();
-        let remaining_elements = sources_content_len - source_index;
-        if remaining_elements > 0 {
-            self.sources_content.reserve(remaining_elements);
-            for _n in (sources_content_len - 1)..(source_index - 1) {
+        if sources_content_len > source_index + 1 {
+            self.sources_content[source_index] = String::from(source_content);
+        } else {
+            self.sources_content
+                .reserve(sources_content_len - source_index + 1);
+            let items_to_add = source_index + 1 - sources_content_len;
+            for _n in 0..items_to_add {
                 self.sources_content.push(String::from(""));
             }
             self.sources_content.push(String::from(source_content));
-        } else {
-            self.sources_content[source_index] = String::from(source_content);
         }
         return Ok(());
     }
@@ -197,8 +199,41 @@ impl SourceMap {
         let sources_content_vec: Vec<&str> = self.sources_content.iter().map(|n| &n[..]).collect();
         let sources_content_buffer_vec = builder.create_vector_of_strings(&sources_content_vec[..]);
 
+        // TODO: Refactor to iterators?
+        let mut mappings_vec: Vec<source_map_schema::Mapping> = Vec::new();
+        for (generated_line, line) in self.mapping_lines.iter() {
+            mappings_vec.reserve(line.mappings.len());
+            for (generated_column, original_location_value) in line.mappings.iter() {
+                let mut original_line: i32 = -1;
+                let mut original_column: i32 = -1;
+                let mut original_source: i32 = -1;
+                let mut original_name: i32 = -1;
+
+                if let Some(original_location) = original_location_value {
+                    original_line = original_location.original_line as i32;
+                    original_column = original_location.original_column as i32;
+                    original_source = original_location.source as i32;
+
+                    if let Some(name) = original_location.name {
+                        original_name = name as i32;
+                    }
+                }
+
+                mappings_vec.push(source_map_schema::Mapping::new(
+                    *generated_line,
+                    *generated_column,
+                    original_line,
+                    original_column,
+                    original_source,
+                    original_name,
+                ));
+            }
+        }
+
+        let mappings_vec = builder.create_vector_from_iter(mappings_vec.iter());
+
         let args = source_map_schema::MapArgs {
-            mappings: None,
+            mappings: Some(mappings_vec),
             names: Some(names_buffer_vec),
             sources: Some(sources_buffer_vec),
             sources_content: Some(sources_content_buffer_vec),
@@ -583,13 +618,78 @@ mod tests {
         let mut source_map = super::SourceMap::new();
 
         // Based on amount of mappings in kitchen-sink example
-        for mapping_id in 1..25000 {
-            source_map.add_mapping(super::Mapping::new(1, mapping_id, None));
+        for mapping_index in 1..25000 {
+            source_map.add_mapping(super::Mapping::new(1, mapping_index, None));
         }
 
         source_map.find_closest_mapping(1, 25000);
 
         let elapsed = start_time.elapsed().as_millis();
         println!("Find closest mapping duration: {}ms", elapsed);
+    }
+
+    #[test]
+    fn flatbuffers() {
+        let start_time = Instant::now();
+
+        let mut original_source_map = super::SourceMap::new();
+        original_source_map.add_source("a.js");
+        original_source_map.add_source("b.js");
+        original_source_map.add_name("test");
+        original_source_map.add_mapping(super::Mapping::new(
+            12,
+            7,
+            Some(super::mapping::OriginalLocation::new(0, 5, 0, Some(0))),
+        ));
+        original_source_map.add_mapping(super::Mapping::new(25, 12, None));
+        original_source_map.add_mapping(super::Mapping::new(
+            15,
+            9,
+            Some(super::mapping::OriginalLocation::new(0, 5, 1, Some(0))),
+        ));
+
+        let mut buffer = Vec::new();
+        match original_source_map.write_to_buffer(&mut buffer) {
+            Ok(()) => (),
+            Err(err) => panic!(err),
+        }
+
+        let mut new_map = super::SourceMap::new();
+        match new_map.add_buffer_mappings(&buffer) {
+            Ok(()) => (),
+            Err(err) => panic!(err),
+        }
+
+        // Basic find closest test
+        match new_map.find_closest_mapping(12, 10) {
+            Some(mapping) => {
+                assert_eq!(mapping.generated_line, 12);
+                assert_eq!(mapping.generated_column, 7);
+                match mapping.original {
+                    Some(original) => {
+                        assert_eq!(original.original_line, 0);
+                        assert_eq!(original.original_column, 5);
+                        assert_eq!(original.source, 0);
+                        match original.name {
+                            Some(name) => {
+                                assert_eq!(name, 0);
+                            }
+                            None => {
+                                panic!("No name attached to mapping")
+                            }
+                        }
+                    }
+                    None => {
+                        panic!("No original position attached to mapping")
+                    }
+                }
+            }
+            None => {
+                panic!("Mapping not found");
+            }
+        }
+
+        let elapsed = start_time.elapsed().as_millis();
+        println!("Flatbuffer test duration: {}ms", elapsed);
     }
 }
