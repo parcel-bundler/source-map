@@ -8,7 +8,7 @@ mod vlq_utils;
 use flatbuffers::FlatBufferBuilder;
 use mapping::{Mapping, OriginalLocation};
 use mapping_line::MappingLine;
-use sourcemap_error::{SourceMapError, SourceMapErrorType};
+pub use sourcemap_error::{SourceMapError, SourceMapErrorType};
 use std::collections::BTreeMap;
 use std::io;
 use vlq;
