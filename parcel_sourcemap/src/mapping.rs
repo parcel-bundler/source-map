@@ -23,17 +23,3 @@ pub struct Mapping {
     pub generated_column: u32,
     pub original: Option<OriginalLocation>,
 }
-
-impl Mapping {
-    pub fn new(
-        generated_line: u32,
-        generated_column: u32,
-        original: Option<OriginalLocation>,
-    ) -> Self {
-        Self {
-            generated_line,
-            generated_column,
-            original,
-        }
-    }
-}

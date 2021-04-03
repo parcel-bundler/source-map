@@ -39,13 +39,64 @@ impl SourceMap {
         }
     }
 
-    // TODO: Validate if source and name exist?
-    pub fn add_mapping(&mut self, mapping: Mapping) {
+    pub fn add_mapping(
+        &mut self,
+        generated_line: u32,
+        generated_column: u32,
+        original: Option<OriginalLocation>,
+    ) {
+        // TODO: Create new public function that validates if source and name exist?
         let line = self
             .mapping_lines
-            .entry(mapping.generated_line)
-            .or_insert(MappingLine::new(mapping.generated_line));
-        line.add_mapping(mapping.generated_column, mapping.original);
+            .entry(generated_line)
+            .or_insert(MappingLine::new(generated_line));
+        line.add_mapping(generated_column, original);
+    }
+
+    pub fn add_mapping_with_offset(
+        &mut self,
+        mapping: Mapping,
+        line_offset: i64,
+        column_offset: i64,
+    ) -> Result<(), SourceMapError> {
+        let (generated_line, generated_line_overflowed) =
+            (mapping.generated_line as i64).overflowing_add(line_offset);
+        if generated_line_overflowed || generated_line > (u32::MAX as i64) {
+            return Err(SourceMapError::new_with_reason(
+                SourceMapErrorType::UnexpectedlyBigNumber,
+                "mapping.generated_line + line_offset",
+            ));
+        }
+
+        if generated_line < 0 {
+            return Err(SourceMapError::new_with_reason(
+                SourceMapErrorType::UnexpectedNegativeNumber,
+                "mapping.generated_line + line_offset",
+            ));
+        }
+
+        let (generated_column, generated_column_overflowed) =
+            (mapping.generated_column as i64).overflowing_add(column_offset);
+        if generated_column_overflowed || generated_column > (u32::MAX as i64) {
+            return Err(SourceMapError::new_with_reason(
+                SourceMapErrorType::UnexpectedlyBigNumber,
+                "mapping.generated_column + column_offset",
+            ));
+        }
+
+        if generated_column < 0 {
+            return Err(SourceMapError::new_with_reason(
+                SourceMapErrorType::UnexpectedNegativeNumber,
+                "mapping.generated_column + column_offset",
+            ));
+        }
+
+        self.add_mapping(
+            generated_line as u32,
+            generated_column as u32,
+            mapping.original,
+        );
+        return Ok(());
     }
 
     pub fn find_closest_mapping(
@@ -56,7 +107,11 @@ impl SourceMap {
         match self.mapping_lines.get(&generated_line) {
             Some(line) => match line.mappings.range(..generated_column).next_back() {
                 Some((column_number, original)) => {
-                    return Some(Mapping::new(generated_line, *column_number, *original));
+                    return Some(Mapping {
+                        generated_line,
+                        generated_column: *column_number,
+                        original: *original,
+                    });
                 }
                 None => {
                     return None;
@@ -306,7 +361,12 @@ impl SourceMap {
         return Ok(());
     }
 
-    pub fn add_buffer_mappings(&mut self, buf: &[u8]) -> Result<(), SourceMapError> {
+    pub fn add_buffer_mappings(
+        &mut self,
+        buf: &[u8],
+        line_offset: i64,
+        column_offset: i64,
+    ) -> Result<(), SourceMapError> {
         let buffer_map = source_map_schema::root_as_map(buf)?;
 
         let mut name_indexes: Vec<u32> = Vec::new();
@@ -359,11 +419,15 @@ impl SourceMap {
                     }
                 }
 
-                self.add_mapping(Mapping::new(
-                    buffer_mapping.generated_line(),
-                    buffer_mapping.generated_column(),
-                    original_location,
-                ))
+                self.add_mapping_with_offset(
+                    Mapping {
+                        generated_line: buffer_mapping.generated_line(),
+                        generated_column: buffer_mapping.generated_column(),
+                        original: original_location,
+                    },
+                    line_offset,
+                    column_offset,
+                )?;
             }
         }
 
@@ -436,7 +500,7 @@ impl SourceMap {
                         ))
                     };
 
-                    self.add_mapping(Mapping::new(generated_line, generated_column, original));
+                    self.add_mapping(generated_line, generated_column, original);
                 }
             }
         }
@@ -505,17 +569,17 @@ mod tests {
     #[test]
     fn write_vlq_mappings() {
         let mut source_map = super::SourceMap::new("/");
-        source_map.add_mapping(super::Mapping::new(
+        source_map.add_mapping(
             12,
             7,
             Some(super::mapping::OriginalLocation::new(0, 5, 0, Some(0))),
-        ));
-        source_map.add_mapping(super::Mapping::new(25, 12, None));
-        source_map.add_mapping(super::Mapping::new(
+        );
+        source_map.add_mapping(25, 12, None);
+        source_map.add_mapping(
             15,
             9,
             Some(super::mapping::OriginalLocation::new(0, 5, 1, Some(0))),
-        ));
+        );
 
         let mut output = vec![];
         match source_map.write_vlq(&mut output) {
@@ -586,23 +650,23 @@ mod tests {
     #[test]
     fn offset_columns() {
         let mut source_map_one = super::SourceMap::new("/");
-        source_map_one.add_mapping(super::Mapping::new(
+        source_map_one.add_mapping(
             12,
             7,
             Some(super::mapping::OriginalLocation::new(0, 5, 0, Some(0))),
-        ));
-        source_map_one.add_mapping(super::Mapping::new(
+        );
+        source_map_one.add_mapping(
             15,
             9,
             Some(super::mapping::OriginalLocation::new(0, 5, 1, Some(0))),
-        ));
-        source_map_one.add_mapping(super::Mapping::new(12, 2, None));
-        source_map_one.add_mapping(super::Mapping::new(
+        );
+        source_map_one.add_mapping(12, 2, None);
+        source_map_one.add_mapping(
             12,
             15,
             Some(super::mapping::OriginalLocation::new(0, 5, 0, Some(0))),
-        ));
-        source_map_one.add_mapping(super::Mapping::new(12, 43, None));
+        );
+        source_map_one.add_mapping(12, 43, None);
 
         match source_map_one.offset_columns(12, 14, -9) {
             Ok(_) => {}
@@ -610,18 +674,18 @@ mod tests {
         }
 
         let mut source_map_two = super::SourceMap::new("/");
-        source_map_two.add_mapping(super::Mapping::new(12, 2, None));
-        source_map_two.add_mapping(super::Mapping::new(
+        source_map_two.add_mapping(12, 2, None);
+        source_map_two.add_mapping(
             12,
             6,
             Some(super::mapping::OriginalLocation::new(0, 5, 0, Some(0))),
-        ));
-        source_map_two.add_mapping(super::Mapping::new(12, 34, None));
-        source_map_two.add_mapping(super::Mapping::new(
+        );
+        source_map_two.add_mapping(12, 34, None);
+        source_map_two.add_mapping(
             15,
             9,
             Some(super::mapping::OriginalLocation::new(0, 5, 1, Some(0))),
-        ));
+        );
 
         let mut output_one = vec![];
         match source_map_one.write_vlq(&mut output_one) {
@@ -651,7 +715,7 @@ mod tests {
 
         // Based on amount of mappings in kitchen-sink example
         for mapping_id in 1..25000 {
-            source_map.add_mapping(super::Mapping::new(1, mapping_id, None));
+            source_map.add_mapping(1, mapping_id, None);
         }
 
         match source_map.offset_columns(1, 500, -251) {
@@ -672,7 +736,7 @@ mod tests {
 
         // Based on amount of mappings in kitchen-sink example
         for mapping_index in 1..25000 {
-            source_map.add_mapping(super::Mapping::new(1, mapping_index, None));
+            source_map.add_mapping(1, mapping_index, None);
         }
 
         source_map.find_closest_mapping(1, 25000);
@@ -689,17 +753,17 @@ mod tests {
         original_source_map.add_source("a.js");
         original_source_map.add_source("b.js");
         original_source_map.add_name("test");
-        original_source_map.add_mapping(super::Mapping::new(
+        original_source_map.add_mapping(
             12,
             7,
             Some(super::mapping::OriginalLocation::new(0, 5, 0, Some(0))),
-        ));
-        original_source_map.add_mapping(super::Mapping::new(25, 12, None));
-        original_source_map.add_mapping(super::Mapping::new(
+        );
+        original_source_map.add_mapping(25, 12, None);
+        original_source_map.add_mapping(
             15,
             9,
             Some(super::mapping::OriginalLocation::new(0, 5, 1, Some(0))),
-        ));
+        );
 
         let mut buffer = Vec::new();
         match original_source_map.write_to_buffer(&mut buffer) {
@@ -708,7 +772,7 @@ mod tests {
         }
 
         let mut new_map = super::SourceMap::new("/");
-        match new_map.add_buffer_mappings(&buffer) {
+        match new_map.add_buffer_mappings(&buffer, 0, 0) {
             Ok(()) => (),
             Err(err) => panic!(err),
         }

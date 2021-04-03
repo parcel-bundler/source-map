@@ -4,7 +4,8 @@ extern crate napi_derive;
 extern crate parcel_sourcemap;
 
 use napi::{
-    CallContext, Either, Env, JsNull, JsNumber, JsObject, JsString, JsUndefined, Property, Result,
+    CallContext, Either, Env, JsBuffer, JsNull, JsNumber, JsObject, JsString, JsUndefined,
+    Property, Result,
 };
 use parcel_sourcemap::SourceMap;
 
@@ -120,6 +121,30 @@ fn get_name_index(ctx: CallContext) -> Result<Either<JsNumber, JsNull>> {
     }
 }
 
+#[js_function]
+fn to_buffer(ctx: CallContext) -> Result<JsBuffer> {
+    let this: JsObject = ctx.this_unchecked();
+    let source_map_instance: &SourceMap = ctx.env.unwrap(&this)?;
+
+    let mut buffer_data = Vec::new();
+    source_map_instance.write_to_buffer(&mut buffer_data)?;
+    return Ok(ctx.env.create_buffer_with_data(buffer_data)?.into_raw());
+}
+
+#[js_function(3)]
+fn add_buffer_mappings(ctx: CallContext) -> Result<JsUndefined> {
+    let this: JsObject = ctx.this_unchecked();
+    let source_map_instance: &mut SourceMap = ctx.env.unwrap(&this)?;
+
+    let map_buffer = ctx.get::<JsBuffer>(0)?.into_value()?;
+    let line_offset = ctx.get::<JsNumber>(1)?.get_int64()?;
+    let column_offset = ctx.get::<JsNumber>(2)?.get_int64()?;
+
+    source_map_instance.add_buffer_mappings(&map_buffer[..], line_offset, column_offset)?;
+    
+    return ctx.env.get_undefined();
+}
+
 #[js_function(1)]
 fn watcher_class_contructor(ctx: CallContext) -> Result<JsUndefined> {
     let mut this: JsObject = ctx.this_unchecked();
@@ -140,6 +165,9 @@ fn init(mut exports: JsObject, env: Env) -> Result<()> {
     let get_name_method = Property::new(&env, "getName")?.with_method(get_name);
     let get_names_method = Property::new(&env, "getNames")?.with_method(get_names);
     let get_name_index_method = Property::new(&env, "getNameIndex")?.with_method(get_name_index);
+    let to_buffer_method = Property::new(&env, "toBuffer")?.with_method(to_buffer);
+    let add_buffer_mappings_method =
+        Property::new(&env, "addBufferMappings")?.with_method(add_buffer_mappings);
     let watcher_class = env.define_class(
         "SourceMap",
         watcher_class_contructor,
@@ -152,6 +180,8 @@ fn init(mut exports: JsObject, env: Env) -> Result<()> {
             get_name_method,
             get_names_method,
             get_name_index_method,
+            to_buffer_method,
+            add_buffer_mappings_method,
         ],
     )?;
     exports.set_named_property("SourceMap", watcher_class)?;
