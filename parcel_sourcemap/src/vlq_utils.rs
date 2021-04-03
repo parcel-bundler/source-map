@@ -12,14 +12,12 @@ where
     if overflowed || new > (u32::MAX as i64) {
         return Err(SourceMapError::new(
             SourceMapErrorType::UnexpectedlyBigNumber,
-            None,
         ));
     }
 
     if new < 0 {
         return Err(SourceMapError::new(
             SourceMapErrorType::UnexpectedNegativeNumber,
-            None,
         ));
     }
 

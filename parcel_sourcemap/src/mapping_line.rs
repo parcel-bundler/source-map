@@ -28,9 +28,9 @@ impl MappingLine {
         let (start_column, overflowed) =
             (generated_column as i64).overflowing_add(generated_column_offset);
         if overflowed || start_column > (u32::MAX as i64) {
-            return Err(SourceMapError::new(
+            return Err(SourceMapError::new_with_reason(
                 SourceMapErrorType::UnexpectedNegativeNumber,
-                Some(String::from("column + column_offset cannot be negative")),
+                "column + column_offset cannot be negative",
             ));
         }
 

@@ -22,10 +22,10 @@ pub use schema_generated::source_map_schema;
 
 pub struct SourceMap {
     _project_root: String,
-    pub sources: Vec<String>,
-    pub sources_content: Vec<String>,
-    pub names: Vec<String>,
-    pub mapping_lines: BTreeMap<u32, MappingLine>,
+    sources: Vec<String>,
+    sources_content: Vec<String>,
+    names: Vec<String>,
+    mapping_lines: BTreeMap<u32, MappingLine>,
 }
 
 impl SourceMap {
@@ -145,6 +145,28 @@ impl SourceMap {
         return sources.iter().map(|s| self.add_source(s)).collect();
     }
 
+    pub fn get_source_index(&self, source: &str) -> Option<u32> {
+        match self.sources.iter().position(|s| source.eq(s)) {
+            Some(i) => {
+                return Some(i as u32);
+            }
+            None => {
+                return None;
+            }
+        };
+    }
+
+    pub fn get_source(&self, index: u32) -> Result<&str, SourceMapError> {
+        match self.sources.get(index as usize) {
+            Some(v) => {
+                return Ok(&v[..]);
+            }
+            None => {
+                return Err(SourceMapError::new(SourceMapErrorType::SourceOutOfRange));
+            }
+        }
+    }
+
     pub fn add_name(&mut self, name: &str) -> u32 {
         return match self.names.iter().position(|s| name.eq(s)) {
             Some(i) => i as u32,
@@ -160,16 +182,35 @@ impl SourceMap {
         return names.iter().map(|n| self.add_name(n)).collect();
     }
 
+    pub fn get_name_index(&self, name: &str) -> Option<u32> {
+        match self.names.iter().position(|n| name.eq(n)) {
+            Some(i) => {
+                return Some(i as u32);
+            }
+            None => {
+                return None;
+            }
+        };
+    }
+
+    pub fn get_name(&self, index: u32) -> Result<&str, SourceMapError> {
+        match self.names.get(index as usize) {
+            Some(v) => {
+                return Ok(&v[..]);
+            }
+            None => {
+                return Err(SourceMapError::new(SourceMapErrorType::NameOutOfRange));
+            }
+        }
+    }
+
     pub fn set_source_content(
         &mut self,
         source_index: usize,
         source_content: &str,
     ) -> Result<(), SourceMapError> {
         if self.sources.len() == 0 || source_index > self.sources.len() - 1 {
-            return Err(SourceMapError::new(
-                SourceMapErrorType::SourceOutOfRange,
-                None,
-            ));
+            return Err(SourceMapError::new(SourceMapErrorType::SourceOutOfRange));
         }
 
         let sources_content_len = self.sources_content.len();
@@ -184,7 +225,19 @@ impl SourceMap {
             }
             self.sources_content.push(String::from(source_content));
         }
+
         return Ok(());
+    }
+
+    pub fn get_source_content(&self, index: u32) -> Result<&str, SourceMapError> {
+        match self.names.get(index as usize) {
+            Some(v) => {
+                return Ok(&v[..]);
+            }
+            None => {
+                return Err(SourceMapError::new(SourceMapErrorType::SourceOutOfRange));
+            }
+        }
     }
 
     pub fn write_to_buffer(&self, output: &mut Vec<u8>) -> Result<(), SourceMapError> {
@@ -364,7 +417,6 @@ impl SourceMap {
                                 None => {
                                     return Err(SourceMapError::new(
                                         SourceMapErrorType::SourceOutOfRange,
-                                        None,
                                     ));
                                 }
                             },
@@ -377,7 +429,6 @@ impl SourceMap {
                                     None => {
                                         return Err(SourceMapError::new(
                                             SourceMapErrorType::NameOutOfRange,
-                                            None,
                                         ));
                                     }
                                 })
@@ -417,9 +468,9 @@ impl SourceMap {
         let (start_line, overflowed) =
             (generated_line as i64).overflowing_add(generated_line_offset);
         if overflowed || start_line > (u32::MAX as i64) {
-            return Err(SourceMapError::new(
+            return Err(SourceMapError::new_with_reason(
                 SourceMapErrorType::UnexpectedNegativeNumber,
-                Some(String::from("column + column_offset cannot be negative")),
+                "column + column_offset cannot be negative",
             ));
         }
 
