@@ -21,6 +21,7 @@ mod schema_generated;
 pub use schema_generated::source_map_schema;
 
 pub struct SourceMap {
+    _project_root: String,
     pub sources: Vec<String>,
     pub sources_content: Vec<String>,
     pub names: Vec<String>,
@@ -28,8 +29,9 @@ pub struct SourceMap {
 }
 
 impl SourceMap {
-    pub fn new() -> Self {
+    pub fn new(project_root: &str) -> Self {
         Self {
+            _project_root: String::from(project_root),
             sources: Vec::new(),
             sources_content: Vec::new(),
             names: Vec::new(),
@@ -451,7 +453,7 @@ mod tests {
 
     #[test]
     fn write_vlq_mappings() {
-        let mut source_map = super::SourceMap::new();
+        let mut source_map = super::SourceMap::new("/");
         source_map.add_mapping(super::Mapping::new(
             12,
             7,
@@ -510,7 +512,7 @@ mod tests {
         let vlq_mappings = b";;;;;;;;;;;;OAAKA;;;SCAAA;;;;;;;;;;Y";
         let sources = vec!["a.js", "b.js"];
         let names = vec!["test"];
-        let mut source_map = super::SourceMap::new();
+        let mut source_map = super::SourceMap::new("/");
 
         match source_map.add_vql_mappings(vlq_mappings, sources, names) {
             Ok(()) => {}
@@ -532,7 +534,7 @@ mod tests {
 
     #[test]
     fn offset_columns() {
-        let mut source_map_one = super::SourceMap::new();
+        let mut source_map_one = super::SourceMap::new("/");
         source_map_one.add_mapping(super::Mapping::new(
             12,
             7,
@@ -556,7 +558,7 @@ mod tests {
             Err(err) => panic!(err),
         }
 
-        let mut source_map_two = super::SourceMap::new();
+        let mut source_map_two = super::SourceMap::new("/");
         source_map_two.add_mapping(super::Mapping::new(12, 2, None));
         source_map_two.add_mapping(super::Mapping::new(
             12,
@@ -594,7 +596,7 @@ mod tests {
     #[test]
     fn offset_benchmark() {
         let start_time = Instant::now();
-        let mut source_map = super::SourceMap::new();
+        let mut source_map = super::SourceMap::new("/");
 
         // Based on amount of mappings in kitchen-sink example
         for mapping_id in 1..25000 {
@@ -615,7 +617,7 @@ mod tests {
     #[test]
     fn find_benchmark() {
         let start_time = Instant::now();
-        let mut source_map = super::SourceMap::new();
+        let mut source_map = super::SourceMap::new("/");
 
         // Based on amount of mappings in kitchen-sink example
         for mapping_index in 1..25000 {
@@ -632,7 +634,7 @@ mod tests {
     fn flatbuffers() {
         let start_time = Instant::now();
 
-        let mut original_source_map = super::SourceMap::new();
+        let mut original_source_map = super::SourceMap::new("/");
         original_source_map.add_source("a.js");
         original_source_map.add_source("b.js");
         original_source_map.add_name("test");
@@ -654,7 +656,7 @@ mod tests {
             Err(err) => panic!(err),
         }
 
-        let mut new_map = super::SourceMap::new();
+        let mut new_map = super::SourceMap::new("/");
         match new_map.add_buffer_mappings(&buffer) {
             Ok(()) => (),
             Err(err) => panic!(err),

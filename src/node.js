@@ -9,7 +9,7 @@ const bindings = require('../parcel_sourcemap_node/index');
 export default class NodeSourceMap extends SourceMap {
   constructor(projectRoot: string = '/') {
     super(projectRoot);
-    this.sourceMapInstance = new bindings.SourceMap();
+    this.sourceMapInstance = new bindings.SourceMap(projectRoot);
   }
 
   addRawMappings(map: VLQMap, lineOffset: number = 0, columnOffset: number = 0): SourceMap {

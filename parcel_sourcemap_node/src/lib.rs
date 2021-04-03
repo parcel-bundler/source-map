@@ -28,10 +28,11 @@ fn add_name(ctx: CallContext) -> Result<JsUndefined> {
     return ctx.env.get_undefined();
 }
 
-#[js_function]
+#[js_function(1)]
 fn watcher_class_contructor(ctx: CallContext) -> Result<JsUndefined> {
     let mut this: JsObject = ctx.this_unchecked();
-    ctx.env.wrap(&mut this, SourceMap::new())?;
+    let project_root = ctx.get::<JsString>(0)?.into_utf8()?;
+    ctx.env.wrap(&mut this, SourceMap::new(project_root.as_str()?))?;
     return ctx.env.get_undefined();
 }
 

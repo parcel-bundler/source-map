@@ -15,3 +15,4 @@ yarn.lock
 *-lock.json
 .vscode
 target
+*.node
