@@ -21,17 +21,17 @@ mod schema_generated;
 pub use schema_generated::source_map_schema;
 
 pub struct SourceMap {
-    _project_root: String,
-    sources: Vec<String>,
-    sources_content: Vec<String>,
-    names: Vec<String>,
+    project_root: String,
+    pub sources: Vec<String>,
+    pub sources_content: Vec<String>,
+    pub names: Vec<String>,
     mapping_lines: BTreeMap<u32, MappingLine>,
 }
 
 impl SourceMap {
     pub fn new(project_root: &str) -> Self {
         Self {
-            _project_root: String::from(project_root),
+            project_root: String::from(project_root),
             sources: Vec::new(),
             sources_content: Vec::new(),
             names: Vec::new(),
