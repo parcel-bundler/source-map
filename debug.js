@@ -1,4 +1,8 @@
 // For debugging issues write minimal reproduction here...
-const SourceMap = require('./');
+const SourceMap = require('./').default;
 
-console.log('Hello world!');
+let instance = new SourceMap();
+
+instance.addName('./test.js');
+
+console.log(instance);

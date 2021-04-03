@@ -4,7 +4,7 @@ import path from 'path';
 import SourceMap from './SourceMap';
 import { relatifyPath } from './utils';
 
-const bindings = require('node-gyp-build')(path.join(__dirname, '..'));
+const bindings = require('../parcel_sourcemap_node/index');
 
 export default class NodeSourceMap extends SourceMap {
   constructor(projectRoot: string = '/') {
