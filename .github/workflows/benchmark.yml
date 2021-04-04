@@ -24,14 +24,24 @@ jobs:
         run: yarn transpile && yarn build:node-release
       - name: 'Run benchmark'
         run: yarn benchmark
-      - name: Store benchmark result
+      - name: Store benchmark results
         uses: rhysd/github-action-benchmark@v1
-        if: github.ref != 'refs/heads/main'
+        if: github.ref == 'refs/heads/master'
         with:
           tool: 'benchmarkjs'
           output-file-path: bench.txt
           github-token: ${{ secrets.GITHUB_TOKEN }}
           comment-always: true
+          auto-push: true
+      - name: Compare benchmark results
+        uses: rhysd/github-action-benchmark@v1
+        if: github.ref != 'refs/heads/master'
+        with:
+          tool: 'benchmarkjs'
+          output-file-path: bench.txt
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          comment-always: true
+          auto-push: false
 
       - name: Clear the cargo caches
         run: |
