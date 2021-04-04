@@ -17,10 +17,6 @@ jobs:
         with:
           node-version: 14
           check-latest: true
-      - name: Generate Cargo.lock
-        uses: actions-rs/cargo@v1
-        with:
-          command: yarn build:node-release
 
       - name: Cache cargo registry
         uses: actions/cache@v1
@@ -42,6 +38,8 @@ jobs:
 
       - name: 'Install dependencies'
         run: yarn install --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
+      - name: Build code
+        run: yarn transpile && yarn build:node-release
       - name: 'Run benchmark'
         run: yarn benchmark
       - name: Store benchmark result
