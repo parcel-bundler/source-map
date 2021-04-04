@@ -40,6 +40,7 @@ jobs:
           external-data-json-path: ./cache/benchmark-data.json
           comment-always: true
           auto-push: false
+          save-data-file: ${{ github.ref == 'refs/heads/master' }}
 
       - name: Clear the cargo caches
         run: |
