@@ -4,10 +4,10 @@ extern crate napi_derive;
 extern crate parcel_sourcemap;
 
 use napi::{
-    CallContext, Either, Env, Error, JsBuffer, JsNull, JsNumber, JsObject, JsString, JsTypedArray,
-    JsUndefined, Property, Result, TypedArrayType,
+    CallContext, Either, Env, JsBuffer, JsNull, JsNumber, JsObject, JsString, JsUndefined,
+    Property, Result,
 };
-use parcel_sourcemap::{SourceMap};
+use parcel_sourcemap::{OriginalLocation, SourceMap};
 
 #[js_function(1)]
 fn add_source(ctx: CallContext) -> Result<JsUndefined> {
@@ -31,8 +31,7 @@ fn get_source(ctx: CallContext) -> Result<JsString> {
     return ctx.env.create_string(source);
 }
 
-#[js_function]
-fn get_sources(ctx: CallContext) -> Result<JsObject> {
+fn _get_sources(ctx: &CallContext) -> Result<JsObject> {
     let this: JsObject = ctx.this_unchecked();
     let source_map_instance: &SourceMap = ctx.env.unwrap(&this)?;
 
@@ -45,6 +44,11 @@ fn get_sources(ctx: CallContext) -> Result<JsObject> {
 
     // Return array
     return Ok(napi_sources_array);
+}
+
+#[js_function]
+fn get_sources(ctx: CallContext) -> Result<JsObject> {
+    return _get_sources(&ctx);
 }
 
 #[js_function(1)]
@@ -87,8 +91,7 @@ fn get_name(ctx: CallContext) -> Result<JsString> {
     return ctx.env.create_string(name);
 }
 
-#[js_function]
-fn get_names(ctx: CallContext) -> Result<JsObject> {
+fn _get_names(ctx: &CallContext) -> Result<JsObject> {
     let this: JsObject = ctx.this_unchecked();
     let source_map_instance: &SourceMap = ctx.env.unwrap(&this)?;
 
@@ -101,6 +104,11 @@ fn get_names(ctx: CallContext) -> Result<JsObject> {
 
     // Return array
     return Ok(napi_names_array);
+}
+
+#[js_function]
+fn get_names(ctx: CallContext) -> Result<JsObject> {
+    return _get_names(&ctx);
 }
 
 #[js_function(1)]
@@ -132,7 +140,7 @@ fn to_buffer(ctx: CallContext) -> Result<JsBuffer> {
 }
 
 #[js_function(3)]
-fn add_buffer_mappings(ctx: CallContext) -> Result<JsUndefined> {
+fn add_buffer_map(ctx: CallContext) -> Result<JsUndefined> {
     let this: JsObject = ctx.this_unchecked();
     let source_map_instance: &mut SourceMap = ctx.env.unwrap(&this)?;
 
@@ -144,48 +152,136 @@ fn add_buffer_mappings(ctx: CallContext) -> Result<JsUndefined> {
     return ctx.env.get_undefined();
 }
 
+#[js_function(6)]
+fn add_vlq_map(ctx: CallContext) -> Result<JsUndefined> {
+    let this: JsObject = ctx.this_unchecked();
+    let source_map_instance: &mut SourceMap = ctx.env.unwrap(&this)?;
+
+    let vlq_mappings = ctx.get::<JsString>(0)?.into_utf8()?;
+
+    let js_sources_arr = ctx.get::<JsObject>(1)?;
+    let js_sources_arr_len: u32 = js_sources_arr
+        .get_named_property::<JsNumber>("length")?
+        .get_uint32()?;
+    let mut sources = Vec::with_capacity(js_sources_arr_len as usize);
+    for i in 0..js_sources_arr_len {
+        sources.push(js_sources_arr.get_element::<JsString>(i)?.into_utf8()?.into_owned()?);
+    }
+
+    let js_sources_content_arr = ctx.get::<JsObject>(2)?;
+    let js_sources_content_arr_len: u32 = js_sources_arr
+        .get_named_property::<JsNumber>("length")?
+        .get_uint32()?;
+    let mut sources_content = Vec::with_capacity(js_sources_content_arr_len as usize);
+    for i in 0..js_sources_content_arr_len {
+        sources_content.push(
+            js_sources_content_arr
+                .get_element::<JsString>(i)?
+                .into_utf8()?
+                .into_owned()?,
+        );
+    }
+
+    let js_names_arr = ctx.get::<JsObject>(3)?;
+    let js_names_arr_len: u32 = js_names_arr
+        .get_named_property::<JsNumber>("length")?
+        .get_uint32()?;
+    let mut names = Vec::with_capacity(js_names_arr_len as usize);
+    for i in 0..js_names_arr_len {
+        names.push(
+            js_names_arr
+                .get_element::<JsString>(i)?
+                .into_utf8()?
+                .into_owned()?,
+        );
+    }
+
+    let line_offset = ctx.get::<JsNumber>(4)?.get_int64()?;
+    let column_offset = ctx.get::<JsNumber>(5)?.get_int64()?;
+
+    source_map_instance.add_vql_map(
+        vlq_mappings.as_slice(),
+        sources.iter().map(|s| &s[..]).collect(),
+        sources_content.iter().map(|s| &s[..]).collect(),
+        names.iter().map(|n| &n[..]).collect(),
+        line_offset,
+        column_offset,
+    )?;
+
+    return ctx.env.get_undefined();
+}
+
+#[js_function]
+fn to_vlq(ctx: CallContext) -> Result<JsObject> {
+    let this: JsObject = ctx.this_unchecked();
+    let source_map_instance: &mut SourceMap = ctx.env.unwrap(&this)?;
+
+    let mut vlq_output: Vec<u8> = vec![];
+    source_map_instance.write_vlq(&mut vlq_output)?;
+    let vlq_string = ctx.env.create_string_from_vec_u8(vlq_output)?;
+    let mut result_obj: JsObject = ctx.env.create_object()?;
+    result_obj.set_named_property("mappings", vlq_string)?;
+    result_obj.set_named_property("sources", _get_sources(&ctx)?)?;
+    result_obj.set_named_property("names", _get_names(&ctx)?)?;
+
+    return Ok(result_obj);
+}
+
 #[js_function(1)]
 fn add_indexed_mappings(ctx: CallContext) -> Result<JsUndefined> {
     let this: JsObject = ctx.this_unchecked();
     let source_map_instance: &mut SourceMap = ctx.env.unwrap(&this)?;
 
-    // TODO: Figure out how this works...
-    // let js_mapping_array = ctx.get::<JsTypedArray>(0)?.into_value()?;
-    // if js_mapping_array.typedarray_type != TypedArrayType::Int32 {
-    //     return Err(Error::new(
-    //         napi::Status::InvalidArg,
-    //         String::from("argument should be an Int32Array"),
-    //     ));
-    // }
+    // TODO: Figure out a more optimal way of handling typed arrays...
+    let js_mapping_arr = ctx.get::<JsObject>(0)?;
+    let length: u32 = js_mapping_arr
+        .get_named_property::<JsNumber>("length")?
+        .get_uint32()?;
 
-    // let mut generated_line: u32 = 0; // 0
-    // let mut generated_column: u32 = 0; // 1
-    // let mut original_line: i32 = 0; // 2
-    // let mut original_column: i32 = 0; // 3
-    // let mut original_source: i32 = 0; // 4
-    // for (i, value) in js_mapping_array.iter().enumerate() {
-    //     match i % 6 {
-    //         0 => {
-    //             generated_line = value;
-    //         }
-    //         1 => {
-    //             generated_column = value;
-    //         }
-    //         2 => {
-    //             original_line = value;
-    //         }
-    //         3 => {
-    //             original_column = value;
-    //         }
-    //         4 => {
-    //             original_source = value;
-    //         }
-    //         5 => {
-    //             // TODO: Add support for original position...
-    //             source_map_instance.add_mapping(generated_line, generated_column, None);
-    //         }
-    //     }
-    // }
+    let mut generated_line: u32 = 0; // 0
+    let mut generated_column: u32 = 0; // 1
+    let mut original_line: i32 = 0; // 2
+    let mut original_column: i32 = 0; // 3
+    let mut original_source: i32 = 0; // 4
+    for i in 0..length {
+        let value: i32 = js_mapping_arr.get_element::<JsNumber>(i)?.get_int32()?;
+
+        match i % 6 {
+            0 => {
+                generated_line = value as u32;
+            }
+            1 => {
+                generated_column = value as u32;
+            }
+            2 => {
+                original_line = value;
+            }
+            3 => {
+                original_column = value;
+            }
+            4 => {
+                original_source = value;
+            }
+            5 => {
+                source_map_instance.add_mapping(
+                    generated_line,
+                    generated_column,
+                    if original_line > -1 && original_column > -1 && original_source > -1 {
+                        Some(OriginalLocation {
+                            original_line: original_line as u32,
+                            original_column: original_column as u32,
+                            source: original_source as u32,
+                            name: if value > -1 { Some(value as u32) } else { None },
+                        })
+                    } else {
+                        None
+                    },
+                );
+            }
+            // This is a rust bug? i % 6 can never return anything else...
+            _ => (),
+        }
+    }
 
     return ctx.env.get_undefined();
 }
@@ -211,10 +307,11 @@ fn init(mut exports: JsObject, env: Env) -> Result<()> {
     let get_names_method = Property::new(&env, "getNames")?.with_method(get_names);
     let get_name_index_method = Property::new(&env, "getNameIndex")?.with_method(get_name_index);
     let to_buffer_method = Property::new(&env, "toBuffer")?.with_method(to_buffer);
-    let add_buffer_mappings_method =
-        Property::new(&env, "addBufferMappings")?.with_method(add_buffer_mappings);
+    let add_buffer_map_method = Property::new(&env, "addBufferMap")?.with_method(add_buffer_map);
     let add_indexed_mappings_method =
         Property::new(&env, "addIndexedMappings")?.with_method(add_indexed_mappings);
+    let add_vlq_map_method = Property::new(&env, "addVLQMap")?.with_method(add_vlq_map);
+    let to_vlq_method = Property::new(&env, "toVLQ")?.with_method(to_vlq);
     let watcher_class = env.define_class(
         "SourceMap",
         watcher_class_contructor,
@@ -227,9 +324,11 @@ fn init(mut exports: JsObject, env: Env) -> Result<()> {
             get_name_method,
             get_names_method,
             get_name_index_method,
-            to_buffer_method,
-            add_buffer_mappings_method,
+            add_buffer_map_method,
             add_indexed_mappings_method,
+            add_vlq_map_method,
+            to_buffer_method,
+            to_vlq_method,
         ],
     )?;
     exports.set_named_property("SourceMap", watcher_class)?;

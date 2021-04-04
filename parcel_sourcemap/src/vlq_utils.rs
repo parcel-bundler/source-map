@@ -3,7 +3,7 @@ use crate::sourcemap_error::{SourceMapError, SourceMapErrorType};
 use vlq::decode;
 
 #[inline]
-pub fn read_relative_vlq<B>(previous: &mut u32, input: &mut B) -> Result<(), SourceMapError>
+pub fn read_relative_vlq<B>(previous: &mut i64, input: &mut B) -> Result<(), SourceMapError>
 where
     B: Iterator<Item = u8>,
 {
@@ -21,7 +21,7 @@ where
         ));
     }
 
-    *previous = new as u32;
+    *previous = new;
 
     return Ok(());
 }

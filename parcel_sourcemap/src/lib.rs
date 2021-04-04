@@ -6,7 +6,7 @@ pub mod sourcemap_error;
 mod vlq_utils;
 
 use flatbuffers::FlatBufferBuilder;
-use mapping::{Mapping, OriginalLocation};
+pub use mapping::{Mapping, OriginalLocation};
 use mapping_line::MappingLine;
 pub use sourcemap_error::{SourceMapError, SourceMapErrorType};
 use std::collections::BTreeMap;
@@ -18,7 +18,7 @@ use vlq_utils::{is_mapping_separator, read_relative_vlq};
 #[allow(dead_code, unused_imports)]
 #[path = "./schema_generated.rs"]
 mod schema_generated;
-pub use schema_generated::source_map_schema;
+use schema_generated::source_map_schema;
 
 pub struct SourceMap {
     project_root: String,
@@ -434,14 +434,17 @@ impl SourceMap {
         return Ok(());
     }
 
-    pub fn add_vql_mappings(
+    pub fn add_vql_map(
         &mut self,
         input: &[u8],
         sources: Vec<&str>,
+        sources_content: Vec<&str>,
         names: Vec<&str>,
+        line_offset: i64,
+        column_offset: i64,
     ) -> Result<(), SourceMapError> {
-        let mut generated_line = 0;
-        let mut generated_column = 0;
+        let mut generated_line: i64 = line_offset;
+        let mut generated_column: i64 = 0;
         let mut original_line = 0;
         let mut original_column = 0;
         let mut source = 0;
@@ -450,12 +453,17 @@ impl SourceMap {
         let source_indexes: Vec<u32> = self.add_sources(sources);
         let name_indexes: Vec<u32> = self.add_names(names);
 
+        self.sources_content.reserve(sources_content.len());
+        for (i, source_content) in sources_content.iter().enumerate() {
+            self.set_source_content(i, source_content)?;
+        }
+
         let mut input = input.iter().cloned().peekable();
         while let Some(byte) = input.peek().cloned() {
             match byte {
                 b';' => {
                     generated_line += 1;
-                    generated_column = 0;
+                    generated_column = column_offset;
                     input.next().unwrap();
                 }
                 b',' => {
@@ -474,8 +482,8 @@ impl SourceMap {
                         read_relative_vlq(&mut original_line, &mut input)?;
                         read_relative_vlq(&mut original_column, &mut input)?;
                         Some(OriginalLocation::new(
-                            original_line,
-                            original_column,
+                            original_line as u32,
+                            original_column as u32,
                             match source_indexes.get(source as usize) {
                                 Some(v) => *v,
                                 None => {
@@ -500,7 +508,9 @@ impl SourceMap {
                         ))
                     };
 
-                    self.add_mapping(generated_line, generated_column, original);
+                    if generated_line > 0 {
+                        self.add_mapping(generated_line as u32, generated_column as u32, original);
+                    }
                 }
             }
         }
@@ -581,7 +591,7 @@ mod tests {
             Some(super::mapping::OriginalLocation::new(0, 5, 1, Some(0))),
         );
 
-        let mut output = vec![];
+        let mut output: Vec<u8> = vec![];
         match source_map.write_vlq(&mut output) {
             Ok(()) => {
                 let vlq_string = str::from_utf8(&output).unwrap();
@@ -626,10 +636,11 @@ mod tests {
     fn read_vlq_mappings() {
         let vlq_mappings = b";;;;;;;;;;;;OAAKA;;;SCAAA;;;;;;;;;;Y";
         let sources = vec!["a.js", "b.js"];
+        let sources_content = vec!["", ""];
         let names = vec!["test"];
         let mut source_map = super::SourceMap::new("/");
 
-        match source_map.add_vql_mappings(vlq_mappings, sources, names) {
+        match source_map.add_vql_map(vlq_mappings, sources, sources_content, names, 0, 0) {
             Ok(()) => {}
             Err(err) => panic!(err),
         }

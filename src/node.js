@@ -19,7 +19,7 @@ export default class NodeSourceMap extends SourceMap {
     } else {
       sourcesContent = sourcesContent.map((content) => (content ? content : ''));
     }
-    this.sourceMapInstance.addRawMappings(
+    this.sourceMapInstance.addVLQMap(
       mappings,
       sources.map((source) => (source ? relatifyPath(source, this.projectRoot) : '')),
       sourcesContent.map((content) => (content ? content : '')),

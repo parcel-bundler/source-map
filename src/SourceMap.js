@@ -68,7 +68,7 @@ export default class SourceMap {
    * @param columnOffset  an offset that gets added to the sourceColumn index of each mapping
    */
   addBufferMappings(buffer: Buffer, lineOffset: number = 0, columnOffset: number = 0): SourceMap {
-    this.sourceMapInstance.addBufferMappings(buffer, lineOffset, columnOffset);
+    this.sourceMapInstance.addBufferMap(buffer, lineOffset, columnOffset);
     return this;
   }
 
@@ -402,7 +402,7 @@ export default class SourceMap {
    * Returns a serialised map using VLQ Mappings
    */
   toVLQ(): VLQMap {
-    return this.sourceMapInstance.stringify();
+    return this.sourceMapInstance.toVLQ();
   }
 
   /**
