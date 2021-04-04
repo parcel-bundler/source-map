@@ -48,22 +48,22 @@ jobs:
             ./emsdk activate latest
             cd ..
         condition: eq('${{ parameters.name }}', 'macOS')
-      - script: yarn run compile-wasm
-        displayName: Compile wasm
-        env:
-          PATH: $(PATH):$(System.DefaultWorkingDirectory)/emsdk/bin:$(System.DefaultWorkingDirectory)/emsdk/upstream/emscripten
-        condition: eq('${{ parameters.name }}', 'macOS')
+      # - script: yarn run compile-wasm
+      #   displayName: Compile wasm
+      #   env:
+      #     PATH: $(PATH):$(System.DefaultWorkingDirectory)/emsdk/bin:$(System.DefaultWorkingDirectory)/emsdk/upstream/emscripten
+      #   condition: eq('${{ parameters.name }}', 'macOS')
 
       - script: yarn run test:node
         displayName: Run tests (node)
       - script: yarn run benchmark:node
         displayName: Run benchmark (node)
-      - script: yarn run test:wasm
-        displayName: Run tests (wasm)
-        condition: eq('${{ parameters.name }}', 'macOS')
-      - script: yarn run benchmark:wasm
-        displayName: Run benchmark (wasm)
-        condition: eq('${{ parameters.name }}', 'macOS')
+      # - script: yarn run test:wasm
+      #   displayName: Run tests (wasm)
+      #   condition: eq('${{ parameters.name }}', 'macOS')
+      # - script: yarn run benchmark:wasm
+      #   displayName: Run benchmark (wasm)
+      #   condition: eq('${{ parameters.name }}', 'macOS')
 
       - script: yarn run prebuild
         displayName: Test prebuild
@@ -79,15 +79,15 @@ jobs:
         inputs:
           artifactName: prebuilds
           pathtoPublish: '$(System.DefaultWorkingDirectory)/prebuilds'
-      - task: PublishBuildArtifacts@1
-        displayName: Publish wasm-node Artifacts
-        condition: and(succeeded(), eq(variables['publish_artifacts'], 'true'), eq('${{ parameters.name }}', 'macOS'))
-        inputs:
-          artifactName: wasm-node
-          pathtoPublish: '$(System.DefaultWorkingDirectory)/wasm-node'
-      - task: PublishBuildArtifacts@1
-        displayName: Publish wasm-browser Artifacts
-        condition: and(succeeded(), eq(variables['publish_artifacts'], 'true'), eq('${{ parameters.name }}', 'macOS'))
-        inputs:
-          artifactName: wasm-browser
-          pathtoPublish: '$(System.DefaultWorkingDirectory)/wasm-browser'
+      # - task: PublishBuildArtifacts@1
+      #   displayName: Publish wasm-node Artifacts
+      #   condition: and(succeeded(), eq(variables['publish_artifacts'], 'true'), eq('${{ parameters.name }}', 'macOS'))
+      #   inputs:
+      #     artifactName: wasm-node
+      #     pathtoPublish: '$(System.DefaultWorkingDirectory)/wasm-node'
+      # - task: PublishBuildArtifacts@1
+      #   displayName: Publish wasm-browser Artifacts
+      #   condition: and(succeeded(), eq(variables['publish_artifacts'], 'true'), eq('${{ parameters.name }}', 'macOS'))
+      #   inputs:
+      #     artifactName: wasm-browser
+      #     pathtoPublish: '$(System.DefaultWorkingDirectory)/wasm-browser'
