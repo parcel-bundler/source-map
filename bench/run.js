@@ -1,131 +1,24 @@
-const Benchmark = require('tiny-benchy');
-const MozillaSourceMap = require('source-map');
-const assert = require('assert');
-const { default: SourceMap, init } = process.env.BACKEND === 'wasm' ? require('../dist/wasm-node') : require('../');
+const fs = require('fs-extra');
+const path = require('path');
 
-const ITERATIONS = 250;
+const { init } = require('./setup');
+const { consume } = require('./consume');
+const { serialize } = require('./serialize');
 
-init.then(() => {
-  const suite = new Benchmark(ITERATIONS);
+function formatSummary(summary) {
+  return summary.results
+    .map((result) => {
+      return `${summary.name}#${result.name} x ${result.ops} ops/sec ±${result.margin}% (${result.samples} runs sampled)`;
+    })
+    .join('\n');
+}
 
-  let mappings = new Array(100).fill('').map((item, index) => {
-    return {
-      source: 'index.js',
-      name: 'A',
-      original: {
-        line: index + 1,
-        column: 0 + 10 * index,
-      },
-      generated: {
-        line: 1,
-        column: 15 + 10 * index,
-      },
-    };
-  });
+async function run() {
+  await init;
 
-  let sourcemapInstance = new SourceMap();
-  sourcemapInstance.addIndexedMappings(mappings);
-  let sourcemapBuffer = sourcemapInstance.toBuffer();
-  let rawSourceMap = sourcemapInstance.toVLQ();
+  const output = [await consume(), await serialize()].map(formatSummary).join('\n');
 
-  suite.add('consume vlq mappings', async () => {
-    let map = new SourceMap();
-    map.addRawMappings({
-      mappings: rawSourceMap.mappings,
-      sources: rawSourceMap.sources,
-      names: rawSourceMap.names,
-    });
-    map.delete();
-  });
+  await fs.writeFile(path.join(process.cwd(), 'bench.txt'), output, 'utf8');
+}
 
-  suite.add('consume flatbuffer', async () => {
-    let map = new SourceMap();
-    map.addBufferMappings(sourcemapBuffer);
-    map.delete();
-  });
-
-  suite.add('consume JS Mappings', async () => {
-    let map = new SourceMap();
-    map.addIndexedMappings(mappings);
-    map.delete();
-  });
-
-  suite.add('JS Mappings => vlq (mozilla source-map) => buffer', async () => {
-    let map = new MozillaSourceMap.SourceMapGenerator({
-      sourceRoot: '/',
-    });
-
-    for (let mapping of mappings) {
-      map.addMapping(mapping);
-    }
-
-    let json = map.toJSON();
-
-    let sourceMap = new SourceMap();
-    sourceMap.addRawMappings({
-      mappings: json.mappings,
-      sources: json.sources,
-      names: json.names,
-    });
-    sourceMap.delete();
-  });
-
-  suite.add('Save buffer', async () => {
-    sourcemapInstance.toBuffer();
-  });
-
-  suite.add('extend map', async () => {
-    let map = new SourceMap();
-    map.addBufferMappings(sourcemapBuffer);
-    map.extends(sourcemapBuffer);
-    map.delete();
-  });
-
-  suite.add('stringify', async () => {
-    await sourcemapInstance.stringify({
-      file: 'index.js.map',
-      sourceRoot: '/',
-    });
-  });
-
-  suite.add('combine 1000 maps using flatbuffers', async () => {
-    let map = new SourceMap();
-    for (let i = 0; i < 1000; i++) {
-      map.addBufferMappings(sourcemapBuffer, i * 4);
-    }
-    map.delete();
-  });
-
-  suite.add('combine 1000 maps using vlq mappings', async () => {
-    let map = new SourceMap();
-    for (let i = 0; i < 1000; i++) {
-      map.addRawMappings(
-        {
-          mappings: rawSourceMap.mappings,
-          sources: rawSourceMap.sources,
-          names: rawSourceMap.names,
-        },
-        i * 4
-      );
-    }
-    map.delete();
-  });
-
-  if (!(process.platform === 'win32' && process.arch === 'ia32')) {
-    suite.add('combine 1000 maps using flatbuffers and stringify', async () => {
-      let map = new SourceMap();
-      for (let i = 0; i < 1000; i++) {
-        map.addBufferMappings(sourcemapBuffer, i * 4);
-      }
-      await map.stringify({
-        file: 'index.js.map',
-        sourceRoot: '/',
-        // We don't wanna benchmark JSON.stringify...
-        format: 'object',
-      });
-      map.delete();
-    });
-  }
-
-  suite.run();
-});
+run();

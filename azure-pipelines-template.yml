@@ -56,13 +56,8 @@ jobs:
 
       - script: yarn run test:node
         displayName: Run tests (node)
-      - script: yarn run benchmark:node
-        displayName: Run benchmark (node)
       # - script: yarn run test:wasm
       #   displayName: Run tests (wasm)
-      #   condition: eq('${{ parameters.name }}', 'macOS')
-      # - script: yarn run benchmark:wasm
-      #   displayName: Run benchmark (wasm)
       #   condition: eq('${{ parameters.name }}', 'macOS')
 
       - script: yarn run prebuild

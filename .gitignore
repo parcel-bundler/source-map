@@ -16,3 +16,4 @@ yarn.lock
 .vscode
 target
 *.node
+bench.txt
