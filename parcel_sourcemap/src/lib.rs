@@ -128,10 +128,10 @@ impl SourceMap {
         W: io::Write,
     {
         let mut last_generated_line: u32 = 0;
-        let mut previous_source: u32 = 0;
-        let mut previous_original_line: u32 = 0;
-        let mut previous_original_column: u32 = 0;
-        let mut previous_name: u32 = 0;
+        let mut previous_source: i64 = 0;
+        let mut previous_original_line: i64 = 0;
+        let mut previous_original_column: i64 = 0;
+        let mut previous_name: i64 = 0;
 
         for (generated_line, line_content) in &self.mapping_lines {
             let mut previous_generated_column: u32 = 0;
@@ -156,23 +156,22 @@ impl SourceMap {
 
                 // Source should only be written if there is any
                 if let Some(original) = &original_location_option {
-                    vlq::encode((original.source - previous_source) as i64, output)?;
-                    previous_source = original.source;
+                    let original_source = original.source as i64;
+                    vlq::encode(original_source - previous_source, output)?;
+                    previous_source = original_source;
 
-                    vlq::encode(
-                        (original.original_line - previous_original_line) as i64,
-                        output,
-                    )?;
-                    previous_original_line = original.original_line;
+                    let original_line = original.original_line as i64;
+                    vlq::encode((original_line - previous_original_line) as i64, output)?;
+                    previous_original_line = original_line;
 
-                    vlq::encode(
-                        (original.original_column - previous_original_column) as i64,
-                        output,
-                    )?;
-                    previous_original_column = original.original_column;
+                    let original_column = original.original_column as i64;
+                    vlq::encode(original_column - previous_original_column, output)?;
+                    previous_original_column = original_column;
+
                     if let Some(name) = original.name {
-                        vlq::encode((name - previous_name) as i64, output)?;
-                        previous_name = name;
+                        let original_name = name as i64;
+                        vlq::encode(original_name - previous_name, output)?;
+                        previous_name = original_name;
                     }
                 }
 
@@ -568,256 +567,5 @@ impl SourceMap {
         }
 
         return Ok(());
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use std::str;
-    use std::time::Instant;
-
-    #[test]
-    fn write_vlq_mappings() {
-        let mut source_map = super::SourceMap::new("/");
-        source_map.add_mapping(
-            12,
-            7,
-            Some(super::mapping::OriginalLocation::new(0, 5, 0, Some(0))),
-        );
-        source_map.add_mapping(25, 12, None);
-        source_map.add_mapping(
-            15,
-            9,
-            Some(super::mapping::OriginalLocation::new(0, 5, 1, Some(0))),
-        );
-
-        let mut output: Vec<u8> = vec![];
-        match source_map.write_vlq(&mut output) {
-            Ok(()) => {
-                let vlq_string = str::from_utf8(&output).unwrap();
-                assert_eq!(vlq_string, ";;;;;;;;;;;;OAAKA;;;SCAAA;;;;;;;;;;Y");
-            }
-            Err(err) => {
-                panic!(err);
-            }
-        };
-
-        // Basic find closest test
-        match source_map.find_closest_mapping(12, 10) {
-            Some(mapping) => {
-                assert_eq!(mapping.generated_line, 12);
-                assert_eq!(mapping.generated_column, 7);
-                match mapping.original {
-                    Some(original) => {
-                        assert_eq!(original.original_line, 0);
-                        assert_eq!(original.original_column, 5);
-                        assert_eq!(original.source, 0);
-                        match original.name {
-                            Some(name) => {
-                                assert_eq!(name, 0);
-                            }
-                            None => {
-                                panic!("No name attached to mapping")
-                            }
-                        }
-                    }
-                    None => {
-                        panic!("No original position attached to mapping")
-                    }
-                }
-            }
-            None => {
-                panic!("Mapping not found");
-            }
-        }
-    }
-
-    #[test]
-    fn read_vlq_mappings() {
-        let vlq_mappings = b";;;;;;;;;;;;OAAKA;;;SCAAA;;;;;;;;;;Y";
-        let sources = vec!["a.js", "b.js"];
-        let sources_content = vec!["", ""];
-        let names = vec!["test"];
-        let mut source_map = super::SourceMap::new("/");
-
-        match source_map.add_vql_map(vlq_mappings, sources, sources_content, names, 0, 0) {
-            Ok(()) => {}
-            Err(err) => panic!(err),
-        }
-
-        // Should be able to write the vlq mappings again...
-        let mut output = vec![];
-        match source_map.write_vlq(&mut output) {
-            Ok(()) => {
-                let vlq_string = str::from_utf8(&output).unwrap();
-                assert_eq!(vlq_string, ";;;;;;;;;;;;OAAKA;;;SCAAA;;;;;;;;;;Y");
-            }
-            Err(err) => {
-                panic!(err);
-            }
-        };
-    }
-
-    #[test]
-    fn offset_columns() {
-        let mut source_map_one = super::SourceMap::new("/");
-        source_map_one.add_mapping(
-            12,
-            7,
-            Some(super::mapping::OriginalLocation::new(0, 5, 0, Some(0))),
-        );
-        source_map_one.add_mapping(
-            15,
-            9,
-            Some(super::mapping::OriginalLocation::new(0, 5, 1, Some(0))),
-        );
-        source_map_one.add_mapping(12, 2, None);
-        source_map_one.add_mapping(
-            12,
-            15,
-            Some(super::mapping::OriginalLocation::new(0, 5, 0, Some(0))),
-        );
-        source_map_one.add_mapping(12, 43, None);
-
-        match source_map_one.offset_columns(12, 14, -9) {
-            Ok(_) => {}
-            Err(err) => panic!(err),
-        }
-
-        let mut source_map_two = super::SourceMap::new("/");
-        source_map_two.add_mapping(12, 2, None);
-        source_map_two.add_mapping(
-            12,
-            6,
-            Some(super::mapping::OriginalLocation::new(0, 5, 0, Some(0))),
-        );
-        source_map_two.add_mapping(12, 34, None);
-        source_map_two.add_mapping(
-            15,
-            9,
-            Some(super::mapping::OriginalLocation::new(0, 5, 1, Some(0))),
-        );
-
-        let mut output_one = vec![];
-        match source_map_one.write_vlq(&mut output_one) {
-            Ok(()) => {
-                let mut output_two = vec![];
-                match source_map_two.write_vlq(&mut output_two) {
-                    Ok(()) => {
-                        let string_one = str::from_utf8(&output_one).unwrap();
-                        let string_two = str::from_utf8(&output_two).unwrap();
-                        assert_eq!(string_one, string_two);
-                    }
-                    Err(err) => {
-                        panic!(err);
-                    }
-                };
-            }
-            Err(err) => {
-                panic!(err);
-            }
-        };
-    }
-
-    #[test]
-    fn offset_benchmark() {
-        let start_time = Instant::now();
-        let mut source_map = super::SourceMap::new("/");
-
-        // Based on amount of mappings in kitchen-sink example
-        for mapping_id in 1..25000 {
-            source_map.add_mapping(1, mapping_id, None);
-        }
-
-        match source_map.offset_columns(1, 500, -251) {
-            Ok(_) => {}
-            Err(err) => {
-                panic!(err)
-            }
-        }
-
-        let elapsed = start_time.elapsed().as_millis();
-        println!("Offset mappings duration: {}ms", elapsed);
-    }
-
-    #[test]
-    fn find_benchmark() {
-        let start_time = Instant::now();
-        let mut source_map = super::SourceMap::new("/");
-
-        // Based on amount of mappings in kitchen-sink example
-        for mapping_index in 1..25000 {
-            source_map.add_mapping(1, mapping_index, None);
-        }
-
-        source_map.find_closest_mapping(1, 25000);
-
-        let elapsed = start_time.elapsed().as_millis();
-        println!("Find closest mapping duration: {}ms", elapsed);
-    }
-
-    #[test]
-    fn flatbuffers() {
-        let start_time = Instant::now();
-
-        let mut original_source_map = super::SourceMap::new("/");
-        original_source_map.add_source("a.js");
-        original_source_map.add_source("b.js");
-        original_source_map.add_name("test");
-        original_source_map.add_mapping(
-            12,
-            7,
-            Some(super::mapping::OriginalLocation::new(0, 5, 0, Some(0))),
-        );
-        original_source_map.add_mapping(25, 12, None);
-        original_source_map.add_mapping(
-            15,
-            9,
-            Some(super::mapping::OriginalLocation::new(0, 5, 1, Some(0))),
-        );
-
-        let mut buffer = Vec::new();
-        match original_source_map.write_to_buffer(&mut buffer) {
-            Ok(()) => (),
-            Err(err) => panic!(err),
-        }
-
-        let mut new_map = super::SourceMap::new("/");
-        match new_map.add_buffer_mappings(&buffer, 0, 0) {
-            Ok(()) => (),
-            Err(err) => panic!(err),
-        }
-
-        // Basic find closest test
-        match new_map.find_closest_mapping(12, 10) {
-            Some(mapping) => {
-                assert_eq!(mapping.generated_line, 12);
-                assert_eq!(mapping.generated_column, 7);
-                match mapping.original {
-                    Some(original) => {
-                        assert_eq!(original.original_line, 0);
-                        assert_eq!(original.original_column, 5);
-                        assert_eq!(original.source, 0);
-                        match original.name {
-                            Some(name) => {
-                                assert_eq!(name, 0);
-                            }
-                            None => {
-                                panic!("No name attached to mapping")
-                            }
-                        }
-                    }
-                    None => {
-                        panic!("No original position attached to mapping")
-                    }
-                }
-            }
-            None => {
-                panic!("Mapping not found");
-            }
-        }
-
-        let elapsed = start_time.elapsed().as_millis();
-        println!("Flatbuffer test duration: {}ms", elapsed);
     }
 }
