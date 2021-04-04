@@ -70,6 +70,18 @@ fn get_source_index(ctx: CallContext) -> Result<Either<JsNumber, JsNull>> {
 }
 
 #[js_function(1)]
+fn set_source_content(ctx: CallContext) -> Result<JsUndefined> {
+    let this: JsObject = ctx.this_unchecked();
+    let source_map_instance: &mut SourceMap = ctx.env.unwrap(&this)?;
+
+    let source_index = ctx.get::<JsNumber>(0)?.get_uint32()? as usize;
+    let source_content = ctx.get::<JsString>(1)?.into_utf8()?;
+    source_map_instance.set_source_content(source_index, source_content.as_str()?)?;
+
+    return ctx.env.get_undefined();
+}
+
+#[js_function(1)]
 fn add_name(ctx: CallContext) -> Result<JsUndefined> {
     let this: JsObject = ctx.this_unchecked();
     let source_map_instance: &mut SourceMap = ctx.env.unwrap(&this)?;
@@ -165,7 +177,12 @@ fn add_vlq_map(ctx: CallContext) -> Result<JsUndefined> {
         .get_uint32()?;
     let mut sources = Vec::with_capacity(js_sources_arr_len as usize);
     for i in 0..js_sources_arr_len {
-        sources.push(js_sources_arr.get_element::<JsString>(i)?.into_utf8()?.into_owned()?);
+        sources.push(
+            js_sources_arr
+                .get_element::<JsString>(i)?
+                .into_utf8()?
+                .into_owned()?,
+        );
     }
 
     let js_sources_content_arr = ctx.get::<JsObject>(2)?;
@@ -286,8 +303,36 @@ fn add_indexed_mappings(ctx: CallContext) -> Result<JsUndefined> {
     return ctx.env.get_undefined();
 }
 
+#[js_function(2)]
+fn offset_lines(ctx: CallContext) -> Result<JsUndefined> {
+    let this: JsObject = ctx.this_unchecked();
+    let source_map_instance: &mut SourceMap = ctx.env.unwrap(&this)?;
+
+    let generated_line = ctx.get::<JsNumber>(0)?.get_uint32()?;
+    let generated_line_offset = ctx.get::<JsNumber>(1)?.get_int64()?;
+    source_map_instance.offset_lines(generated_line, generated_line_offset)?;
+    return ctx.env.get_undefined();
+}
+
+#[js_function(3)]
+fn offset_columns(ctx: CallContext) -> Result<JsUndefined> {
+    let this: JsObject = ctx.this_unchecked();
+    let source_map_instance: &mut SourceMap = ctx.env.unwrap(&this)?;
+
+    let generated_line = ctx.get::<JsNumber>(0)?.get_uint32()?;
+    let generated_column = ctx.get::<JsNumber>(1)?.get_uint32()?;
+    let generated_column_offset = ctx.get::<JsNumber>(2)?.get_int64()?;
+
+    source_map_instance.offset_columns(
+        generated_line,
+        generated_column,
+        generated_column_offset,
+    )?;
+    return ctx.env.get_undefined();
+}
+
 #[js_function(1)]
-fn watcher_class_contructor(ctx: CallContext) -> Result<JsUndefined> {
+fn constructor(ctx: CallContext) -> Result<JsUndefined> {
     let mut this: JsObject = ctx.this_unchecked();
     let project_root = ctx.get::<JsString>(0)?.into_utf8()?;
     ctx.env
@@ -302,6 +347,8 @@ fn init(mut exports: JsObject, env: Env) -> Result<()> {
     let get_sources_method = Property::new(&env, "getSources")?.with_method(get_sources);
     let get_source_index_method =
         Property::new(&env, "getSourceIndex")?.with_method(get_source_index);
+    let set_source_content_method =
+        Property::new(&env, "setSourceContent")?.with_method(set_source_content);
     let add_name_method = Property::new(&env, "addName")?.with_method(add_name);
     let get_name_method = Property::new(&env, "getName")?.with_method(get_name);
     let get_names_method = Property::new(&env, "getNames")?.with_method(get_names);
@@ -312,14 +359,17 @@ fn init(mut exports: JsObject, env: Env) -> Result<()> {
         Property::new(&env, "addIndexedMappings")?.with_method(add_indexed_mappings);
     let add_vlq_map_method = Property::new(&env, "addVLQMap")?.with_method(add_vlq_map);
     let to_vlq_method = Property::new(&env, "toVLQ")?.with_method(to_vlq);
+    let offset_lines_method = Property::new(&env, "offsetLines")?.with_method(offset_lines);
+    let offset_columns_method = Property::new(&env, "offsetColumns")?.with_method(offset_columns);
     let watcher_class = env.define_class(
         "SourceMap",
-        watcher_class_contructor,
+        constructor,
         &[
             add_source_method,
             get_source_method,
             get_sources_method,
             get_source_index_method,
+            set_source_content_method,
             add_name_method,
             get_name_method,
             get_names_method,
@@ -329,6 +379,8 @@ fn init(mut exports: JsObject, env: Env) -> Result<()> {
             add_vlq_map_method,
             to_buffer_method,
             to_vlq_method,
+            offset_lines_method,
+            offset_columns_method,
         ],
     )?;
     exports.set_named_property("SourceMap", watcher_class)?;
