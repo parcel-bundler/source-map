@@ -142,6 +142,53 @@ fn get_name_index(ctx: CallContext) -> Result<Either<JsNumber, JsNull>> {
 }
 
 #[js_function]
+fn get_mappings(ctx: CallContext) -> Result<JsObject> {
+    let this: JsObject = ctx.this_unchecked();
+    let source_map_instance: &SourceMap = ctx.env.unwrap(&this)?;
+
+    let mut mappings_arr = ctx.env.create_array()?;
+    let mut index: u32 = 0;
+    for (generated_line, mapping_line) in source_map_instance.mapping_lines.iter() {
+        for (generated_column, mapping) in mapping_line.mappings.iter() {
+            let mut mapping_obj = ctx.env.create_object()?;
+
+            let mut generated_position_obj = ctx.env.create_object()?;
+            generated_position_obj
+                .set_named_property("line", ctx.env.create_uint32(*generated_line)?)?;
+            generated_position_obj
+                .set_named_property("column", ctx.env.create_uint32(*generated_column)?)?;
+            mapping_obj.set_named_property("generated", generated_position_obj)?;
+
+            if let Some(original_position) = mapping {
+                let mut original_position_obj = ctx.env.create_object()?;
+                original_position_obj.set_named_property(
+                    "line",
+                    ctx.env.create_uint32(original_position.original_line)?,
+                )?;
+                original_position_obj.set_named_property(
+                    "column",
+                    ctx.env.create_uint32(original_position.original_column)?,
+                )?;
+                mapping_obj.set_named_property("original", original_position_obj)?;
+
+                mapping_obj.set_named_property(
+                    "source",
+                    ctx.env.create_uint32(original_position.source)?,
+                )?;
+
+                if let Some(name) = original_position.name {
+                    mapping_obj.set_named_property("name", ctx.env.create_uint32(name)?)?;
+                }
+            }
+
+            mappings_arr.set_element(index, mapping_obj)?;
+            index += 1;
+        }
+    }
+    return Ok(mappings_arr);
+}
+
+#[js_function]
 fn to_buffer(ctx: CallContext) -> Result<JsBuffer> {
     let this: JsObject = ctx.this_unchecked();
     let source_map_instance: &SourceMap = ctx.env.unwrap(&this)?;
@@ -353,6 +400,7 @@ fn init(mut exports: JsObject, env: Env) -> Result<()> {
     let get_name_method = Property::new(&env, "getName")?.with_method(get_name);
     let get_names_method = Property::new(&env, "getNames")?.with_method(get_names);
     let get_name_index_method = Property::new(&env, "getNameIndex")?.with_method(get_name_index);
+    let get_mappings_method = Property::new(&env, "getMappings")?.with_method(get_mappings);
     let to_buffer_method = Property::new(&env, "toBuffer")?.with_method(to_buffer);
     let add_buffer_map_method = Property::new(&env, "addBufferMap")?.with_method(add_buffer_map);
     let add_indexed_mappings_method =
@@ -374,6 +422,7 @@ fn init(mut exports: JsObject, env: Env) -> Result<()> {
             get_name_method,
             get_names_method,
             get_name_index_method,
+            get_mappings_method,
             add_buffer_map_method,
             add_indexed_mappings_method,
             add_vlq_map_method,

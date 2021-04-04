@@ -25,7 +25,7 @@ pub struct SourceMap {
     pub sources: Vec<String>,
     pub sources_content: Vec<String>,
     pub names: Vec<String>,
-    mapping_lines: BTreeMap<u32, MappingLine>,
+    pub mapping_lines: BTreeMap<u32, MappingLine>,
 }
 
 impl SourceMap {
