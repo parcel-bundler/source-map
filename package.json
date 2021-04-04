@@ -6,6 +6,7 @@
   "license": "MIT",
   "scripts": {
     "test": "cross-env BACKEND=node mocha ./test/*.test.js",
+    "test:node": "yarn test",
     "benchmark": "cross-env BACKEND=node node ./bench/run",
     "transpile": "babel ./src/*.js --out-dir ./dist && flow-copy-source -v src dist",
     "build:node": "make build-node",
