@@ -10,7 +10,7 @@ const SIMPLE_SOURCE_MAP = {
 };
 
 const PROCESSED_MAP = {
-  sources: ['./helloworld.coffee'],
+  sources: ['helloworld.coffee'],
   sourcesContent: [''],
   names: [],
   mappings: [
@@ -135,7 +135,7 @@ describe('SourceMap - Basics', () => {
       file: 'index.js.map',
       sourceRoot: '/',
       mappings: ';;;;;eAAAA',
-      sources: ['./index.js'],
+      sources: ['index.js'],
       sourcesContent: [null],
       names: ['A'],
     });
@@ -170,7 +170,7 @@ describe('SourceMap - Basics', () => {
       file: 'index.js.map',
       sourceRoot: '/',
       mappings: ';;;;;eAAA',
-      sources: ['./index.js'],
+      sources: ['index.js'],
       sourcesContent: [null],
       names: [],
     });
@@ -230,7 +230,7 @@ describe('SourceMap - Basics', () => {
       version: 3,
       file: 'index.js.map',
       sourceRoot: '/',
-      sources: ['./helloworld.coffee'],
+      sources: ['helloworld.coffee'],
       sourcesContent: ['() => "test"'],
       names: SIMPLE_SOURCE_MAP.names,
       mappings: SIMPLE_SOURCE_MAP.mappings,
@@ -300,7 +300,7 @@ describe('SourceMap - Basics', () => {
       names: SIMPLE_SOURCE_MAP.names,
     });
 
-    assert.equal(map.getSource(0), './helloworld.coffee');
+    assert.equal(map.getSource(0), 'helloworld.coffee');
     assert.equal(map.getSource(1), '');
   });
 
@@ -312,11 +312,11 @@ describe('SourceMap - Basics', () => {
       names: SIMPLE_SOURCE_MAP.names,
     });
 
-    assert.deepEqual(map.getSources(), ['./helloworld.coffee']);
+    assert.deepEqual(map.getSources(), ['helloworld.coffee']);
 
-    map.addSource('./b.jsx');
+    map.addSource('b.jsx');
     map.addSource('/test-root/c.ts');
-    assert.deepEqual(map.getSources(), ['./helloworld.coffee', './b.jsx', './c.ts']);
+    assert.deepEqual(map.getSources(), ['helloworld.coffee', 'b.jsx', 'c.ts']);
   });
 
   it('Should be able to return a map of all sources and their content', () => {
@@ -328,16 +328,16 @@ describe('SourceMap - Basics', () => {
     });
 
     map.setSourceContent('./helloworld.coffee', 'hello-world');
-    map.addSource('./b.jsx');
+    map.addSource('b.jsx');
     map.setSourceContent('/test-root/b.jsx', 'content-b');
     map.addSource('/test-root/c.ts');
     map.setSourceContent('/test-root/d.tsx', 'tsx-content-d');
 
     assert.deepEqual(map.getSourcesContentMap(), {
-      './helloworld.coffee': 'hello-world',
-      './b.jsx': 'content-b',
-      './c.ts': null,
-      './d.tsx': 'tsx-content-d',
+      'helloworld.coffee': 'hello-world',
+      'b.jsx': 'content-b',
+      'c.ts': null,
+      'd.tsx': 'tsx-content-d',
     });
   });
 
@@ -390,7 +390,7 @@ describe('SourceMap - Basics', () => {
       version: 3,
       file: 'index.js.map',
       sourceRoot: '/',
-      sources: ['./helloworld.coffee'],
+      sources: ['helloworld.coffee'],
       sourcesContent: ['module.exports = () => "hello world";'],
       names: [],
       mappings: 'AAAA;AAAA,EAAA,OAAO,CAAC,GAAR,CAAY,aAAZ,CAAA,CAAA;AAAA',

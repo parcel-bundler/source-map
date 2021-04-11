@@ -1,5 +1,4 @@
 extern crate flatbuffers;
-extern crate lazy_static;
 
 pub mod mapping;
 pub mod mapping_line;
@@ -16,6 +15,7 @@ use std::collections::BTreeMap;
 use std::io;
 use vlq;
 use vlq_utils::{is_mapping_separator, read_relative_vlq};
+use std::path::{Path, PathBuf};
 
 // import the generated code
 #[allow(dead_code, unused_imports)]
@@ -24,7 +24,7 @@ mod schema_generated;
 use schema_generated::source_map_schema;
 
 pub struct SourceMap {
-    pub project_root: String,
+    pub project_root: PathBuf,
     pub sources: Vec<String>,
     pub sources_content: Vec<String>,
     pub names: Vec<String>,
@@ -34,7 +34,7 @@ pub struct SourceMap {
 impl SourceMap {
     pub fn new(project_root: &str) -> Self {
         Self {
-            project_root: String::from(project_root),
+            project_root: PathBuf::from(project_root),
             sources: Vec::new(),
             sources_content: Vec::new(),
             names: Vec::new(),
@@ -192,8 +192,8 @@ impl SourceMap {
             Some(i) => Ok(i as u32),
             None => {
                 self.sources.push(relatify_path(
-                    String::from(source),
-                    self.project_root.as_str(),
+                    Path::new(source),
+                    self.project_root.as_path(),
                 )?);
 
                 Ok((self.sources.len() - 1) as u32)
@@ -211,7 +211,7 @@ impl SourceMap {
     }
 
     pub fn get_source_index(&self, source: &str) -> Result<Option<u32>, SourceMapError> {
-        let normalized_source = relatify_path(String::from(source), self.project_root.as_str())?;
+        let normalized_source = relatify_path(Path::new(source), self.project_root.as_path(),)?;
         match self.sources.iter().position(|s| normalized_source.eq(s)) {
             Some(i) => {
                 return Ok(Some(i as u32));
