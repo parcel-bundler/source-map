@@ -51,6 +51,25 @@ fn get_sources(ctx: CallContext) -> Result<JsObject> {
     return _get_sources(&ctx);
 }
 
+#[js_function]
+fn get_sources_content(ctx: CallContext) -> Result<JsObject> {
+    let this: JsObject = ctx.this_unchecked();
+    let source_map_instance: &SourceMap = ctx.env.unwrap(&this)?;
+
+    let mut napi_sources_content_array = ctx
+        .env
+        .create_array_with_length(source_map_instance.sources_content.len())?;
+    for (source_index, source_content) in source_map_instance.sources_content.iter().enumerate() {
+        napi_sources_content_array.set_element(
+            source_index as u32,
+            ctx.env.create_string(&source_content[..])?,
+        )?;
+    }
+
+    // Return array
+    return Ok(napi_sources_content_array);
+}
+
 #[js_function(1)]
 fn get_source_index(ctx: CallContext) -> Result<Either<JsNumber, JsNull>> {
     let this: JsObject = ctx.this_unchecked();
@@ -154,7 +173,7 @@ fn get_mappings(ctx: CallContext) -> Result<JsObject> {
 
             let mut generated_position_obj = ctx.env.create_object()?;
             generated_position_obj
-                .set_named_property("line", ctx.env.create_uint32(*generated_line)?)?;
+                .set_named_property("line", ctx.env.create_uint32((*generated_line) + 1)?)?;
             generated_position_obj
                 .set_named_property("column", ctx.env.create_uint32(*generated_column)?)?;
             mapping_obj.set_named_property("generated", generated_position_obj)?;
@@ -163,7 +182,7 @@ fn get_mappings(ctx: CallContext) -> Result<JsObject> {
                 let mut original_position_obj = ctx.env.create_object()?;
                 original_position_obj.set_named_property(
                     "line",
-                    ctx.env.create_uint32(original_position.original_line)?,
+                    ctx.env.create_uint32(original_position.original_line + 1)?,
                 )?;
                 original_position_obj.set_named_property(
                     "column",
@@ -396,6 +415,8 @@ fn init(mut exports: JsObject, env: Env) -> Result<()> {
         Property::new(&env, "getSourceIndex")?.with_method(get_source_index);
     let set_source_content_method =
         Property::new(&env, "setSourceContent")?.with_method(set_source_content);
+    let get_sources_content_method =
+        Property::new(&env, "getSourcesContent")?.with_method(get_sources_content);
     let add_name_method = Property::new(&env, "addName")?.with_method(add_name);
     let get_name_method = Property::new(&env, "getName")?.with_method(get_name);
     let get_names_method = Property::new(&env, "getNames")?.with_method(get_names);
@@ -418,6 +439,7 @@ fn init(mut exports: JsObject, env: Env) -> Result<()> {
             get_sources_method,
             get_source_index_method,
             set_source_content_method,
+            get_sources_content_method,
             add_name_method,
             get_name_method,
             get_names_method,
