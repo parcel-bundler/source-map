@@ -54,16 +54,6 @@ describe('SourceMap - Offset Utils', () => {
           source: 0,
         },
         {
-          generated: { line: 2, column: 13 },
-          original: { line: 1, column: 0 },
-          source: 0,
-        },
-        {
-          generated: { line: 2, column: 14 },
-          original: { line: 1, column: 12 },
-          source: 0,
-        },
-        {
           generated: { line: 2, column: 23 },
           original: { line: 1, column: 0 },
           source: 0,
@@ -192,11 +182,6 @@ describe('SourceMap - Offset Utils', () => {
       sourcesContent: [''],
       names: [],
       mappings: [
-        {
-          generated: { line: 1, column: 0 },
-          original: { line: 1, column: 0 },
-          source: 0,
-        },
         {
           generated: { line: 1, column: 0 },
           original: { line: 1, column: 0 },

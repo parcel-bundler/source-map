@@ -1,7 +1,7 @@
 import assert from 'assert';
 import SourceMap from '.';
 
-describe('SourceMap - Extend Map', () => {
+describe.skip('SourceMap - Extend Map', () => {
   it('Basic extending', async function () {
     let originalMap = new SourceMap('/test-root');
     originalMap.addIndexedMappings([
