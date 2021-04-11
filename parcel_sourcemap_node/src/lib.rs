@@ -134,7 +134,6 @@ fn add_name(ctx: CallContext) -> Result<JsNumber> {
 
     let name = ctx.get::<JsString>(0)?.into_utf8()?;
     let name_index = source_map_instance.add_name(name.as_str()?);
-    
     return ctx.env.create_uint32(name_index);
 }
 
@@ -430,6 +429,18 @@ fn offset_columns(ctx: CallContext) -> Result<JsUndefined> {
     return ctx.env.get_undefined();
 }
 
+#[js_function(3)]
+fn add_empty_map(ctx: CallContext) -> Result<JsUndefined> {
+    let this: JsObject = ctx.this_unchecked();
+    let source_map_instance: &mut SourceMap = ctx.env.unwrap(&this)?;
+
+    let source = ctx.get::<JsString>(0)?.into_utf8()?;
+    let source_content = ctx.get::<JsString>(1)?.into_utf8()?;
+    let line_offset = ctx.get::<JsNumber>(2)?.get_int64()?;
+    source_map_instance.add_empty_map(source.as_str()?, source_content.as_str()?, line_offset)?;
+    return ctx.env.get_undefined();
+}
+
 #[js_function(1)]
 fn constructor(ctx: CallContext) -> Result<JsUndefined> {
     let mut this: JsObject = ctx.this_unchecked();
@@ -465,6 +476,7 @@ fn init(mut exports: JsObject, env: Env) -> Result<()> {
     let to_vlq_method = Property::new(&env, "toVLQ")?.with_method(to_vlq);
     let offset_lines_method = Property::new(&env, "offsetLines")?.with_method(offset_lines);
     let offset_columns_method = Property::new(&env, "offsetColumns")?.with_method(offset_columns);
+    let add_empty_map_method = Property::new(&env, "addEmptyMap")?.with_method(add_empty_map);
     let watcher_class = env.define_class(
         "SourceMap",
         constructor,
@@ -488,6 +500,7 @@ fn init(mut exports: JsObject, env: Env) -> Result<()> {
             to_vlq_method,
             offset_lines_method,
             offset_columns_method,
+            add_empty_map_method,
         ],
     )?;
     exports.set_named_property("SourceMap", watcher_class)?;

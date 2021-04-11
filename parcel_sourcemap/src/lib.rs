@@ -568,4 +568,35 @@ impl SourceMap {
 
         return Ok(());
     }
+
+    pub fn add_empty_map(
+        &mut self,
+        source: &str,
+        source_content: &str,
+        line_offset: i64,
+    ) -> Result<(), SourceMapError> {
+        let source_index = self.add_source(source);
+        self.set_source_content(source_index as usize, source_content)?;
+
+        let mut line_count: u32 = 0;
+        for _line in source_content.lines() {
+            let generated_line = (line_count as i64) + line_offset;
+            if generated_line >= 0 {
+                self.add_mapping(
+                    generated_line as u32,
+                    0,
+                    Some(OriginalLocation::new(
+                        line_count,
+                        0,
+                        source_index,
+                        None,
+                    )),
+                )
+            }
+
+            line_count += 1;
+        }
+
+        return Ok(());
+    }
 }
