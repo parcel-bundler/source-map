@@ -1,17 +1,21 @@
 use crate::sourcemap_error::{SourceMapError, SourceMapErrorType};
 use regex::Regex;
+use lazy_static::lazy_static;
+
+lazy_static! {
+    static ref PATH_SEPERATOR_REGEX: Regex = Regex::new(r"[\\/]+").unwrap();
+    static ref ABS_PATH_REGEX: Regex = Regex::new(r"^([a-zA-Z]:){0,1}[\\/]+").unwrap();
+}
 
 #[inline]
 pub fn normalize_path(filepath: &str) -> String {
-    let re = Regex::new(r"[\\/]+").unwrap();
-    let result = re.replace_all(filepath, "/");
-    return String::from(&result[..]);
+    let result = PATH_SEPERATOR_REGEX.replace_all(filepath, "/");
+    return result.into_owned();
 }
 
 #[inline]
 pub fn is_absolute_path(filepath: &str) -> bool {
-    let re = Regex::new(r"^([a-zA-Z]:){0,1}[\\/]+").unwrap();
-    return re.is_match(filepath);
+    return ABS_PATH_REGEX.is_match(filepath);
 }
 
 #[inline]

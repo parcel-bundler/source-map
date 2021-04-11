@@ -1,4 +1,5 @@
 extern crate flatbuffers;
+extern crate lazy_static;
 
 pub mod mapping;
 pub mod mapping_line;
