@@ -2,7 +2,6 @@
 import type { ParsedMap, VLQMap, SourceMapStringifyOptions, IndexedMapping, GenerateEmptyMapOptions } from './types';
 import path from 'path';
 import SourceMap from './SourceMap';
-import { relatifyPath } from './utils';
 
 const bindings = require('../parcel_sourcemap_node/index');
 
@@ -21,7 +20,7 @@ export default class NodeSourceMap extends SourceMap {
     }
     this.sourceMapInstance.addVLQMap(
       mappings,
-      sources.map((source) => (source ? relatifyPath(source, this.projectRoot) : '')),
+      sources,
       sourcesContent.map((content) => (content ? content : '')),
       names,
       lineOffset,

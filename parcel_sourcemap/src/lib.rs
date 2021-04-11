@@ -3,8 +3,10 @@ extern crate flatbuffers;
 pub mod mapping;
 pub mod mapping_line;
 pub mod sourcemap_error;
+pub mod utils;
 mod vlq_utils;
 
+use crate::utils::relatify_path;
 use flatbuffers::FlatBufferBuilder;
 pub use mapping::{Mapping, OriginalLocation};
 use mapping_line::MappingLine;
@@ -21,7 +23,7 @@ mod schema_generated;
 use schema_generated::source_map_schema;
 
 pub struct SourceMap {
-    project_root: String,
+    pub project_root: String,
     pub sources: Vec<String>,
     pub sources_content: Vec<String>,
     pub names: Vec<String>,
@@ -184,28 +186,37 @@ impl SourceMap {
         return Ok(());
     }
 
-    pub fn add_source(&mut self, source: &str) -> u32 {
+    pub fn add_source(&mut self, source: &str) -> Result<u32, SourceMapError> {
         return match self.sources.iter().position(|s| source.eq(s)) {
-            Some(i) => i as u32,
+            Some(i) => Ok(i as u32),
             None => {
-                self.sources.push(String::from(source));
-                (self.sources.len() - 1) as u32
+                self.sources.push(relatify_path(
+                    String::from(source),
+                    self.project_root.as_str(),
+                )?);
+
+                Ok((self.sources.len() - 1) as u32)
             }
         };
     }
 
-    pub fn add_sources(&mut self, sources: Vec<&str>) -> Vec<u32> {
+    pub fn add_sources(&mut self, sources: Vec<&str>) -> Result<Vec<u32>, SourceMapError> {
         self.sources.reserve(sources.len());
-        return sources.iter().map(|s| self.add_source(s)).collect();
+        let mut result_vec = Vec::with_capacity(sources.len());
+        for s in sources.iter() {
+            result_vec.push(self.add_source(s)?);
+        }
+        return Ok(result_vec);
     }
 
-    pub fn get_source_index(&self, source: &str) -> Option<u32> {
-        match self.sources.iter().position(|s| source.eq(s)) {
+    pub fn get_source_index(&self, source: &str) -> Result<Option<u32>, SourceMapError> {
+        let normalized_source = relatify_path(String::from(source), self.project_root.as_str())?;
+        match self.sources.iter().position(|s| normalized_source.eq(s)) {
             Some(i) => {
-                return Some(i as u32);
+                return Ok(Some(i as u32));
             }
             None => {
-                return None;
+                return Ok(None);
             }
         };
     }
@@ -380,7 +391,7 @@ impl SourceMap {
         if let Some(sources_buffer) = buffer_map.sources() {
             self.sources.reserve(sources_buffer.len());
             for source_str in sources_buffer {
-                source_indexes.push(self.add_source(source_str));
+                source_indexes.push(self.add_source(source_str)?);
             }
         }
 
@@ -448,7 +459,7 @@ impl SourceMap {
         if let Some(sources_buffer) = buffer_map.sources() {
             self.sources.reserve(sources_buffer.len());
             for source_str in sources_buffer {
-                source_indexes.push(self.add_source(source_str));
+                source_indexes.push(self.add_source(source_str)?);
             }
         }
 
@@ -462,52 +473,11 @@ impl SourceMap {
         }
 
         // TODO: Figure this out...
-        // if let Some(buffer_mappings) = buffer_map.mappings() {
-        //     for buffer_mapping in buffer_mappings {
-        //         let original_line = buffer_mapping.original_line();
-        //         let original_column = buffer_mapping.original_column();
-        //         let source = buffer_mapping.source();
-        //         let mut original_location = None;
-        //         if original_line > -1 && original_column > -1 && source > -1 {
-        //             if let Some(real_source) = source_indexes.get(source as usize) {
-        //                 let name = buffer_mapping.name();
-        //                 let mut real_name: Option<u32> = None;
-        //                 if name > -1 {
-        //                     if let Some(found_name) = name_indexes.get(source as usize) {
-        //                         real_name = Some(*found_name);
-        //                     }
-        //                 }
-
-        //                 let u_original_line = original_line as u32;
-        //                 let u_original_column = original_column as u32;
-        //                 match self.mapping_lines.get(&u_original_line) {
-        //                     Some(line) => {
-        //                         match line.mappings.range(..u_original_column).next_back() {
-        //                             Some((column_number, &mut original)) => {
-        //                                 return Some(Mapping {
-        //                                     generated_line,
-        //                                     generated_column: *column_number,
-        //                                     original: *original,
-        //                                 });
-        //                             }
-        //                             None => {
-        //                                 return None;
-        //                             }
-        //                         }
-        //                     }
-        //                     None => {
-        //                         return None;
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
 
         return Ok(());
     }
 
-    pub fn add_vql_map(
+    pub fn add_vlq_map(
         &mut self,
         input: &[u8],
         sources: Vec<&str>,
@@ -523,7 +493,7 @@ impl SourceMap {
         let mut source = 0;
         let mut name = 0;
 
-        let source_indexes: Vec<u32> = self.add_sources(sources);
+        let source_indexes: Vec<u32> = self.add_sources(sources)?;
         let name_indexes: Vec<u32> = self.add_names(names);
 
         self.sources_content.reserve(sources_content.len());
@@ -649,7 +619,7 @@ impl SourceMap {
         source_content: &str,
         line_offset: i64,
     ) -> Result<(), SourceMapError> {
-        let source_index = self.add_source(source);
+        let source_index = self.add_source(source)?;
         self.set_source_content(source_index as usize, source_content)?;
 
         let mut line_count: u32 = 0;

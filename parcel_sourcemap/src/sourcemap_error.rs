@@ -32,6 +32,9 @@ pub enum SourceMapErrorType {
 
     // Flatbuffer is invalid
     InvalidFlatBuffer = 9,
+
+    // FilePath is invalid
+    InvalidFilePath = 10,
 }
 
 pub struct SourceMapError {
@@ -116,6 +119,9 @@ impl From<SourceMapError> for napi::Error {
             }
             SourceMapErrorType::InvalidFlatBuffer => {
                 reason.push_str("Invalid Flatbuffer");
+            }
+            SourceMapErrorType::InvalidFilePath => {
+                reason.push_str("Invalid FilePath");
             }
         }
 

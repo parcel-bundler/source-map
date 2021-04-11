@@ -9,4 +9,5 @@ edition = "2018"
 [dependencies]
 "flatbuffers" = "0.8.3"
 "vlq" = "0.5.1"
-napi = "1.2.0"
+"napi" = "1.2.0"
+"regex" = "1.4.5"

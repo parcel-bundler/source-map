@@ -2,7 +2,7 @@
 import type { ParsedMap, VLQMap, SourceMapStringifyOptions, IndexedMapping, GenerateEmptyMapOptions } from './types';
 
 import path from 'path';
-import { generateInlineMap, partialVlqMapToSourceMap, relatifyPath, normalizePath } from './utils';
+import { generateInlineMap, partialVlqMapToSourceMap } from './utils';
 
 export default class SourceMap {
   /**
@@ -48,7 +48,7 @@ export default class SourceMap {
    * @param lineOffset an offset that gets added to the sourceLine index of each mapping
    */
   addEmptyMap(sourceName: string, sourceContent: string, lineOffset: number = 0): SourceMap {
-    this.sourceMapInstance.addEmptyMap(relatifyPath(sourceName, this.projectRoot), sourceContent, lineOffset);
+    this.sourceMapInstance.addEmptyMap(sourceName, sourceContent, lineOffset);
     return this;
   }
 
@@ -180,7 +180,7 @@ export default class SourceMap {
    * @returns the index of the added source filepath in the sources array
    */
   addSource(source: string): number {
-    return this.sourceMapInstance.addSource(relatifyPath(source, this.projectRoot));
+    return this.sourceMapInstance.addSource(source);
   }
 
   /**
@@ -199,7 +199,7 @@ export default class SourceMap {
    * @param source the filepath of the source file
    */
   getSourceIndex(source: string): number {
-    return this.sourceMapInstance.getSourceIndex(relatifyPath(source, this.projectRoot));
+    return this.sourceMapInstance.getSourceIndex(source);
   }
 
   /**
@@ -226,7 +226,7 @@ export default class SourceMap {
    * @param sourceContent the content of the sourceFile
    */
   setSourceContent(sourceName: string, sourceContent: string): void {
-    return this.sourceMapInstance.setSourceContentBySource(relatifyPath(sourceName, this.projectRoot), sourceContent);
+    return this.sourceMapInstance.setSourceContentBySource(sourceName, sourceContent);
   }
 
   /**
@@ -235,7 +235,7 @@ export default class SourceMap {
    * @param sourceName filename
    */
   getSourceContent(sourceName: string): string | null {
-    return this.sourceMapInstance.getSourceContentBySource(relatifyPath(sourceName, this.projectRoot));
+    return this.sourceMapInstance.getSourceContentBySource(sourceName);
   }
 
   /**
