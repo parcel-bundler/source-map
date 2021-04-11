@@ -46,8 +46,8 @@ jobs:
       - name: Download previous benchmark data
         uses: actions/cache@v1
         with:
-          path: ./cache
-          key: ${{ runner.os }}-benchmark
+          path: ./benchmark-results
+          key: benchmark-results-cache
 
       - name: Compare benchmark results
         uses: rhysd/github-action-benchmark@v1
@@ -55,7 +55,7 @@ jobs:
           tool: 'benchmarkjs'
           output-file-path: bench.txt
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          external-data-json-path: ./cache/benchmark-data.json
+          external-data-json-path: ./benchmark-results/benchmark-data.json
           comment-always: true
           auto-push: false
           save-data-file: ${{ github.ref == 'refs/heads/master' }}
