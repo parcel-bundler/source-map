@@ -13,7 +13,11 @@ let map = new SourceMap('/test-root');
 map.addRawMappings({
   mappings: SIMPLE_SOURCE_MAP.mappings,
   sources: SIMPLE_SOURCE_MAP.sources,
+  sourcesContent: ['() => "test"'],
   names: SIMPLE_SOURCE_MAP.names,
 });
-let vlqMap = map.toVLQ();
-console.log(vlqMap);
+console.log(map.getMap());
+let buffer = map.toBuffer();
+let newMap = new SourceMap();
+newMap.addBufferMappings(buffer);
+console.log(newMap.getMap());

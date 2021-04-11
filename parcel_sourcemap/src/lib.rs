@@ -268,12 +268,12 @@ impl SourceMap {
         }
 
         let sources_content_len = self.sources_content.len();
-        if sources_content_len > source_index + 1 {
+        if sources_content_len >= source_index + 1 {
             self.sources_content[source_index] = String::from(source_content);
         } else {
             self.sources_content
-                .reserve(sources_content_len - source_index + 1);
-            let items_to_add = source_index + 1 - sources_content_len;
+                .reserve((source_index + 1) - sources_content_len);
+            let items_to_add = source_index - sources_content_len;
             for _n in 0..items_to_add {
                 self.sources_content.push(String::from(""));
             }
@@ -284,7 +284,7 @@ impl SourceMap {
     }
 
     pub fn get_source_content(&self, index: u32) -> Result<&str, SourceMapError> {
-        match self.names.get(index as usize) {
+        match self.sources_content.get(index as usize) {
             Some(v) => {
                 return Ok(&v[..]);
             }
@@ -384,7 +384,7 @@ impl SourceMap {
             }
         }
 
-        if let Some(sources_content_buffer) = buffer_map.sources() {
+        if let Some(sources_content_buffer) = buffer_map.sources_content() {
             self.sources_content.reserve(sources_content_buffer.len());
             for (i, source_content_str) in sources_content_buffer.iter().enumerate() {
                 if let Some(source_index) = source_indexes.get(i) {

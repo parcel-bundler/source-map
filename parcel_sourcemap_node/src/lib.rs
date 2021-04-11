@@ -71,7 +71,7 @@ fn get_sources_content(ctx: CallContext) -> Result<JsObject> {
 }
 
 #[js_function(1)]
-fn get_source_index(ctx: CallContext) -> Result<Either<JsNumber, JsNull>> {
+fn get_source_index(ctx: CallContext) -> Result<JsNumber> {
     let this: JsObject = ctx.this_unchecked();
     let source_map_instance: &SourceMap = ctx.env.unwrap(&this)?;
 
@@ -80,10 +80,10 @@ fn get_source_index(ctx: CallContext) -> Result<Either<JsNumber, JsNull>> {
 
     match source_index {
         Some(i) => {
-            return ctx.env.create_uint32(i).map(Either::A);
+            return ctx.env.create_uint32(i);
         }
         None => {
-            return ctx.env.get_null().map(Either::B);
+            return ctx.env.create_int32(-1);
         }
     }
 }
