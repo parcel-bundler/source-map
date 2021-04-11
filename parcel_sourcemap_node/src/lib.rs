@@ -4,9 +4,10 @@ extern crate napi_derive;
 extern crate parcel_sourcemap;
 
 use napi::{
-    CallContext, Env, JsBuffer, JsNumber, JsObject, JsString, JsUndefined, Property, Result,
+    CallContext, Either, Env, JsBuffer, JsNull, JsNumber, JsObject, JsString, JsUndefined,
+    Property, Result,
 };
-use parcel_sourcemap::{OriginalLocation, SourceMap};
+use parcel_sourcemap::{Mapping, OriginalLocation, SourceMap};
 
 #[js_function(1)]
 fn add_source(ctx: CallContext) -> Result<JsNumber> {
@@ -191,6 +192,40 @@ fn get_name_index(ctx: CallContext) -> Result<JsNumber> {
     }
 }
 
+fn mapping_to_js_object(ctx: &CallContext, mapping: &Mapping) -> Result<JsObject> {
+    let mut mapping_obj = ctx.env.create_object()?;
+
+    let mut generated_position_obj = ctx.env.create_object()?;
+    generated_position_obj
+        .set_named_property("line", ctx.env.create_uint32((mapping.generated_line) + 1)?)?;
+    generated_position_obj
+        .set_named_property("column", ctx.env.create_uint32(mapping.generated_column)?)?;
+    mapping_obj.set_named_property("generated", generated_position_obj)?;
+
+    let original_position = mapping.original;
+    if let Some(original_position) = original_position {
+        let mut original_position_obj = ctx.env.create_object()?;
+        original_position_obj.set_named_property(
+            "line",
+            ctx.env.create_uint32(original_position.original_line + 1)?,
+        )?;
+        original_position_obj.set_named_property(
+            "column",
+            ctx.env.create_uint32(original_position.original_column)?,
+        )?;
+        mapping_obj.set_named_property("original", original_position_obj)?;
+
+        mapping_obj
+            .set_named_property("source", ctx.env.create_uint32(original_position.source)?)?;
+
+        if let Some(name) = original_position.name {
+            mapping_obj.set_named_property("name", ctx.env.create_uint32(name)?)?;
+        }
+    }
+
+    return Ok(mapping_obj);
+}
+
 #[js_function]
 fn get_mappings(ctx: CallContext) -> Result<JsObject> {
     let this: JsObject = ctx.this_unchecked();
@@ -199,39 +234,18 @@ fn get_mappings(ctx: CallContext) -> Result<JsObject> {
     let mut mappings_arr = ctx.env.create_array()?;
     let mut index: u32 = 0;
     for (generated_line, mapping_line) in source_map_instance.mapping_lines.iter() {
-        for (generated_column, mapping) in mapping_line.mappings.iter() {
-            let mut mapping_obj = ctx.env.create_object()?;
-
-            let mut generated_position_obj = ctx.env.create_object()?;
-            generated_position_obj
-                .set_named_property("line", ctx.env.create_uint32((*generated_line) + 1)?)?;
-            generated_position_obj
-                .set_named_property("column", ctx.env.create_uint32(*generated_column)?)?;
-            mapping_obj.set_named_property("generated", generated_position_obj)?;
-
-            if let Some(original_position) = mapping {
-                let mut original_position_obj = ctx.env.create_object()?;
-                original_position_obj.set_named_property(
-                    "line",
-                    ctx.env.create_uint32(original_position.original_line + 1)?,
-                )?;
-                original_position_obj.set_named_property(
-                    "column",
-                    ctx.env.create_uint32(original_position.original_column)?,
-                )?;
-                mapping_obj.set_named_property("original", original_position_obj)?;
-
-                mapping_obj.set_named_property(
-                    "source",
-                    ctx.env.create_uint32(original_position.source)?,
-                )?;
-
-                if let Some(name) = original_position.name {
-                    mapping_obj.set_named_property("name", ctx.env.create_uint32(name)?)?;
-                }
-            }
-
-            mappings_arr.set_element(index, mapping_obj)?;
+        for (generated_column, original_position) in mapping_line.mappings.iter() {
+            mappings_arr.set_element(
+                index,
+                mapping_to_js_object(
+                    &ctx,
+                    &Mapping {
+                        generated_line: *generated_line,
+                        generated_column: *generated_column,
+                        original: *original_position,
+                    },
+                )?,
+            )?;
             index += 1;
         }
     }
@@ -442,6 +456,34 @@ fn add_empty_map(ctx: CallContext) -> Result<JsUndefined> {
 }
 
 #[js_function(1)]
+fn extends_buffer(ctx: CallContext) -> Result<JsUndefined> {
+    let this: JsObject = ctx.this_unchecked();
+    let source_map_instance: &mut SourceMap = ctx.env.unwrap(&this)?;
+
+    let map_buffer = ctx.get::<JsBuffer>(0)?.into_value()?;
+
+    source_map_instance.extends_buffer(&map_buffer[..])?;
+    return ctx.env.get_undefined();
+}
+
+#[js_function(2)]
+fn find_closest_mapping(ctx: CallContext) -> Result<Either<JsObject, JsNull>> {
+    let this: JsObject = ctx.this_unchecked();
+    let source_map_instance: &mut SourceMap = ctx.env.unwrap(&this)?;
+
+    let generated_line = ctx.get::<JsNumber>(0)?.get_uint32()?;
+    let generated_column = ctx.get::<JsNumber>(1)?.get_uint32()?;
+    match source_map_instance.find_closest_mapping(generated_line, generated_column) {
+        Some(mapping) => {
+            return mapping_to_js_object(&ctx, &mapping).map(Either::A);
+        }
+        None => {
+            return ctx.env.get_null().map(Either::B);
+        }
+    }
+}
+
+#[js_function(1)]
 fn constructor(ctx: CallContext) -> Result<JsUndefined> {
     let mut this: JsObject = ctx.this_unchecked();
     let project_root = ctx.get::<JsString>(0)?.into_utf8()?;
@@ -477,6 +519,9 @@ fn init(mut exports: JsObject, env: Env) -> Result<()> {
     let offset_lines_method = Property::new(&env, "offsetLines")?.with_method(offset_lines);
     let offset_columns_method = Property::new(&env, "offsetColumns")?.with_method(offset_columns);
     let add_empty_map_method = Property::new(&env, "addEmptyMap")?.with_method(add_empty_map);
+    let extends_buffer_method = Property::new(&env, "extendsBuffer")?.with_method(extends_buffer);
+    let find_closest_mapping_method =
+        Property::new(&env, "findClosestMapping")?.with_method(find_closest_mapping);
     let watcher_class = env.define_class(
         "SourceMap",
         constructor,
@@ -501,6 +546,8 @@ fn init(mut exports: JsObject, env: Env) -> Result<()> {
             offset_lines_method,
             offset_columns_method,
             add_empty_map_method,
+            extends_buffer_method,
+            find_closest_mapping_method,
         ],
     )?;
     exports.set_named_property("SourceMap", watcher_class)?;

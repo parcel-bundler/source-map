@@ -45,12 +45,12 @@ export default class NodeSourceMap extends SourceMap {
   }
 
   findClosestMapping(line: number, column: number): ?IndexedMapping<string> {
-    let mapping = this.sourceMapInstance.findClosestMapping(line, column);
-    if (mapping.generated.line === -1 || mapping.generated.column === -1) {
-      return null;
-    } else {
+    let mapping = this.sourceMapInstance.findClosestMapping(line - 1, column);
+    if (mapping) {
       let v = this.indexedMappingToStringMapping(mapping);
       return v;
+    } else {
+      return null;
     }
   }
 

@@ -105,7 +105,7 @@ impl SourceMap {
         generated_column: u32,
     ) -> Option<Mapping> {
         match self.mapping_lines.get(&generated_line) {
-            Some(line) => match line.mappings.range(..generated_column).next_back() {
+            Some(line) => match line.mappings.range(..(generated_column + 1)).next_back() {
                 Some((column_number, original)) => {
                     return Some(Mapping {
                         generated_line,
@@ -433,6 +433,80 @@ impl SourceMap {
         return Ok(());
     }
 
+    pub fn extends_buffer(&mut self, buf: &[u8]) -> Result<(), SourceMapError> {
+        let buffer_map = source_map_schema::root_as_map(buf)?;
+
+        let mut name_indexes: Vec<u32> = Vec::new();
+        if let Some(names_buffer) = buffer_map.names() {
+            self.names.reserve(names_buffer.len());
+            for name_str in names_buffer {
+                name_indexes.push(self.add_name(name_str));
+            }
+        }
+
+        let mut source_indexes: Vec<u32> = Vec::new();
+        if let Some(sources_buffer) = buffer_map.sources() {
+            self.sources.reserve(sources_buffer.len());
+            for source_str in sources_buffer {
+                source_indexes.push(self.add_source(source_str));
+            }
+        }
+
+        if let Some(sources_content_buffer) = buffer_map.sources_content() {
+            self.sources_content.reserve(sources_content_buffer.len());
+            for (i, source_content_str) in sources_content_buffer.iter().enumerate() {
+                if let Some(source_index) = source_indexes.get(i) {
+                    self.set_source_content(*source_index as usize, source_content_str)?;
+                }
+            }
+        }
+
+        // TODO: Figure this out...
+        // if let Some(buffer_mappings) = buffer_map.mappings() {
+        //     for buffer_mapping in buffer_mappings {
+        //         let original_line = buffer_mapping.original_line();
+        //         let original_column = buffer_mapping.original_column();
+        //         let source = buffer_mapping.source();
+        //         let mut original_location = None;
+        //         if original_line > -1 && original_column > -1 && source > -1 {
+        //             if let Some(real_source) = source_indexes.get(source as usize) {
+        //                 let name = buffer_mapping.name();
+        //                 let mut real_name: Option<u32> = None;
+        //                 if name > -1 {
+        //                     if let Some(found_name) = name_indexes.get(source as usize) {
+        //                         real_name = Some(*found_name);
+        //                     }
+        //                 }
+
+        //                 let u_original_line = original_line as u32;
+        //                 let u_original_column = original_column as u32;
+        //                 match self.mapping_lines.get(&u_original_line) {
+        //                     Some(line) => {
+        //                         match line.mappings.range(..u_original_column).next_back() {
+        //                             Some((column_number, &mut original)) => {
+        //                                 return Some(Mapping {
+        //                                     generated_line,
+        //                                     generated_column: *column_number,
+        //                                     original: *original,
+        //                                 });
+        //                             }
+        //                             None => {
+        //                                 return None;
+        //                             }
+        //                         }
+        //                     }
+        //                     None => {
+        //                         return None;
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+
+        return Ok(());
+    }
+
     pub fn add_vql_map(
         &mut self,
         input: &[u8],
@@ -585,12 +659,7 @@ impl SourceMap {
                 self.add_mapping(
                     generated_line as u32,
                     0,
-                    Some(OriginalLocation::new(
-                        line_count,
-                        0,
-                        source_index,
-                        None,
-                    )),
+                    Some(OriginalLocation::new(line_count, 0, source_index, None)),
                 )
             }
 

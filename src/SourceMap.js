@@ -325,7 +325,7 @@ export default class SourceMap {
    * @param buffer exported SourceMap as a flatbuffer
    */
   extends(buffer: Buffer): SourceMap {
-    this.sourceMapInstance.extends(buffer);
+    this.sourceMapInstance.extendsBuffer(buffer);
     return this;
   }
 

@@ -12,8 +12,8 @@ describe('SourceMap - Find', () => {
 
     let mapping = map.findClosestMapping(2, 8);
     assert.deepEqual(mapping, {
-      generated: { line: 2, column: 9 },
-      original: { line: 1, column: 7 },
+      generated: { line: 2, column: 2 },
+      original: { line: 1, column: 0 },
       source: './helloworld.coffee',
     });
 
@@ -26,8 +26,8 @@ describe('SourceMap - Find', () => {
 
     mapping = map.findClosestMapping(2, 12);
     assert.deepEqual(mapping, {
-      generated: { line: 2, column: 13 },
-      original: { line: 1, column: 0 },
+      generated: { line: 2, column: 10 },
+      original: { line: 1, column: 8 },
       source: './helloworld.coffee',
     });
 
