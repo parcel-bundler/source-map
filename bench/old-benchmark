@@ -1,0 +1,78 @@
+init.then(() => {
+  const suite = new Benchmark(ITERATIONS);
+
+  let mappings = new Array(100).fill('').map((item, index) => {
+    return {
+      source: 'index.js',
+      name: 'A',
+      original: {
+        line: index + 1,
+        column: 0 + 10 * index,
+      },
+      generated: {
+        line: 1,
+        column: 15 + 10 * index,
+      },
+    };
+  });
+
+  let sourcemapInstance = new SourceMap();
+  sourcemapInstance.addIndexedMappings(mappings);
+  let sourcemapBuffer = sourcemapInstance.toBuffer();
+  let rawSourceMap = sourcemapInstance.toVLQ();
+
+  suite.add('extend map', async () => {
+    let map = new SourceMap();
+    map.addBufferMappings(sourcemapBuffer);
+    map.extends(sourcemapBuffer);
+    map.delete();
+  });
+
+  suite.add('stringify', async () => {
+    await sourcemapInstance.stringify({
+      file: 'index.js.map',
+      sourceRoot: '/',
+    });
+  });
+
+  suite.add('combine 1000 maps using flatbuffers', async () => {
+    let map = new SourceMap();
+    for (let i = 0; i < 1000; i++) {
+      map.addBufferMappings(sourcemapBuffer, i * 4);
+    }
+    map.delete();
+  });
+
+  suite.add('combine 1000 maps using vlq mappings', async () => {
+    let map = new SourceMap();
+    for (let i = 0; i < 1000; i++) {
+      map.addRawMappings(
+        {
+          mappings: rawSourceMap.mappings,
+          sources: rawSourceMap.sources,
+          names: rawSourceMap.names,
+        },
+        i * 4
+      );
+    }
+    map.delete();
+  });
+
+  if (!(process.platform === 'win32' && process.arch === 'ia32')) {
+    suite.add('combine 1000 maps using flatbuffers and stringify', async () => {
+      let map = new SourceMap();
+      for (let i = 0; i < 1000; i++) {
+        map.addBufferMappings(sourcemapBuffer, i * 4);
+      }
+      await map.stringify({
+        file: 'index.js.map',
+        sourceRoot: '/',
+        // We don't wanna benchmark JSON.stringify...
+        format: 'object',
+      });
+      map.delete();
+    });
+  }
+
+  suite.run();
+});
