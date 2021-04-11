@@ -443,7 +443,7 @@ impl SourceMap {
         column_offset: i64,
     ) -> Result<(), SourceMapError> {
         let mut generated_line: i64 = line_offset;
-        let mut generated_column: i64 = 0;
+        let mut generated_column: i64 = column_offset;
         let mut original_line = 0;
         let mut original_column = 0;
         let mut source = 0;

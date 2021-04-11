@@ -62,7 +62,7 @@ export async function partialVlqMapToSourceMap(map: VLQMap, opts: SourceMapStrin
   };
 
   if (resultMap.sourcesContent.length < resultMap.sources.length) {
-    for (let i = 0; i < resultMap.sources.length - resultMap.sourcesContent.length; i++) {
+    for (let i = 0; i <= resultMap.sources.length - resultMap.sourcesContent.length; i++) {
       resultMap.sourcesContent.push(null);
     }
   }

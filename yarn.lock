@@ -3694,11 +3694,6 @@ through@^2.3.6, through@^2.3.8:
   resolved "https://registry.yarnpkg.com/through/-/through-2.3.8.tgz#0dd4c9ffaabc357960b1b724115d7e0e86a2e1f5"
   integrity sha1-DdTJ/6q8NXlgsbckEV1+Doai4fU=
 
-tiny-benchy@^1.0.0:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/tiny-benchy/-/tiny-benchy-1.0.2.tgz#ed13db50876b54ded3d4cdf7710a5c2856b234ae"
-  integrity sha512-IpawVd9wuRyVXyajQ/La9ugQXKJohIEA6ufdPZsNuqOH7U4//xq4ivc7YdyCBshYccrUJovwYhMKWhxwdFgDsA==
-
 tmp@^0.0.33:
   version "0.0.33"
   resolved "https://registry.yarnpkg.com/tmp/-/tmp-0.0.33.tgz#6d34335889768d21b2bcda0aa277ced3b1bfadf9"
