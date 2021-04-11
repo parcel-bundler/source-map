@@ -37,36 +37,14 @@ jobs:
         displayName: Install dependencies
       - script: yarn run transpile
         displayName: Transpile and Generate Typings
-      - task: Bash@3
-        displayName: Install Emscripten
-        inputs:
-          targetType: 'inline'
-          script: |
-            git clone https://github.com/emscripten-core/emsdk.git
-            cd emsdk
-            ./emsdk install latest
-            ./emsdk activate latest
-            cd ..
-        condition: eq('${{ parameters.name }}', 'macOS')
-      # - script: yarn run compile-wasm
-      #   displayName: Compile wasm
-      #   env:
-      #     PATH: $(PATH):$(System.DefaultWorkingDirectory)/emsdk/bin:$(System.DefaultWorkingDirectory)/emsdk/upstream/emscripten
-      #   condition: eq('${{ parameters.name }}', 'macOS')
+      - script: yarn build:node
+        displayName: Build binaries
 
       - script: yarn run test:node
         displayName: Run tests (node)
-      # - script: yarn run test:wasm
-      #   displayName: Run tests (wasm)
-      #   condition: eq('${{ parameters.name }}', 'macOS')
 
-      - script: yarn run prebuild
-        displayName: Test prebuild
-        condition: eq('${{ parameters.arch }}', '')
-
-      - script: yarn run prebuild --arch=${{ parameters.arch }}
-        displayName: Test prebuild for specific architecture
-        condition: ne('${{ parameters.arch }}', '')
+      - script: yarn run build:node-release
+        displayName: Test production build
 
       - task: PublishBuildArtifacts@1
         displayName: Publish Native Artifacts
@@ -74,15 +52,3 @@ jobs:
         inputs:
           artifactName: prebuilds
           pathtoPublish: '$(System.DefaultWorkingDirectory)/prebuilds'
-      # - task: PublishBuildArtifacts@1
-      #   displayName: Publish wasm-node Artifacts
-      #   condition: and(succeeded(), eq(variables['publish_artifacts'], 'true'), eq('${{ parameters.name }}', 'macOS'))
-      #   inputs:
-      #     artifactName: wasm-node
-      #     pathtoPublish: '$(System.DefaultWorkingDirectory)/wasm-node'
-      # - task: PublishBuildArtifacts@1
-      #   displayName: Publish wasm-browser Artifacts
-      #   condition: and(succeeded(), eq(variables['publish_artifacts'], 'true'), eq('${{ parameters.name }}', 'macOS'))
-      #   inputs:
-      #     artifactName: wasm-browser
-      #     pathtoPublish: '$(System.DefaultWorkingDirectory)/wasm-browser'
