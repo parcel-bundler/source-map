@@ -507,7 +507,7 @@ impl SourceMap {
                         ))
                     };
 
-                    if generated_line > 0 {
+                    if generated_line >= 0 {
                         self.add_mapping(generated_line as u32, generated_column as u32, original);
                     }
                 }

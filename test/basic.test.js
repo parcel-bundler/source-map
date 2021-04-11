@@ -80,13 +80,8 @@ describe('SourceMap - Basics', () => {
       sources: SIMPLE_SOURCE_MAP.sources,
       names: SIMPLE_SOURCE_MAP.names,
     });
-    let stringifiedMap = JSON.parse(
-      await map.stringify({
-        file: 'index.js.map',
-        sourceRoot: '/',
-      })
-    );
-    assert.equal(stringifiedMap.mappings, SIMPLE_SOURCE_MAP.mappings);
+    let vlqMap = map.toVLQ();
+    assert.equal(vlqMap.mappings, SIMPLE_SOURCE_MAP.mappings);
   });
 
   it('Should be able to output the processed map as a JS Object', () => {
