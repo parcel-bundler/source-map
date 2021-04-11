@@ -4,20 +4,19 @@ extern crate napi_derive;
 extern crate parcel_sourcemap;
 
 use napi::{
-    CallContext, Either, Env, JsBuffer, JsNull, JsNumber, JsObject, JsString, JsUndefined,
-    Property, Result,
+    CallContext, Env, JsBuffer, JsNumber, JsObject, JsString, JsUndefined, Property, Result,
 };
 use parcel_sourcemap::{OriginalLocation, SourceMap};
 
 #[js_function(1)]
-fn add_source(ctx: CallContext) -> Result<JsUndefined> {
+fn add_source(ctx: CallContext) -> Result<JsNumber> {
     let this: JsObject = ctx.this_unchecked();
     let source_map_instance: &mut SourceMap = ctx.env.unwrap(&this)?;
 
     let source = ctx.get::<JsString>(0)?.into_utf8()?;
-    source_map_instance.add_source(source.as_str()?);
+    let source_index = source_map_instance.add_source(source.as_str()?);
 
-    return ctx.env.get_undefined();
+    return ctx.env.create_uint32(source_index);
 }
 
 #[js_function(1)]
@@ -26,9 +25,14 @@ fn get_source(ctx: CallContext) -> Result<JsString> {
     let source_map_instance: &SourceMap = ctx.env.unwrap(&this)?;
 
     let source_index = ctx.get::<JsNumber>(0)?.get_uint32()?;
-    let source = source_map_instance.get_source(source_index)?;
-
-    return ctx.env.create_string(source);
+    match source_map_instance.get_source(source_index) {
+        Ok(source) => {
+            return ctx.env.create_string(source);
+        }
+        Err(_err) => {
+            return ctx.env.create_string("");
+        }
+    }
 }
 
 fn _get_sources(ctx: &CallContext) -> Result<JsObject> {
@@ -51,8 +55,7 @@ fn get_sources(ctx: CallContext) -> Result<JsObject> {
     return _get_sources(&ctx);
 }
 
-#[js_function]
-fn get_sources_content(ctx: CallContext) -> Result<JsObject> {
+fn _get_sources_content(ctx: &CallContext) -> Result<JsObject> {
     let this: JsObject = ctx.this_unchecked();
     let source_map_instance: &SourceMap = ctx.env.unwrap(&this)?;
 
@@ -68,6 +71,11 @@ fn get_sources_content(ctx: CallContext) -> Result<JsObject> {
 
     // Return array
     return Ok(napi_sources_content_array);
+}
+
+#[js_function]
+fn get_sources_content(ctx: CallContext) -> Result<JsObject> {
+    return _get_sources_content(&ctx);
 }
 
 #[js_function(1)]
@@ -88,12 +96,13 @@ fn get_source_index(ctx: CallContext) -> Result<JsNumber> {
     }
 }
 
-#[js_function(1)]
-fn set_source_content(ctx: CallContext) -> Result<JsUndefined> {
+#[js_function(2)]
+fn set_source_content_by_source(ctx: CallContext) -> Result<JsUndefined> {
     let this: JsObject = ctx.this_unchecked();
     let source_map_instance: &mut SourceMap = ctx.env.unwrap(&this)?;
 
-    let source_index = ctx.get::<JsNumber>(0)?.get_uint32()? as usize;
+    let source = ctx.get::<JsString>(0)?.into_utf8()?;
+    let source_index: usize = source_map_instance.add_source(source.as_str()?) as usize;
     let source_content = ctx.get::<JsString>(1)?.into_utf8()?;
     source_map_instance.set_source_content(source_index, source_content.as_str()?)?;
 
@@ -101,14 +110,32 @@ fn set_source_content(ctx: CallContext) -> Result<JsUndefined> {
 }
 
 #[js_function(1)]
-fn add_name(ctx: CallContext) -> Result<JsUndefined> {
+fn get_source_content_by_source(ctx: CallContext) -> Result<JsString> {
+    let this: JsObject = ctx.this_unchecked();
+    let source_map_instance: &mut SourceMap = ctx.env.unwrap(&this)?;
+
+    let source = ctx.get::<JsString>(0)?.into_utf8()?;
+    let source_index = source_map_instance.get_source_index(source.as_str()?);
+    match source_index {
+        Some(i) => {
+            let source_content = source_map_instance.get_source_content(i)?;
+            return ctx.env.create_string(source_content);
+        }
+        None => {
+            return ctx.env.create_string("");
+        }
+    }
+}
+
+#[js_function(1)]
+fn add_name(ctx: CallContext) -> Result<JsNumber> {
     let this: JsObject = ctx.this_unchecked();
     let source_map_instance: &mut SourceMap = ctx.env.unwrap(&this)?;
 
     let name = ctx.get::<JsString>(0)?.into_utf8()?;
-    source_map_instance.add_name(name.as_str()?);
-
-    return ctx.env.get_undefined();
+    let name_index = source_map_instance.add_name(name.as_str()?);
+    
+    return ctx.env.create_uint32(name_index);
 }
 
 #[js_function(1)]
@@ -117,9 +144,14 @@ fn get_name(ctx: CallContext) -> Result<JsString> {
     let source_map_instance: &SourceMap = ctx.env.unwrap(&this)?;
 
     let name_index = ctx.get::<JsNumber>(0)?.get_uint32()?;
-    let name = source_map_instance.get_name(name_index)?;
-
-    return ctx.env.create_string(name);
+    match source_map_instance.get_name(name_index) {
+        Ok(name) => {
+            return ctx.env.create_string(name);
+        }
+        Err(_err) => {
+            return ctx.env.create_string("");
+        }
+    }
 }
 
 fn _get_names(ctx: &CallContext) -> Result<JsObject> {
@@ -143,7 +175,7 @@ fn get_names(ctx: CallContext) -> Result<JsObject> {
 }
 
 #[js_function(1)]
-fn get_name_index(ctx: CallContext) -> Result<Either<JsNumber, JsNull>> {
+fn get_name_index(ctx: CallContext) -> Result<JsNumber> {
     let this: JsObject = ctx.this_unchecked();
     let source_map_instance: &SourceMap = ctx.env.unwrap(&this)?;
 
@@ -152,10 +184,10 @@ fn get_name_index(ctx: CallContext) -> Result<Either<JsNumber, JsNull>> {
 
     match name_index {
         Some(i) => {
-            return ctx.env.create_uint32(i).map(Either::A);
+            return ctx.env.create_uint32(i);
         }
         None => {
-            return ctx.env.get_null().map(Either::B);
+            return ctx.env.create_int32(-1);
         }
     }
 }
@@ -305,6 +337,7 @@ fn to_vlq(ctx: CallContext) -> Result<JsObject> {
     let mut result_obj: JsObject = ctx.env.create_object()?;
     result_obj.set_named_property("mappings", vlq_string)?;
     result_obj.set_named_property("sources", _get_sources(&ctx)?)?;
+    result_obj.set_named_property("sourcesContent", _get_sources_content(&ctx)?)?;
     result_obj.set_named_property("names", _get_names(&ctx)?)?;
 
     return Ok(result_obj);
@@ -413,8 +446,10 @@ fn init(mut exports: JsObject, env: Env) -> Result<()> {
     let get_sources_method = Property::new(&env, "getSources")?.with_method(get_sources);
     let get_source_index_method =
         Property::new(&env, "getSourceIndex")?.with_method(get_source_index);
-    let set_source_content_method =
-        Property::new(&env, "setSourceContent")?.with_method(set_source_content);
+    let set_source_content_by_source_method =
+        Property::new(&env, "setSourceContentBySource")?.with_method(set_source_content_by_source);
+    let get_source_content_by_source_method =
+        Property::new(&env, "getSourceContentBySource")?.with_method(get_source_content_by_source);
     let get_sources_content_method =
         Property::new(&env, "getSourcesContent")?.with_method(get_sources_content);
     let add_name_method = Property::new(&env, "addName")?.with_method(add_name);
@@ -438,7 +473,8 @@ fn init(mut exports: JsObject, env: Env) -> Result<()> {
             get_source_method,
             get_sources_method,
             get_source_index_method,
-            set_source_content_method,
+            set_source_content_by_source_method,
+            get_source_content_by_source_method,
             get_sources_content_method,
             add_name_method,
             get_name_method,

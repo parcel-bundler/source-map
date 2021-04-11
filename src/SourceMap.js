@@ -226,7 +226,7 @@ export default class SourceMap {
    * @param sourceContent the content of the sourceFile
    */
   setSourceContent(sourceName: string, sourceContent: string): void {
-    return this.sourceMapInstance.setSourceContent(relatifyPath(sourceName, this.projectRoot), sourceContent);
+    return this.sourceMapInstance.setSourceContentBySource(relatifyPath(sourceName, this.projectRoot), sourceContent);
   }
 
   /**
@@ -235,7 +235,7 @@ export default class SourceMap {
    * @param sourceName filename
    */
   getSourceContent(sourceName: string): string | null {
-    return this.sourceMapInstance.getSourceContent(relatifyPath(sourceName, this.projectRoot));
+    return this.sourceMapInstance.getSourceContentBySource(relatifyPath(sourceName, this.projectRoot));
   }
 
   /**

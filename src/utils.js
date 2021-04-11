@@ -42,20 +42,29 @@ export function relatifyPath(filepath: string, rootDir: string): string {
   return normalizePath(filepath);
 }
 
-export async function partialVlqMapToSourceMap(
-  map: VLQMap,
-  { fs, file, sourceRoot, inlineSources, rootDir, format = 'string' }: SourceMapStringifyOptions
-): Promise<VLQMap | string> {
+export async function partialVlqMapToSourceMap(map: VLQMap, opts: SourceMapStringifyOptions): Promise<VLQMap | string> {
+  let { fs, file, sourceRoot, inlineSources, rootDir, format = 'string' } = opts;
+
   let resultMap = {
     ...map,
-    sourcesContent: map.sourcesContent ? map.sourcesContent.map((content) => (content ? content : null)) : [],
+    sourcesContent: map.sourcesContent
+      ? map.sourcesContent.map((content) => {
+          if (content) {
+            return content;
+          } else {
+            return null;
+          }
+        })
+      : [],
     version: 3,
     file,
     sourceRoot,
   };
 
   if (resultMap.sourcesContent.length < resultMap.sources.length) {
-    resultMap.sourcesContent.push(...new Array(resultMap.sources.length - resultMap.sourcesContent.length).fill(null));
+    for (let i = 0; i < resultMap.sources.length - resultMap.sourcesContent.length; i++) {
+      resultMap.sourcesContent.push(null);
+    }
   }
 
   if (fs) {
