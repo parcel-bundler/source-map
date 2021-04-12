@@ -187,13 +187,12 @@ impl SourceMap {
     }
 
     pub fn add_source(&mut self, source: &str) -> u32 {
-        return match self.sources.iter().position(|s| source.eq(s)) {
-            Some(i) => i as u32,
+        let relative_source = make_relative_path(self.project_root.as_str(), source);
+        match self.sources.iter().position(|s| relative_source.eq(s)) {
+            Some(i) => return i as u32,
             None => {
-                self.sources
-                    .push(make_relative_path(self.project_root.as_str(), source));
-
-                (self.sources.len() - 1) as u32
+                self.sources.push(relative_source);
+                return (self.sources.len() - 1) as u32;
             }
         };
     }
