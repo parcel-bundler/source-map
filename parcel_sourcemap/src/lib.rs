@@ -6,7 +6,7 @@ pub mod sourcemap_error;
 pub mod utils;
 mod vlq_utils;
 
-use crate::utils::{make_relative_path, normalize_path};
+use crate::utils::make_relative_path;
 use flatbuffers::FlatBufferBuilder;
 pub use mapping::{Mapping, OriginalLocation};
 use mapping_line::MappingLine;
@@ -33,7 +33,7 @@ pub struct SourceMap {
 impl SourceMap {
     pub fn new(project_root: &str) -> Self {
         Self {
-            project_root: normalize_path(project_root),
+            project_root: String::from(project_root),
             sources: Vec::new(),
             sources_content: Vec::new(),
             names: Vec::new(),
@@ -187,9 +187,7 @@ impl SourceMap {
     }
 
     pub fn add_source(&mut self, source: &str) -> u32 {
-        let normalized_source = normalize_path(source);
-        let relative_source =
-            make_relative_path(self.project_root.as_str(), normalized_source.as_str());
+        let relative_source = make_relative_path(self.project_root.as_str(), source);
         match self.sources.iter().position(|s| relative_source.eq(s)) {
             Some(i) => return i as u32,
             None => {
@@ -443,7 +441,6 @@ impl SourceMap {
         return Ok(());
     }
 
-    // TODO: Figure this out...
     pub fn extends_buffer(&mut self, buf: &[u8]) -> Result<(), SourceMapError> {
         let buffer_map = source_map_schema::root_as_map(buf)?;
 
@@ -471,6 +468,8 @@ impl SourceMap {
                 }
             }
         }
+
+        // TODO: Figure this out...
 
         return Ok(());
     }
