@@ -15,7 +15,7 @@ fn add_source(ctx: CallContext) -> Result<JsNumber> {
     let source_map_instance: &mut SourceMap = ctx.env.unwrap(&this)?;
 
     let source = ctx.get::<JsString>(0)?.into_utf8()?;
-    let source_index = source_map_instance.add_source(source.as_str()?)?;
+    let source_index = source_map_instance.add_source(source.as_str()?);
 
     return ctx.env.create_uint32(source_index);
 }
@@ -103,7 +103,7 @@ fn set_source_content_by_source(ctx: CallContext) -> Result<JsUndefined> {
     let source_map_instance: &mut SourceMap = ctx.env.unwrap(&this)?;
 
     let source = ctx.get::<JsString>(0)?.into_utf8()?;
-    let source_index: usize = source_map_instance.add_source(source.as_str()?)? as usize;
+    let source_index: usize = source_map_instance.add_source(source.as_str()?) as usize;
     let source_content = ctx.get::<JsString>(1)?.into_utf8()?;
     source_map_instance.set_source_content(source_index, source_content.as_str()?)?;
 

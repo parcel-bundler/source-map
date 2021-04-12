@@ -85,13 +85,6 @@ impl From<flatbuffers::InvalidFlatbuffer> for SourceMapError {
     }
 }
 
-impl From<std::path::StripPrefixError> for SourceMapError {
-    #[inline]
-    fn from(_err: std::path::StripPrefixError) -> SourceMapError {
-        return SourceMapError::new(SourceMapErrorType::InvalidFilePath);
-    }
-}
-
 impl From<SourceMapError> for napi::Error {
     #[inline]
     fn from(err: SourceMapError) -> napi::Error {

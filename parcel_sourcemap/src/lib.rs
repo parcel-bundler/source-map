@@ -13,9 +13,9 @@ use mapping_line::MappingLine;
 pub use sourcemap_error::{SourceMapError, SourceMapErrorType};
 use std::collections::BTreeMap;
 use std::io;
+use std::path::{Path, PathBuf};
 use vlq;
 use vlq_utils::{is_mapping_separator, read_relative_vlq};
-use std::path::{Path, PathBuf};
 
 // import the generated code
 #[allow(dead_code, unused_imports)]
@@ -187,31 +187,31 @@ impl SourceMap {
         return Ok(());
     }
 
-    pub fn add_source(&mut self, source: &str) -> Result<u32, SourceMapError> {
+    pub fn add_source(&mut self, source: &str) -> u32 {
         return match self.sources.iter().position(|s| source.eq(s)) {
-            Some(i) => Ok(i as u32),
+            Some(i) => i as u32,
             None => {
                 self.sources.push(relatify_path(
                     Path::new(source),
                     self.project_root.as_path(),
-                )?);
+                ));
 
-                Ok((self.sources.len() - 1) as u32)
+                (self.sources.len() - 1) as u32
             }
         };
     }
 
-    pub fn add_sources(&mut self, sources: Vec<&str>) -> Result<Vec<u32>, SourceMapError> {
+    pub fn add_sources(&mut self, sources: Vec<&str>) -> Vec<u32> {
         self.sources.reserve(sources.len());
         let mut result_vec = Vec::with_capacity(sources.len());
         for s in sources.iter() {
-            result_vec.push(self.add_source(s)?);
+            result_vec.push(self.add_source(s));
         }
-        return Ok(result_vec);
+        return result_vec;
     }
 
     pub fn get_source_index(&self, source: &str) -> Result<Option<u32>, SourceMapError> {
-        let normalized_source = relatify_path(Path::new(source), self.project_root.as_path(),)?;
+        let normalized_source = relatify_path(Path::new(source), self.project_root.as_path());
         match self.sources.iter().position(|s| normalized_source.eq(s)) {
             Some(i) => {
                 return Ok(Some(i as u32));
@@ -392,7 +392,7 @@ impl SourceMap {
         if let Some(sources_buffer) = buffer_map.sources() {
             self.sources.reserve(sources_buffer.len());
             for source_str in sources_buffer {
-                source_indexes.push(self.add_source(source_str)?);
+                source_indexes.push(self.add_source(source_str));
             }
         }
 
@@ -460,7 +460,7 @@ impl SourceMap {
         if let Some(sources_buffer) = buffer_map.sources() {
             self.sources.reserve(sources_buffer.len());
             for source_str in sources_buffer {
-                source_indexes.push(self.add_source(source_str)?);
+                source_indexes.push(self.add_source(source_str));
             }
         }
 
@@ -494,7 +494,7 @@ impl SourceMap {
         let mut source = 0;
         let mut name = 0;
 
-        let source_indexes: Vec<u32> = self.add_sources(sources)?;
+        let source_indexes: Vec<u32> = self.add_sources(sources);
         let name_indexes: Vec<u32> = self.add_names(names);
 
         self.sources_content.reserve(sources_content.len());
@@ -620,7 +620,7 @@ impl SourceMap {
         source_content: &str,
         line_offset: i64,
     ) -> Result<(), SourceMapError> {
-        let source_index = self.add_source(source)?;
+        let source_index = self.add_source(source);
         self.set_source_content(source_index as usize, source_content)?;
 
         let mut line_count: u32 = 0;

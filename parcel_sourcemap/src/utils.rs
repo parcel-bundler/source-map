@@ -1,25 +1,20 @@
 // Maybe use https://crates.io/crates/relative-path?
-use crate::sourcemap_error::{SourceMapError, SourceMapErrorType};
 use path_slash::PathExt;
+use pathdiff::diff_paths;
 use std::path::Path;
 
-fn path_to_slash(filepath: &Path) -> Result<String, SourceMapError> {
-    match filepath.to_slash() {
-        Some(v) => {
-            return Ok(String::from(v));
-        }
-        None => {
-            return Err(SourceMapError::new(SourceMapErrorType::InvalidFilePath));
-        }
-    }
-}
-
 #[inline]
-pub fn relatify_path(filepath: &Path, root_dir: &Path) -> Result<String, SourceMapError> {
+pub fn relatify_path(filepath: &Path, root_dir: &Path) -> String {
     if filepath.is_absolute() {
-        let relative_path = filepath.strip_prefix(root_dir)?;
-        return path_to_slash(relative_path);
+        match diff_paths(filepath, root_dir) {
+            Some(relative_path) => {
+                return relative_path.to_slash_lossy();
+            }
+            None => {
+                return String::from("");
+            }
+        }
     } else {
-        return path_to_slash(filepath);
+        return filepath.to_slash_lossy();
     }
 }
