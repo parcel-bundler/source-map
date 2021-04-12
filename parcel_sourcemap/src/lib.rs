@@ -6,14 +6,13 @@ pub mod sourcemap_error;
 pub mod utils;
 mod vlq_utils;
 
-use crate::utils::relatify_path;
+use crate::utils::make_relative_path;
 use flatbuffers::FlatBufferBuilder;
 pub use mapping::{Mapping, OriginalLocation};
 use mapping_line::MappingLine;
 pub use sourcemap_error::{SourceMapError, SourceMapErrorType};
 use std::collections::BTreeMap;
 use std::io;
-use std::path::{Path, PathBuf};
 use vlq;
 use vlq_utils::{is_mapping_separator, read_relative_vlq};
 
@@ -24,7 +23,7 @@ mod schema_generated;
 use schema_generated::source_map_schema;
 
 pub struct SourceMap {
-    pub project_root: PathBuf,
+    pub project_root: String,
     pub sources: Vec<String>,
     pub sources_content: Vec<String>,
     pub names: Vec<String>,
@@ -34,7 +33,7 @@ pub struct SourceMap {
 impl SourceMap {
     pub fn new(project_root: &str) -> Self {
         Self {
-            project_root: PathBuf::from(project_root),
+            project_root: String::from(project_root),
             sources: Vec::new(),
             sources_content: Vec::new(),
             names: Vec::new(),
@@ -191,10 +190,8 @@ impl SourceMap {
         return match self.sources.iter().position(|s| source.eq(s)) {
             Some(i) => i as u32,
             None => {
-                self.sources.push(relatify_path(
-                    Path::new(source),
-                    self.project_root.as_path(),
-                ));
+                self.sources
+                    .push(make_relative_path(self.project_root.as_str(), source));
 
                 (self.sources.len() - 1) as u32
             }
@@ -211,7 +208,7 @@ impl SourceMap {
     }
 
     pub fn get_source_index(&self, source: &str) -> Result<Option<u32>, SourceMapError> {
-        let normalized_source = relatify_path(Path::new(source), self.project_root.as_path());
+        let normalized_source = make_relative_path(self.project_root.as_str(), source);
         match self.sources.iter().position(|s| normalized_source.eq(s)) {
             Some(i) => {
                 return Ok(Some(i as u32));
