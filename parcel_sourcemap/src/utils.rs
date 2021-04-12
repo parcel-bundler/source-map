@@ -46,20 +46,19 @@ fn get_common_prefix_len<'a>(items: &'a [Cow<'a, [&'a str]>]) -> usize {
     }
 }
 
-fn chunk_path(p: &str) -> Vec<&str> {
-    return p
-        .split(&['/', '\\'][..])
-        .filter(|x| !x.is_empty() && *x != ".")
-        .collect();
+// Should maintain a / at the start for absolute paths...
+pub fn normalize_path(path: &str) -> String {
+    let chunks: Vec<&str> = path.split(&['/', '\\'][..]).filter(|x| *x != ".").collect();
+    return chunks.join("/");
 }
 
 // Helper function to calculate the path from a base file to a target file.
 pub fn make_relative_path(base: &str, target: &str) -> String {
     if !is_abs_path(target) {
-        return chunk_path(target).join("/");
+        return String::from(target);
     } else {
-        let target_path: Vec<&str> = chunk_path(target);
-        let base_dir: Vec<&str> = chunk_path(base);
+        let target_path: Vec<&str> = target.split('/').filter(|x| !x.is_empty()).collect();
+        let base_dir: Vec<&str> = base.split('/').filter(|x| !x.is_empty()).collect();
         let items = vec![
             Cow::Borrowed(base_dir.as_slice()),
             Cow::Borrowed(target_path.as_slice()),
@@ -71,6 +70,7 @@ pub fn make_relative_path(base: &str, target: &str) -> String {
     }
 }
 
+// TODO: Make these tests pass...
 #[test]
 fn test_make_relative_path() {
     assert_eq!(
