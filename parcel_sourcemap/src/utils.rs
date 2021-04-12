@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use std::iter::repeat;
 
 pub fn is_abs_path(s: &str) -> bool {
-    if s.starts_with('/') {
+    if s.starts_with('/') || s.starts_with('\\') {
         return true;
     } else if s.len() > 3 {
         let b = s.as_bytes();
