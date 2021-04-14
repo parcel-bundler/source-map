@@ -30,8 +30,8 @@ pub enum SourceMapErrorType {
     // Source out of range
     SourceOutOfRange = 8,
 
-    // Flatbuffer is invalid
-    InvalidFlatBuffer = 9,
+    // Failed to write buffer
+    BufferError = 9,
 
     // FilePath is invalid
     InvalidFilePath = 10,
@@ -78,13 +78,6 @@ impl From<io::Error> for SourceMapError {
     }
 }
 
-impl From<flatbuffers::InvalidFlatbuffer> for SourceMapError {
-    #[inline]
-    fn from(_err: flatbuffers::InvalidFlatbuffer) -> SourceMapError {
-        return SourceMapError::new(SourceMapErrorType::InvalidFlatBuffer);
-    }
-}
-
 impl From<SourceMapError> for napi::Error {
     #[inline]
     fn from(err: SourceMapError) -> napi::Error {
@@ -117,11 +110,11 @@ impl From<SourceMapError> for napi::Error {
             SourceMapErrorType::SourceOutOfRange => {
                 reason.push_str("Source out of range");
             }
-            SourceMapErrorType::InvalidFlatBuffer => {
-                reason.push_str("Invalid Flatbuffer");
-            }
             SourceMapErrorType::InvalidFilePath => {
                 reason.push_str("Invalid FilePath");
+            }
+            SourceMapErrorType::BufferError => {
+                reason.push_str("Something went wrong while writing/reading a bincode buffer");
             }
         }
 
@@ -136,5 +129,12 @@ impl From<SourceMapError> for napi::Error {
 
         // Return a napi error :)
         return napi::Error::new(napi::Status::GenericFailure, reason);
+    }
+}
+
+impl From<std::boxed::Box<bincode::ErrorKind>> for SourceMapError {
+    #[inline]
+    fn from(_err: std::boxed::Box<bincode::ErrorKind>) -> SourceMapError {
+        return SourceMapError::new(SourceMapErrorType::BufferError);
     }
 }

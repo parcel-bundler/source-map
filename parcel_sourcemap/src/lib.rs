@@ -1,4 +1,4 @@
-extern crate flatbuffers;
+extern crate bincode;
 
 pub mod mapping;
 pub mod mapping_line;
@@ -7,21 +7,17 @@ pub mod utils;
 mod vlq_utils;
 
 use crate::utils::make_relative_path;
-use flatbuffers::FlatBufferBuilder;
 pub use mapping::{Mapping, OriginalLocation};
 use mapping_line::MappingLine;
 pub use sourcemap_error::{SourceMapError, SourceMapErrorType};
 use std::collections::BTreeMap;
 use std::io;
+
+use serde::{Deserialize, Serialize};
 use vlq;
 use vlq_utils::{is_mapping_separator, read_relative_vlq};
 
-// import the generated code
-#[allow(dead_code, unused_imports)]
-#[path = "./schema_generated.rs"]
-mod schema_generated;
-use schema_generated::source_map_schema;
-
+#[derive(Serialize, Deserialize, Debug)]
 pub struct SourceMap {
     pub project_root: String,
     pub sources: Vec<String>,
@@ -302,175 +298,67 @@ impl SourceMap {
         }
     }
 
-    pub fn write_to_buffer(&self, output: &mut Vec<u8>) -> Result<(), SourceMapError> {
+    // Write the sourcemap instance to a buffer
+    pub fn to_buffer(&self, output: &mut Vec<u8>) -> Result<(), SourceMapError> {
         output.clear();
-
-        let mut builder = FlatBufferBuilder::new_with_capacity(2048);
-
-        let names_vec: Vec<&str> = self.names.iter().map(|n| &n[..]).collect();
-        let names_buffer_vec = builder.create_vector_of_strings(&names_vec[..]);
-
-        let sources_vec: Vec<&str> = self.sources.iter().map(|n| &n[..]).collect();
-        let sources_buffer_vec = builder.create_vector_of_strings(&sources_vec[..]);
-
-        let sources_content_vec: Vec<&str> = self.sources_content.iter().map(|n| &n[..]).collect();
-        let sources_content_buffer_vec = builder.create_vector_of_strings(&sources_content_vec[..]);
-
-        // TODO: Refactor to iterators?
-        let mut mappings_vec: Vec<source_map_schema::Mapping> = Vec::new();
-        for (generated_line, line) in self.mapping_lines.iter() {
-            mappings_vec.reserve(line.mappings.len());
-            for (generated_column, original_location_value) in line.mappings.iter() {
-                let mut original_line: i32 = -1;
-                let mut original_column: i32 = -1;
-                let mut original_source: i32 = -1;
-                let mut original_name: i32 = -1;
-
-                if let Some(original_location) = original_location_value {
-                    original_line = original_location.original_line as i32;
-                    original_column = original_location.original_column as i32;
-                    original_source = original_location.source as i32;
-
-                    if let Some(name) = original_location.name {
-                        original_name = name as i32;
-                    }
-                }
-
-                mappings_vec.push(source_map_schema::Mapping::new(
-                    *generated_line,
-                    *generated_column,
-                    original_line,
-                    original_column,
-                    original_source,
-                    original_name,
-                ));
-            }
-        }
-
-        let mappings_vec = builder.create_vector_from_iter(mappings_vec.iter());
-
-        let args = source_map_schema::MapArgs {
-            mappings: Some(mappings_vec),
-            names: Some(names_buffer_vec),
-            sources: Some(sources_buffer_vec),
-            sources_content: Some(sources_content_buffer_vec),
-        };
-
-        let root = source_map_schema::Map::create(&mut builder, &args);
-
-        source_map_schema::finish_map_buffer(&mut builder, root);
-
-        // Copy the serialized FlatBuffers data to our own byte buffer.
-        let finished_data = builder.finished_data();
-        output.extend_from_slice(finished_data);
-
-        // Return
+        bincode::serialize_into(output, self)?;
         return Ok(());
     }
 
-    pub fn add_buffer_mappings(
+    // Create a sourcemap instance from a buffer
+    pub fn from_buffer(buf: &[u8]) -> Result<SourceMap, SourceMapError> {
+        let sourcemap: SourceMap = bincode::deserialize::<SourceMap>(buf)?;
+        return Ok(sourcemap);
+    }
+
+    pub fn append_sourcemap(
         &mut self,
-        buf: &[u8],
+        sourcemap: &SourceMap,
         line_offset: i64,
         column_offset: i64,
     ) -> Result<(), SourceMapError> {
-        let buffer_map = source_map_schema::root_as_map(buf)?;
+        self.sources.reserve(sourcemap.sources.len());
+        let mut source_indexes = Vec::with_capacity(sourcemap.sources.len());
+        for s in sourcemap.sources.iter() {
+            source_indexes.push(self.add_source(s));
+        }
 
-        let mut name_indexes: Vec<u32> = Vec::new();
-        if let Some(names_buffer) = buffer_map.names() {
-            self.names.reserve(names_buffer.len());
-            for name_str in names_buffer {
-                name_indexes.push(self.add_name(name_str));
+        self.names.reserve(sourcemap.names.len());
+        let mut names_indexes = Vec::with_capacity(sourcemap.names.len());
+        for n in sourcemap.names.iter() {
+            names_indexes.push(self.add_name(n));
+        }
+
+        self.sources_content
+            .reserve(sourcemap.sources_content.len());
+        for (i, source_content_str) in sourcemap.sources_content.iter().enumerate() {
+            if let Some(source_index) = source_indexes.get(i) {
+                self.set_source_content(*source_index as usize, source_content_str)?;
             }
         }
 
-        let mut source_indexes: Vec<u32> = Vec::new();
-        if let Some(sources_buffer) = buffer_map.sources() {
-            self.sources.reserve(sources_buffer.len());
-            for source_str in sources_buffer {
-                source_indexes.push(self.add_source(source_str));
-            }
-        }
+        for (line, mapping_line) in sourcemap.mapping_lines.iter() {
+            let generated_line = (*line as i64) + line_offset;
+            if generated_line > 0 {
+                for (column, original_location) in mapping_line.mappings.iter() {
+                    let generated_column = (*column as i64) + column_offset;
 
-        if let Some(sources_content_buffer) = buffer_map.sources_content() {
-            self.sources_content.reserve(sources_content_buffer.len());
-            for (i, source_content_str) in sources_content_buffer.iter().enumerate() {
-                if let Some(source_index) = source_indexes.get(i) {
-                    self.set_source_content(*source_index as usize, source_content_str)?;
-                }
-            }
-        }
-
-        if let Some(buffer_mappings) = buffer_map.mappings() {
-            for buffer_mapping in buffer_mappings {
-                let original_line = buffer_mapping.original_line();
-                let original_column = buffer_mapping.original_column();
-                let source = buffer_mapping.source();
-                let mut original_location = None;
-                if original_line > -1 && original_column > -1 && source > -1 {
-                    if let Some(real_source) = source_indexes.get(source as usize) {
-                        let name = buffer_mapping.name();
-                        let mut real_name: Option<u32> = None;
-                        if name > -1 {
-                            if let Some(found_name) = name_indexes.get(source as usize) {
-                                real_name = Some(*found_name);
-                            }
-                        }
-
-                        original_location = Some(OriginalLocation::new(
-                            original_line as u32,
-                            original_column as u32,
-                            *real_source,
-                            real_name,
-                        ));
+                    if generated_column > 0 {
+                        self.add_mapping(
+                            generated_line as u32,
+                            generated_column as u32,
+                            *original_location,
+                        );
                     }
                 }
-
-                self.add_mapping_with_offset(
-                    Mapping {
-                        generated_line: buffer_mapping.generated_line(),
-                        generated_column: buffer_mapping.generated_column(),
-                        original: original_location,
-                    },
-                    line_offset,
-                    column_offset,
-                )?;
             }
         }
 
         return Ok(());
     }
 
+    // TODO: Refactor to extend a sourcemap instance instead...
     pub fn extends_buffer(&mut self, buf: &[u8]) -> Result<(), SourceMapError> {
-        let buffer_map = source_map_schema::root_as_map(buf)?;
-
-        let mut name_indexes: Vec<u32> = Vec::new();
-        if let Some(names_buffer) = buffer_map.names() {
-            self.names.reserve(names_buffer.len());
-            for name_str in names_buffer {
-                name_indexes.push(self.add_name(name_str));
-            }
-        }
-
-        let mut source_indexes: Vec<u32> = Vec::new();
-        if let Some(sources_buffer) = buffer_map.sources() {
-            self.sources.reserve(sources_buffer.len());
-            for source_str in sources_buffer {
-                source_indexes.push(self.add_source(source_str));
-            }
-        }
-
-        if let Some(sources_content_buffer) = buffer_map.sources_content() {
-            self.sources_content.reserve(sources_content_buffer.len());
-            for (i, source_content_str) in sources_content_buffer.iter().enumerate() {
-                if let Some(source_index) = source_indexes.get(i) {
-                    self.set_source_content(*source_index as usize, source_content_str)?;
-                }
-            }
-        }
-
-        // TODO: Figure this out...
-
         return Ok(());
     }
 
@@ -634,5 +522,21 @@ impl SourceMap {
         }
 
         return Ok(());
+    }
+}
+
+#[test]
+fn test_buffers() {
+    let map = SourceMap::new("/");
+    let mut output = Vec::new();
+    match map.to_buffer(&mut output) {
+        Ok(_) => {}
+        Err(err) => panic!(err),
+    }
+    match SourceMap::from_buffer(&output) {
+        Ok(map) => {
+            println!("{:?}", map)
+        }
+        Err(err) => panic!(err),
     }
 }

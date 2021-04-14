@@ -258,20 +258,21 @@ fn to_buffer(ctx: CallContext) -> Result<JsBuffer> {
     let source_map_instance: &SourceMap = ctx.env.unwrap(&this)?;
 
     let mut buffer_data = Vec::new();
-    source_map_instance.write_to_buffer(&mut buffer_data)?;
+    source_map_instance.to_buffer(&mut buffer_data)?;
     return Ok(ctx.env.create_buffer_with_data(buffer_data)?.into_raw());
 }
 
 #[js_function(3)]
-fn add_buffer_map(ctx: CallContext) -> Result<JsUndefined> {
+fn append_sourcemap(ctx: CallContext) -> Result<JsUndefined> {
     let this: JsObject = ctx.this_unchecked();
     let source_map_instance: &mut SourceMap = ctx.env.unwrap(&this)?;
 
-    let map_buffer = ctx.get::<JsBuffer>(0)?.into_value()?;
+    let sourcemap_object = ctx.get::<JsObject>(0)?;
+    let previous_map_instance = ctx.env.unwrap::<SourceMap>(&sourcemap_object)?;
     let line_offset = ctx.get::<JsNumber>(1)?.get_int64()?;
     let column_offset = ctx.get::<JsNumber>(2)?.get_int64()?;
 
-    source_map_instance.add_buffer_mappings(&map_buffer[..], line_offset, column_offset)?;
+    source_map_instance.append_sourcemap(previous_map_instance, line_offset, column_offset)?;
     return ctx.env.get_undefined();
 }
 
@@ -483,13 +484,23 @@ fn find_closest_mapping(ctx: CallContext) -> Result<Either<JsObject, JsNull>> {
     }
 }
 
-#[js_function(1)]
-fn constructor(ctx: CallContext) -> Result<JsUndefined> {
+#[js_function(2)]
+fn constructor(ctx: CallContext) -> Result<JsObject> {
     let mut this: JsObject = ctx.this_unchecked();
     let project_root = ctx.get::<JsString>(0)?.into_utf8()?;
-    ctx.env
-        .wrap(&mut this, SourceMap::new(project_root.as_str()?))?;
-    return ctx.env.get_undefined();
+    let second_argument = ctx.get::<Either<JsBuffer, JsNull>>(1)?;
+    match second_argument {
+        Either::A(buffer_value) => {
+            let buf = buffer_value.into_value()?;
+            let sourcemap = SourceMap::from_buffer(&buf[..])?;
+            ctx.env.wrap(&mut this, sourcemap)?;
+        }
+        Either::B(_null) => {
+            ctx.env
+                .wrap(&mut this, SourceMap::new(project_root.as_str()?))?;
+        }
+    }
+    return Ok(this);
 }
 
 #[module_exports]
@@ -511,7 +522,8 @@ fn init(mut exports: JsObject, env: Env) -> Result<()> {
     let get_name_index_method = Property::new(&env, "getNameIndex")?.with_method(get_name_index);
     let get_mappings_method = Property::new(&env, "getMappings")?.with_method(get_mappings);
     let to_buffer_method = Property::new(&env, "toBuffer")?.with_method(to_buffer);
-    let add_buffer_map_method = Property::new(&env, "addBufferMap")?.with_method(add_buffer_map);
+    let append_sourcemap_method =
+        Property::new(&env, "appendSourcemap")?.with_method(append_sourcemap);
     let add_indexed_mappings_method =
         Property::new(&env, "addIndexedMappings")?.with_method(add_indexed_mappings);
     let add_vlq_map_method = Property::new(&env, "addVLQMap")?.with_method(add_vlq_map);
@@ -522,7 +534,7 @@ fn init(mut exports: JsObject, env: Env) -> Result<()> {
     let extends_buffer_method = Property::new(&env, "extendsBuffer")?.with_method(extends_buffer);
     let find_closest_mapping_method =
         Property::new(&env, "findClosestMapping")?.with_method(find_closest_mapping);
-    let watcher_class = env.define_class(
+    let sourcemap_class = env.define_class(
         "SourceMap",
         constructor,
         &[
@@ -538,7 +550,7 @@ fn init(mut exports: JsObject, env: Env) -> Result<()> {
             get_names_method,
             get_name_index_method,
             get_mappings_method,
-            add_buffer_map_method,
+            append_sourcemap_method,
             add_indexed_mappings_method,
             add_vlq_map_method,
             to_buffer_method,
@@ -550,6 +562,6 @@ fn init(mut exports: JsObject, env: Env) -> Result<()> {
             find_closest_mapping_method,
         ],
     )?;
-    exports.set_named_property("SourceMap", watcher_class)?;
+    exports.set_named_property("SourceMap", sourcemap_class)?;
     return Ok(());
 }

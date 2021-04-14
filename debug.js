@@ -21,3 +21,8 @@ map.addSource('./b.jsx');
 map.setSourceContent('/test-root/b.jsx', 'content-b');
 map.addSource('/test-root/c.ts');
 map.setSourceContent('/test-root/d.tsx', 'tsx-content-d');
+
+let buffer = map.toBuffer();
+let mapClone = new SourceMap('/', buffer);
+mapClone.addBufferMappings(buffer);
+console.log(mapClone.getMap());

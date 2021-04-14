@@ -1,4 +1,6 @@
-#[derive(Debug, Clone, Copy)]
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 pub struct OriginalLocation {
     pub original_line: u32,
     pub original_column: u32,
@@ -17,7 +19,7 @@ impl OriginalLocation {
     }
 }
 
-#[derive(Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Mapping {
     pub generated_line: u32,
     pub generated_column: u32,

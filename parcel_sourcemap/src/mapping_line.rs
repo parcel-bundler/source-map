@@ -1,7 +1,9 @@
 use crate::mapping::OriginalLocation;
 use crate::sourcemap_error::{SourceMapError, SourceMapErrorType};
 use std::collections::BTreeMap;
+use serde::{Serialize, Deserialize};
 
+#[derive(Serialize, Deserialize, Debug)]
 pub struct MappingLine {
     pub mappings: BTreeMap<u32, Option<OriginalLocation>>,
     pub line_number: u32,
