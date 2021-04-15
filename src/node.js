@@ -39,6 +39,11 @@ export default class NodeSourceMap extends SourceMap {
     return this;
   }
 
+  fromBuffer(buffer: Buffer): this {
+    this.sourceMapInstance.fromBuffer(buffer);
+    return this;
+  }
+
   toBuffer(): Buffer {
     return this.sourceMapInstance.toBuffer();
   }
@@ -55,7 +60,7 @@ export default class NodeSourceMap extends SourceMap {
 
   addBufferMappings(buffer: Buffer, lineOffset: number = 0, columnOffset: number = 0): SourceMap {
     let previousMap = new NodeSourceMap('/', buffer);
-    this.sourceMapInstance.appendSourcemap(previousMap, lineOffset, columnOffset);
+    this.sourceMapInstance.appendSourcemap(previousMap.sourceMapInstance, lineOffset, columnOffset);
     return this;
   }
 

@@ -339,11 +339,11 @@ impl SourceMap {
 
         for (line, mapping_line) in sourcemap.mapping_lines.iter() {
             let generated_line = (*line as i64) + line_offset;
-            if generated_line > 0 {
+            if generated_line >= 0 {
                 for (column, original_location) in mapping_line.mappings.iter() {
                     let generated_column = (*column as i64) + column_offset;
 
-                    if generated_column > 0 {
+                    if generated_column >= 0 {
                         self.add_mapping(
                             generated_line as u32,
                             generated_column as u32,

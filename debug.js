@@ -24,5 +24,5 @@ map.setSourceContent('/test-root/d.tsx', 'tsx-content-d');
 
 let buffer = map.toBuffer();
 let mapClone = new SourceMap('/', buffer);
-mapClone.addBufferMappings(buffer);
-console.log(mapClone.getMap());
+mapClone.addBufferMappings(buffer, 100);
+console.log(mapClone.getMap().mappings.map((v) => v.generated));
