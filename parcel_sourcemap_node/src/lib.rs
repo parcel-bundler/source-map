@@ -457,13 +457,14 @@ fn add_empty_map(ctx: CallContext) -> Result<JsUndefined> {
 }
 
 #[js_function(1)]
-fn extends_buffer(ctx: CallContext) -> Result<JsUndefined> {
+fn extends(ctx: CallContext) -> Result<JsUndefined> {
     let this: JsObject = ctx.this_unchecked();
     let source_map_instance: &mut SourceMap = ctx.env.unwrap(&this)?;
 
-    let map_buffer = ctx.get::<JsBuffer>(0)?.into_value()?;
-
-    source_map_instance.extends_buffer(&map_buffer[..])?;
+    let sourcemap_object = ctx.get::<JsObject>(0)?;
+    let previous_map_instance = ctx.env.unwrap::<SourceMap>(&sourcemap_object)?;
+    source_map_instance.extends(&previous_map_instance)?;
+    
     return ctx.env.get_undefined();
 }
 
@@ -495,7 +496,7 @@ fn get_project_root(ctx: CallContext) -> Result<JsString> {
 }
 
 #[js_function(1)]
-fn constructor(ctx: CallContext) -> Result<JsObject> {
+fn constructor(ctx: CallContext) -> Result<JsUndefined> {
     let mut this: JsObject = ctx.this_unchecked();
     let second_argument = ctx.get::<Either<JsBuffer, JsString>>(0)?;
     match second_argument {
@@ -510,7 +511,7 @@ fn constructor(ctx: CallContext) -> Result<JsObject> {
                 .wrap(&mut this, SourceMap::new(project_root.as_str()?))?;
         }
     }
-    return Ok(this);
+    return ctx.env.get_undefined();
 }
 
 #[module_exports]
@@ -541,7 +542,7 @@ fn init(mut exports: JsObject, env: Env) -> Result<()> {
     let offset_lines_method = Property::new(&env, "offsetLines")?.with_method(offset_lines);
     let offset_columns_method = Property::new(&env, "offsetColumns")?.with_method(offset_columns);
     let add_empty_map_method = Property::new(&env, "addEmptyMap")?.with_method(add_empty_map);
-    let extends_buffer_method = Property::new(&env, "extendsBuffer")?.with_method(extends_buffer);
+    let extends_method = Property::new(&env, "extends")?.with_method(extends);
     let get_project_root_method =
         Property::new(&env, "getProjectRoot")?.with_method(get_project_root);
     let find_closest_mapping_method =
@@ -570,7 +571,7 @@ fn init(mut exports: JsObject, env: Env) -> Result<()> {
             offset_lines_method,
             offset_columns_method,
             add_empty_map_method,
-            extends_buffer_method,
+            extends_method,
             find_closest_mapping_method,
             get_project_root_method,
         ],

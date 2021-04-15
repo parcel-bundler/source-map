@@ -65,6 +65,13 @@ export default class NodeSourceMap extends SourceMap {
     return this;
   }
 
+  extends(input: Buffer | SourceMap): SourceMap {
+    // $FlowFixMe
+    let inputSourceMap: SourceMap = Buffer.isBuffer(input) ? new NodeSourceMap(input) : input;
+    this.sourceMapInstance.extends(inputSourceMap.sourceMapInstance);
+    return this;
+  }
+
   delete() {}
 
   static generateEmptyMap({

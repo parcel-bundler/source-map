@@ -1,7 +1,7 @@
 import assert from 'assert';
 import SourceMap from '.';
 
-describe.skip('SourceMap - Extend Map', () => {
+describe('SourceMap - Extend Map', () => {
   it('Basic extending', async function () {
     let originalMap = new SourceMap('/test-root');
     originalMap.addIndexedMappings([
@@ -124,7 +124,7 @@ describe.skip('SourceMap - Extend Map', () => {
       },
     ]);
 
-    newMap.extends(originalMap.toBuffer());
+    newMap.extends(originalMap);
 
     let mappings = newMap.getMap().mappings;
 

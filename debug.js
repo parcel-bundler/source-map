@@ -1,5 +1,6 @@
 // For debugging issues write minimal reproduction here...
 const SourceMap = require('./').default;
+const assert = require('assert');
 
 const SIMPLE_SOURCE_MAP = {
   version: 3,
@@ -9,20 +10,75 @@ const SIMPLE_SOURCE_MAP = {
   mappings: 'AAAA;AAAA,EAAA,OAAO,CAAC,GAAR,CAAY,aAAZ,CAAA,CAAA;AAAA',
 };
 
-let map = new SourceMap('/test-root');
-map.addRawMappings({
-  mappings: SIMPLE_SOURCE_MAP.mappings,
-  sources: SIMPLE_SOURCE_MAP.sources,
-  names: SIMPLE_SOURCE_MAP.names,
+async function run() {
+  let originalMap = new SourceMap('/test-root');
+  originalMap.addIndexedMappings([
+    {
+      source: 'index.js',
+      name: 'A',
+      original: {
+        line: 1,
+        column: 0,
+      },
+      generated: {
+        line: 6,
+        column: 15,
+      },
+    },
+  ]);
+
+  let newMap = new SourceMap('/test-root');
+  newMap.addIndexedMappings([
+    {
+      source: 'index.js',
+      name: 'B',
+      original: {
+        line: 6,
+        column: 15,
+      },
+      generated: {
+        line: 5,
+        column: 12,
+      },
+    },
+  ]);
+
+  newMap.extends(originalMap.toBuffer());
+
+  let mappings = newMap.getMap().mappings;
+
+  assert.equal(mappings.length, 1);
+  assert.deepEqual(mappings[0], {
+    source: 0,
+    name: 1,
+    original: {
+      line: 1,
+      column: 0,
+    },
+    generated: {
+      line: 5,
+      column: 12,
+    },
+  });
+
+  let stringifiedMap = JSON.parse(
+    await newMap.stringify({
+      file: 'index.js.map',
+      sourceRoot: '/',
+    })
+  );
+
+  assert.deepEqual(stringifiedMap, {
+    version: 3,
+    file: 'index.js.map',
+    sourceRoot: '/',
+    sources: ['index.js'],
+    sourcesContent: [null],
+    names: ['B', 'A'],
+    mappings: ';;;;YAAAC',
+  });
+}
+
+run().catch((err) => {
+  console.error(err);
 });
-
-map.setSourceContent('./helloworld.coffee', 'hello-world');
-map.addSource('./b.jsx');
-map.setSourceContent('/test-root/b.jsx', 'content-b');
-map.addSource('/test-root/c.ts');
-map.setSourceContent('/test-root/d.tsx', 'tsx-content-d');
-
-let buffer = map.toBuffer();
-let mapClone = new SourceMap('/', buffer);
-mapClone.addBufferMappings(buffer, 100);
-console.log(mapClone.getMap().mappings.map((v) => v.generated));

@@ -356,9 +356,78 @@ impl SourceMap {
 
         return Ok(());
     }
+    
+    pub fn extends(&mut self, original_sourcemap: &SourceMap) -> Result<(), SourceMapError> {
+        self.sources.reserve(original_sourcemap.sources.len());
+        let mut source_indexes = Vec::with_capacity(original_sourcemap.sources.len());
+        for s in original_sourcemap.sources.iter() {
+            source_indexes.push(self.add_source(s));
+        }
 
-    // TODO: Refactor to extend a sourcemap instance instead...
-    pub fn extends_buffer(&mut self, buf: &[u8]) -> Result<(), SourceMapError> {
+        self.names.reserve(original_sourcemap.names.len());
+        let mut names_indexes = Vec::with_capacity(original_sourcemap.names.len());
+        for n in original_sourcemap.names.iter() {
+            names_indexes.push(self.add_name(n));
+        }
+
+        self.sources_content
+            .reserve(original_sourcemap.sources_content.len());
+        for (i, source_content_str) in original_sourcemap.sources_content.iter().enumerate() {
+            if let Some(source_index) = source_indexes.get(i) {
+                self.set_source_content(*source_index as usize, source_content_str)?;
+            }
+        }
+
+        for (_generated_line, line_content) in self.mapping_lines.iter_mut() {
+            for (_generated_column, original_location_option) in line_content.mappings.iter_mut() {
+                if let Some(original_location) = original_location_option {
+                    let found_mapping = original_sourcemap.find_closest_mapping(
+                        original_location.original_line,
+                        original_location.original_column,
+                    );
+                    match found_mapping {
+                        Some(original_mapping) => match original_mapping.original {
+                            Some(original_mapping_location) => {
+                                *original_location_option = Some(OriginalLocation::new(
+                                    original_mapping_location.original_line,
+                                    original_mapping_location.original_column,
+                                    match source_indexes
+                                        .get(original_mapping_location.source as usize)
+                                    {
+                                        Some(new_source_index) => *new_source_index,
+                                        None => {
+                                            return Err(SourceMapError::new(
+                                                SourceMapErrorType::SourceOutOfRange,
+                                            ));
+                                        }
+                                    },
+                                    match original_mapping_location.name {
+                                        Some(name_index) => {
+                                            match names_indexes.get(name_index as usize) {
+                                                Some(new_name_index) => Some(*new_name_index),
+                                                None => {
+                                                    return Err(SourceMapError::new(
+                                                        SourceMapErrorType::NameOutOfRange,
+                                                    ));
+                                                }
+                                            }
+                                        }
+                                        None => None,
+                                    },
+                                ));
+                            }
+                            None => {
+                                *original_location_option = None;
+                            }
+                        },
+                        None => {
+                            *original_location_option = None;
+                        }
+                    }
+                }
+            }
+        }
+
         return Ok(());
     }
 
