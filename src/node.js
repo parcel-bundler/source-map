@@ -6,9 +6,10 @@ import SourceMap from './SourceMap';
 const bindings = require('../parcel_sourcemap_node/index');
 
 export default class NodeSourceMap extends SourceMap {
-  constructor(projectRoot: string = '/', buffer?: Buffer) {
-    super(projectRoot);
-    this.sourceMapInstance = new bindings.SourceMap(projectRoot, buffer || null);
+  constructor(opts: string | Buffer = '/') {
+    super(opts);
+    this.sourceMapInstance = new bindings.SourceMap(opts);
+    this.projectRoot = this.sourceMapInstance.getProjectRoot();
   }
 
   addRawMappings(map: VLQMap, lineOffset: number = 0, columnOffset: number = 0): SourceMap {
@@ -59,7 +60,7 @@ export default class NodeSourceMap extends SourceMap {
   }
 
   addBufferMappings(buffer: Buffer, lineOffset: number = 0, columnOffset: number = 0): SourceMap {
-    let previousMap = new NodeSourceMap('/', buffer);
+    let previousMap = new NodeSourceMap(buffer);
     this.sourceMapInstance.appendSourcemap(previousMap.sourceMapInstance, lineOffset, columnOffset);
     return this;
   }

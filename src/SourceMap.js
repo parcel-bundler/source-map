@@ -14,16 +14,14 @@ export default class SourceMap {
   /**
    * @private
    */
-  projectRoot: string;
+  projectRoot: any;
 
   /**
    * Construct a SourceMap instance
    *
    * @param projectRoot root directory of the project, this is to ensure all source paths are relative to this path
    */
-  constructor(projectRoot: string = '/', buffer?: Buffer) {
-    this.projectRoot = projectRoot;
-  }
+  constructor(opts: string | Buffer = '/') {}
 
   // Use this to invalidate saved buffers, we don't check versioning at all in Rust
   get libraryVersion() {

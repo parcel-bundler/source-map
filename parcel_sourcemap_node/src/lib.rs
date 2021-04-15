@@ -484,18 +484,28 @@ fn find_closest_mapping(ctx: CallContext) -> Result<Either<JsObject, JsNull>> {
     }
 }
 
-#[js_function(2)]
+#[js_function]
+fn get_project_root(ctx: CallContext) -> Result<JsString> {
+    let this: JsObject = ctx.this_unchecked();
+    let source_map_instance: &mut SourceMap = ctx.env.unwrap(&this)?;
+
+    return ctx
+        .env
+        .create_string(source_map_instance.project_root.as_str());
+}
+
+#[js_function(1)]
 fn constructor(ctx: CallContext) -> Result<JsObject> {
     let mut this: JsObject = ctx.this_unchecked();
-    let project_root = ctx.get::<JsString>(0)?.into_utf8()?;
-    let second_argument = ctx.get::<Either<JsBuffer, JsNull>>(1)?;
+    let second_argument = ctx.get::<Either<JsBuffer, JsString>>(0)?;
     match second_argument {
-        Either::A(buffer_value) => {
-            let buf = buffer_value.into_value()?;
-            let sourcemap = SourceMap::from_buffer(&buf[..])?;
+        Either::A(js_buffer) => {
+            let buffer = js_buffer.into_value()?;
+            let sourcemap = SourceMap::from_buffer(&buffer[..])?;
             ctx.env.wrap(&mut this, sourcemap)?;
         }
-        Either::B(_null) => {
+        Either::B(js_string) => {
+            let project_root = js_string.into_utf8()?;
             ctx.env
                 .wrap(&mut this, SourceMap::new(project_root.as_str()?))?;
         }
@@ -532,6 +542,8 @@ fn init(mut exports: JsObject, env: Env) -> Result<()> {
     let offset_columns_method = Property::new(&env, "offsetColumns")?.with_method(offset_columns);
     let add_empty_map_method = Property::new(&env, "addEmptyMap")?.with_method(add_empty_map);
     let extends_buffer_method = Property::new(&env, "extendsBuffer")?.with_method(extends_buffer);
+    let get_project_root_method =
+        Property::new(&env, "getProjectRoot")?.with_method(get_project_root);
     let find_closest_mapping_method =
         Property::new(&env, "findClosestMapping")?.with_method(find_closest_mapping);
     let sourcemap_class = env.define_class(
@@ -560,6 +572,7 @@ fn init(mut exports: JsObject, env: Env) -> Result<()> {
             add_empty_map_method,
             extends_buffer_method,
             find_closest_mapping_method,
+            get_project_root_method,
         ],
     )?;
     exports.set_named_property("SourceMap", sourcemap_class)?;
