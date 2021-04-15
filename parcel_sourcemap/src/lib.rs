@@ -347,7 +347,40 @@ impl SourceMap {
                         self.add_mapping(
                             generated_line as u32,
                             generated_column as u32,
-                            *original_location,
+                            match *original_location {
+                                Some(original_mapping_location) => {
+                                    Some(OriginalLocation::new(
+                                        original_mapping_location.original_line,
+                                        original_mapping_location.original_column,
+                                        match source_indexes
+                                            .get(original_mapping_location.source as usize)
+                                        {
+                                            Some(new_source_index) => *new_source_index,
+                                            None => {
+                                                return Err(SourceMapError::new(
+                                                    SourceMapErrorType::SourceOutOfRange,
+                                                ));
+                                            }
+                                        },
+                                        match original_mapping_location.name {
+                                            Some(name_index) => {
+                                                match names_indexes.get(name_index as usize) {
+                                                    Some(new_name_index) => Some(*new_name_index),
+                                                    None => {
+                                                        return Err(SourceMapError::new(
+                                                            SourceMapErrorType::NameOutOfRange,
+                                                        ));
+                                                    }
+                                                }
+                                            }
+                                            None => None,
+                                        },
+                                    ))
+                                }
+                                None => {
+                                    None
+                                }
+                            },
                         );
                     }
                 }
