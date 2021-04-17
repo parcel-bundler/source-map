@@ -42,8 +42,8 @@ jobs:
 
       - script: yarn run test:node
         displayName: Run tests (node)
-      - name: List binaries
-        run: ls -l */target/*
+      - script: ls -l */target/*
+        displayName: List binaries
         
       - task: PublishBuildArtifacts@1
         displayName: Publish Native Artifacts
