@@ -12,4 +12,4 @@ if (process.platform === 'linux') {
   parts.push('msvc');
 }
 
-module.exports = require(`./index.${parts.join('-')}.node`);
+module.exports = require(`./artifacts/index.${parts.join('-')}.node`);

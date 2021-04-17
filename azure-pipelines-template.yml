@@ -42,10 +42,14 @@ jobs:
 
       - script: yarn run test:node
         displayName: Run tests (node)
-        
+
+      - script: strip -x parcel_sourcemap_node/*.node
+        condition: eq('${{ parameters.vmImage }}', 'macOS-latest')
+        displayName: Strip debug symbols
+
       - task: PublishBuildArtifacts@1
         displayName: Save binaries
         condition: and(succeeded(), eq(variables['publish_artifacts'], 'true'))
         inputs:
           artifactName: binaries
-          pathtoPublish: '$(System.DefaultWorkingDirectory)/parcel_sourcemap_node/*.node'
+          pathtoPublish: 'parcel_sourcemap_node/*.node'
