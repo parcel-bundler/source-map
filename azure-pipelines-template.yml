@@ -48,8 +48,8 @@ jobs:
         displayName: Strip debug symbols
 
       - task: PublishBuildArtifacts@1
-        displayName: Save binaries
+        displayName: Save node artifacts
         condition: and(succeeded(), eq(variables['publish_artifacts'], 'true'))
         inputs:
-          artifactName: binaries
+          artifactName: node-artifacts
           pathtoPublish: 'parcel_sourcemap_node/artifacts'

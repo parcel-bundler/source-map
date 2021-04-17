@@ -1,10 +1,10 @@
 trigger:
   branches:
     include:
-      - "*"
+      - '*'
   tags:
     include:
-      - "*"
+      - '*'
 
 jobs:
   - template: azure-pipelines-template.yml
@@ -31,12 +31,12 @@ jobs:
           - task: DownloadBuildArtifacts@0
             displayName: Download Native Artifacts
             inputs:
-              artifactName: binaries
-              downloadPath: "$(System.DefaultWorkingDirectory)"
+              artifactName: node-artifacts
+              downloadPath: '$(System.DefaultWorkingDirectory)/parcel_sourcemap_node/artifacts'
           - script: npm install --build-from-source
             displayName: Install Node Modules
           - task: Npm@1
             displayName: NPM Release
             inputs:
-              command: "publish"
+              command: 'publish'
               publishEndpoint: npm
