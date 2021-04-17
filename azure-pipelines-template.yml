@@ -42,12 +42,10 @@ jobs:
 
       - script: yarn run test:node
         displayName: Run tests (node)
-      - script: ls -l */target/*
-        displayName: List binaries
         
       - task: PublishBuildArtifacts@1
         displayName: Save binaries
         condition: and(succeeded(), eq(variables['publish_artifacts'], 'true'))
         inputs:
           artifactName: binaries
-          pathtoPublish: '$(System.DefaultWorkingDirectory)/*/target/*'
+          pathtoPublish: '$(System.DefaultWorkingDirectory)/parcel_sourcemap_node/*.node'
