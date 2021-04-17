@@ -46,8 +46,8 @@ jobs:
         displayName: List binaries
         
       - task: PublishBuildArtifacts@1
-        displayName: Publish Native Artifacts
+        displayName: Save binaries
         condition: and(succeeded(), eq(variables['publish_artifacts'], 'true'))
         inputs:
-          artifactName: prebuilds
-          pathtoPublish: '$(System.DefaultWorkingDirectory)/**/*.node'
+          artifactName: binaries
+          pathtoPublish: '$(System.DefaultWorkingDirectory)/*/target/*'
