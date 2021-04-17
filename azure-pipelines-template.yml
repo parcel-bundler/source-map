@@ -43,7 +43,7 @@ jobs:
       - script: yarn run test:node
         displayName: Run tests (node)
 
-      - script: strip -x parcel_sourcemap_node/*.node
+      - script: strip -x parcel_sourcemap_node/artifacts/*.node
         condition: eq('${{ parameters.vmImage }}', 'macOS-latest')
         displayName: Strip debug symbols
 
@@ -52,4 +52,4 @@ jobs:
         condition: and(succeeded(), eq(variables['publish_artifacts'], 'true'))
         inputs:
           artifactName: binaries
-          pathtoPublish: 'parcel_sourcemap_node/*.node'
+          pathtoPublish: 'parcel_sourcemap_node/artifacts'
