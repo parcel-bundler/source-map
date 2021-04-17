@@ -37,18 +37,17 @@ jobs:
         displayName: Install dependencies
       - script: yarn run transpile
         displayName: Transpile and Generate Typings
-      - script: yarn build:node
-        displayName: Build binaries
+      - script: yarn build:node-release
+        displayName: Build production binaries
 
       - script: yarn run test:node
         displayName: Run tests (node)
-
-      - script: yarn run build:node-release
-        displayName: Test production build
-
+      - name: List binaries
+        run: ls -l */target/*
+        
       - task: PublishBuildArtifacts@1
         displayName: Publish Native Artifacts
         condition: and(succeeded(), eq(variables['publish_artifacts'], 'true'))
         inputs:
           artifactName: prebuilds
-          pathtoPublish: '$(System.DefaultWorkingDirectory)/prebuilds'
+          pathtoPublish: '$(System.DefaultWorkingDirectory)/**/*.node'

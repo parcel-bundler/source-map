@@ -29,14 +29,13 @@
     ]
   },
   "files": [
-    "binding.gyp",
+    "parcel_sourcemap",
+    "parcel_sourcemap_node",
+    "parcel_sourcemap_wasm",
     "dist",
     "package.json",
-    "prebuilds",
     "README.md",
-    "src",
-    "wasm-browser",
-    "wasm-node"
+    "src"
   ],
   "binary": {
     "napi_versions": [
