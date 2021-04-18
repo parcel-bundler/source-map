@@ -55,12 +55,12 @@ jobs:
           sudo apt-get install gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu g++-aarch64-linux-gnu -y
 
       - uses: bahmutov/npm-install@v1.1.0
-        env:
-          RUST_TARGET: ${{ matrix.target }}
       - name: Transpile JavaScript
         run: yarn run transpile
       - name: Build node release
         run: yarn run build:node-release
+        env:
+          RUST_TARGET: ${{ matrix.target }}
       - name: Strip debug symbols # https://github.com/rust-lang/rust/issues/46034
         if: ${{ matrix.strip }}
         run: ${{ matrix.strip }} parcel_sourcemap_node/artifacts/*.node
