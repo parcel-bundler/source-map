@@ -2,27 +2,28 @@ name: release
 on:
   push:
   workflow_dispatch:
-  
+
 jobs:
   build:
     strategy:
       fail-fast: false
-      include:
-        - os: macos-latest
-          target: x86_64-apple-darwin
-          strip: strip -x # Must use -x on macOS. This produces larger results on linux.
-        - os: windows-latest
-          target: x86_64-pc-windows-msvc
-        - os: ubuntu-latest
-          image: docker.pkg.github.com/napi-rs/napi-rs/rust-nodejs-alpine:lts
-          target: arm-unknown-linux-gnueabihf
-          arch: armhf
-          strip: arm-linux-gnueabihf-strip
-        - os: ubuntu-latest
-          image: docker.pkg.github.com/napi-rs/napi-rs/rust-nodejs-alpine:lts
-          target: aarch64-unknown-linux-gnu
-          arch: arm64
-          strip: aarch64-linux-gnu-strip
+      matrix:
+        include:
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            strip: strip -x # Must use -x on macOS. This produces larger results on linux.
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+          - os: ubuntu-latest
+            image: docker.pkg.github.com/napi-rs/napi-rs/rust-nodejs-alpine:lts
+            target: arm-unknown-linux-gnueabihf
+            arch: armhf
+            strip: arm-linux-gnueabihf-strip
+          - os: ubuntu-latest
+            image: docker.pkg.github.com/napi-rs/napi-rs/rust-nodejs-alpine:lts
+            target: aarch64-unknown-linux-gnu
+            arch: arm64
+            strip: aarch64-linux-gnu-strip
 
     name: ${{ matrix.os }}-${{ matrix.target }}
     runs-on: ${{ matrix.os }}
