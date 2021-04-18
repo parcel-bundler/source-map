@@ -1,6 +1,8 @@
-name: tag-release
+name: release
 on:
+  push:
   workflow_dispatch:
+  
 jobs:
   build:
     strategy:
