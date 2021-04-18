@@ -28,7 +28,6 @@ jobs:
     name: ${{ matrix.os }}-${{ matrix.target }}
     runs-on: ${{ matrix.os }}
     container:
-      if: ${{ matrix.image }}
       image: ${{ matrix.image }}
       credentials:
         username: ${{ github.actor }}
