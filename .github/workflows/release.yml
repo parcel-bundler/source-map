@@ -29,9 +29,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     container:
       image: ${{ matrix.image }}
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.GHCR_TOKEN }}
+      # credentials:
+      #   username: ${{ github.actor }}
+      #   password: ${{ secrets.GHCR_TOKEN }}
     steps:
       - uses: actions/checkout@v1
       - name: Install Node.JS
