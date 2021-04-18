@@ -8,9 +8,9 @@ jobs:
   test:
     strategy:
       fail-fast: false
-    matrix:
-      os: [macos-latest, windows-latest, ubuntu-latest]
-      nodeVersion: [12.x, 14.x]
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        nodeVersion: [12.x, 14.x]
     name: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     steps:
