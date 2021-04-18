@@ -27,11 +27,12 @@ jobs:
 
     name: ${{ matrix.os }}-${{ matrix.target }}
     runs-on: ${{ matrix.os }}
-    container:
-      image: ${{ matrix.image }}
-      # credentials:
-      #   username: ${{ github.actor }}
-      #   password: ${{ secrets.GHCR_TOKEN }}
+    # TODO: Figure out how to get docker images to build...
+    # container:
+    #   image: ${{ matrix.image }}
+    #   credentials:
+    #     username: ${{ github.actor }}
+    #     password: ${{ secrets.GHCR_TOKEN }}
     steps:
       - uses: actions/checkout@v1
       - name: Install Node.JS
