@@ -1,21 +1,9 @@
 parameters:
   - name: 'name'
     type: string
-  - name: 'vmImage'
-    type: string
-  - name: 'container'
-    type: string
-    default: ''
-  - name: 'arch'
-    type: string
-    default: ''
 
 jobs:
   - job: ${{ parameters.name }}
-    pool:
-      vmImage: ${{ parameters.vmImage }}
-    ${{ if ne(parameters.container, '') }}:
-      container: ${{ parameters.container }}
     strategy:
       matrix:
         node_12_x:
@@ -28,28 +16,12 @@ jobs:
       - task: NodeTool@0
         inputs:
           versionSpec: $(node_version)
-          force32bit: eq('${{ parameters.arch }}', 'ia32')
         displayName: 'Install Node.js'
-      - script: npm install -g yarn
-        displayName: 'Install yarn'
-        condition: eq('${{ parameters.name }}', 'CentOS7')
       - script: yarn install --build-from-source
         displayName: Install dependencies
       - script: yarn run transpile
         displayName: Transpile and Generate Typings
       - script: yarn build:node-release
         displayName: Build production binaries
-
       - script: yarn run test:node
         displayName: Run tests (node)
-
-      - script: strip -x parcel_sourcemap_node/artifacts/*.node
-        condition: eq('${{ parameters.vmImage }}', 'macOS-latest')
-        displayName: Strip debug symbols
-
-      - task: PublishBuildArtifacts@1
-        displayName: Save node artifacts
-        condition: and(succeeded(), eq(variables['publish_artifacts'], 'true'))
-        inputs:
-          artifactName: node-artifacts
-          pathtoPublish: 'parcel_sourcemap_node/artifacts'

@@ -1,0 +1,32 @@
+name: test
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+    matrix:
+      os: [macos-latest, windows-latest, ubuntu-latest]
+      nodeVersion: [12.x, 14.x]
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install yarn
+        run: npm install --global yarn@1
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+      - uses: bahmutov/npm-install@v1.1.0
+      - name: Transpile JavaScript
+        run: yarn run transpile
+      - name: Build node release
+        run: yarn run build:node-release
+      - name: Run node tests
+        run: yarn run test:node
