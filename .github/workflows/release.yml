@@ -9,31 +9,26 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # Windows
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+          # Mac OS
           - os: macos-latest
             target: x86_64-apple-darwin
             strip: strip -x # Must use -x on macOS. This produces larger results on linux.
           - os: macos-latest
             target: aarch64-apple-darwin
             strip: strip -x # Must use -x on macOS. This produces larger results on linux.
-          - os: windows-latest
-            target: x86_64-pc-windows-msvc
+          # GNU Linux
           - os: ubuntu-latest
-            image: docker.pkg.github.com/napi-rs/napi-rs/rust-nodejs-alpine:lts
             target: arm-unknown-linux-gnueabihf
             strip: arm-linux-gnueabihf-strip
           - os: ubuntu-latest
-            image: docker.pkg.github.com/napi-rs/napi-rs/rust-nodejs-alpine:lts
             target: aarch64-unknown-linux-gnu
             strip: aarch64-linux-gnu-strip
 
     name: build-${{ matrix.target }}
     runs-on: ${{ matrix.os }}
-    # TODO: Figure out how to get docker images to build...
-    # container:
-    #   image: ${{ matrix.image }}
-    #   credentials:
-    #     username: ${{ github.actor }}
-    #     password: ${{ secrets.GHCR_TOKEN }}
     steps:
       - uses: actions/checkout@v1
       - name: Install Node.JS
@@ -70,11 +65,67 @@ jobs:
           name: bindings-${{ matrix.target }}
           path: parcel_sourcemap_node/artifacts/*.node
 
+  build-docker:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-musl
+            strip: aarch64-linux-musl-strip
+            image: docker.pkg.github.com/napi-rs/napi-rs/rust-nodejs-alpine:lts
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            strip: strip
+            image: docker.pkg.github.com/napi-rs/napi-rs/rust-nodejs-alpine:lts
+
+    name: build-${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    container:
+      image: ${{ matrix.image }}
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install Node.JS
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+          target: ${{ matrix.target }}
+
+      - name: Install cross compile toolchains
+        if: ${{ matrix.target == 'aarch64-unknown-linux-musl' }}
+        run: |
+          curl -O https://musl.cc/aarch64-linux-musl-cross.tgz
+          tar xzf aarch64-linux-musl-cross.tgz
+          cp -R aarch64-linux-musl-cross/* /usr
+
+      - uses: bahmutov/npm-install@v1.1.0
+      - name: Transpile JavaScript
+        run: yarn run transpile
+      - name: Build node release
+        run: yarn run build:node-release
+        env:
+          RUST_TARGET: ${{ matrix.target }}
+      - name: Strip debug symbols # https://github.com/rust-lang/rust/issues/46034
+        if: ${{ matrix.strip }}
+        run: ${{ matrix.strip }} parcel_sourcemap_node/artifacts/*.node
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: bindings-${{ matrix.target }}
+          path: parcel_sourcemap_node/artifacts/*.node
+
   release:
     runs-on: ubuntu-latest
     name: Build and release
     needs:
       - build
+      - build-docker
     steps:
       - uses: actions/checkout@v1
       - name: Link native packages
