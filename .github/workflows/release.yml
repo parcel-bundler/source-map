@@ -91,7 +91,7 @@ jobs:
       image: ${{ matrix.image }}
       credentials:
         username: ${{ github.actor }}
-        password: ${{ secrets.GHCR_TOKEN }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v1
       - name: Install yarn
