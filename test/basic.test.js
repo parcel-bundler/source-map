@@ -251,6 +251,16 @@ describe('SourceMap - Basics', () => {
     assert.deepEqual(map.addSource('abc.js'), 4);
   });
 
+  it('Should be able to handle absolute url sources', () => {
+    let map = new SourceMap('/test-root');
+    map.addSource('https://example.com/a.js');
+    map.addSource('file:///test-root/example.js');
+    map.addSource('webpack://weird-things/index.ts');
+    assert.deepEqual(map.getSource(0), 'https://example.com/a.js');
+    assert.deepEqual(map.getSource(1), 'example.js');
+    assert.deepEqual(map.getSource(2), 'webpack://weird-things/index.ts');
+  });
+
   it('Should be able to add names to a sourcemap', () => {
     let map = new SourceMap('/test-root');
     map.addRawMappings({

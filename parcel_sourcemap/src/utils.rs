@@ -55,10 +55,19 @@ fn chunk_path(p: &str) -> Vec<&str> {
 
 // Helper function to calculate the path from a base file to a target file.
 pub fn make_relative_path(base: &str, target: &str) -> String {
-    if !is_abs_path(target) {
-        return chunk_path(target).join("/");
+    let mut target_str = target;
+    if target.len() > 7 && "file://".eq_ignore_ascii_case(&target[0..7]) {
+        target_str = &target[7..];
+    }
+
+    if !is_abs_path(target_str) {
+        if target_str.contains(":") {
+            return String::from(target_str);
+        } else {
+            return chunk_path(target_str).join("/");
+        }
     } else {
-        let target_path: Vec<&str> = chunk_path(target);
+        let target_path: Vec<&str> = chunk_path(target_str);
         let base_dir: Vec<&str> = chunk_path(base);
         let items = vec![
             Cow::Borrowed(base_dir.as_slice()),
