@@ -183,7 +183,8 @@ jobs:
     name: Build and release
     needs:
       - build
-      - build-docker
+      - build-linux-gnu-x64
+      - build-linux-musl
     steps:
       - uses: actions/checkout@v1
       - name: Link native packages
