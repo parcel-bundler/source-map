@@ -47,7 +47,7 @@ jobs:
         if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
           sudo apt-get update
-          sudo apt-get install gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu g++-aarch64-linux-gnu binutils-aarch64-linux-gnu binutils-arm-linux-gnueabihf -y
+          sudo apt-get install gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu g++-aarch64-linux-gnu -y
 
       - uses: bahmutov/npm-install@v1.1.0
       - name: Transpile JavaScript
@@ -85,7 +85,6 @@ jobs:
         with:
           node-version: 14
       - name: Install yarn
-        if: ${{ matrix.target == 'x86_64-unknown-linux-gnu' }}
         run: npm install --global yarn@1
       - name: Install Rust
         uses: actions-rs/toolchain@v1
@@ -94,13 +93,6 @@ jobs:
           profile: minimal
           override: true
           target: ${{ matrix.target }}
-
-      - name: Install cross compile toolchains
-        if: ${{ matrix.target == 'aarch64-unknown-linux-musl' }}
-        run: |
-          curl -O https://musl.cc/aarch64-linux-musl-cross.tgz
-          tar xzf aarch64-linux-musl-cross.tgz
-          cp -R aarch64-linux-musl-cross/* /usr
 
       - uses: bahmutov/npm-install@v1.1.0
       - name: Transpile JavaScript
@@ -144,9 +136,6 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: 14
-      - name: Install yarn
-        if: ${{ matrix.target == 'x86_64-unknown-linux-gnu' }}
-        run: npm install --global yarn@1
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
