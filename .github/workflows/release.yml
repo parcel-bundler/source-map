@@ -44,7 +44,7 @@ jobs:
           target: ${{ matrix.target }}
 
       - name: Install cross compile toolchains
-        if: ${{ matrix.target == 'aarch64-unknown-linux-musl' || matrix.target == 'arm-unknown-linux-gnueabihf' }}
+        if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
           sudo apt-get update
           sudo apt-get install gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu g++-aarch64-linux-gnu binutils-aarch64-linux-gnu binutils-arm-linux-gnueabihf -y
