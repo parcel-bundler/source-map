@@ -115,7 +115,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # MUSL Linux
           - os: ubuntu-latest
             target: aarch64-unknown-linux-musl
             strip: aarch64-linux-musl-strip
