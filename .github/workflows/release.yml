@@ -41,7 +41,7 @@ jobs:
           toolchain: stable
           profile: minimal
           override: true
-          target: ${{ matrix.target }}
+
       - name: Setup rust target
         run: rustup target add ${{ matrix.target }}
 
@@ -94,7 +94,9 @@ jobs:
           toolchain: stable
           profile: minimal
           override: true
-          target: ${{ matrix.target }}
+
+      - name: Setup rust target
+        run: rustup target add ${{ matrix.target }}
 
       - uses: bahmutov/npm-install@v1.1.0
       - name: Transpile JavaScript
@@ -143,7 +145,7 @@ jobs:
           toolchain: stable
           profile: minimal
           override: true
-          target: ${{ matrix.target }}
+
       - name: Setup rust target
         run: rustup target add ${{ matrix.target }}
 
