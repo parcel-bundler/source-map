@@ -66,6 +66,7 @@
     "source-map": "^0.7.3"
   },
   "dependencies": {
-    "detect-libc": "^1.0.3"
+    "detect-libc": "^1.0.3",
+    "globby": "^11.0.3"
   }
 }
