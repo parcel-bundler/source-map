@@ -181,8 +181,6 @@ jobs:
       - build-linux-musl
     steps:
       - uses: actions/checkout@v1
-      - name: Link native packages
-        run: node scripts/link-native.js
       - uses: bahmutov/npm-install@v1.1.0
       - name: Download artifacts
         uses: actions/download-artifact@v2
@@ -193,4 +191,4 @@ jobs:
       - run: echo //registry.npmjs.org/:_authToken=${NPM_TOKEN} > .npmrc
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - run: yarn release
+      - run: npm publish
