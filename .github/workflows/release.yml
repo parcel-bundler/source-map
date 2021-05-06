@@ -186,6 +186,8 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           path: parcel_sourcemap_node/artifacts
+      - name: Move artifacts
+        run: for d in parcel_sourcemap_node/artifacts/*/*; do cp $d/*.node native-packages/$(basename $d); done
       - name: Debug
         run: ls -l parcel_sourcemap_node/artifacts
       - run: echo //registry.npmjs.org/:_authToken=${NPM_TOKEN} > .npmrc
