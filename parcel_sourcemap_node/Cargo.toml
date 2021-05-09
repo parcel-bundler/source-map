@@ -7,6 +7,10 @@ edition = "2018"
 [lib]
 crate-type = ["cdylib"]
 
+[profile.release]
+lto = true
+opt-level = 3
+
 [dependencies]
 parcel_sourcemap = { path = "../parcel_sourcemap" }
 napi = "1.2.0"
@@ -14,7 +18,3 @@ napi-derive = "1.0"
 
 [build-dependencies]
 napi-build = "1.0.1"
-
-[profile.release]
-lto = true
-opt-level = 3
