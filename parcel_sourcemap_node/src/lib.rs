@@ -5,7 +5,7 @@ extern crate parcel_sourcemap;
 
 use napi::{
     CallContext, Either, Env, JsBuffer, JsNull, JsNumber, JsObject, JsString, JsUndefined,
-    Property, Result,
+    Property, Result, JsTypedArray,
 };
 use parcel_sourcemap::{Mapping, OriginalLocation, SourceMap};
 
@@ -362,8 +362,7 @@ fn add_indexed_mappings(ctx: CallContext) -> Result<JsUndefined> {
     let this: JsObject = ctx.this_unchecked();
     let source_map_instance: &mut SourceMap = ctx.env.unwrap(&this)?;
 
-    // TODO: Figure out a more optimal way of handling typed arrays...
-    let js_mapping_arr = ctx.get::<JsObject>(0)?;
+    let js_mapping_arr = ctx.get::<JsTypedArray>(0)?;
     let length: u32 = js_mapping_arr
         .get_named_property::<JsNumber>("length")?
         .get_uint32()?;
