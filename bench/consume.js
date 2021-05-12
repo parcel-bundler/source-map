@@ -34,8 +34,7 @@ exports.consume = function () {
       map.delete();
     }),
     b.add('consume flatbuffer', () => {
-      let map = new SourceMap();
-      map.addBufferMappings(sourcemapBuffer);
+      let map = new SourceMap(sourcemapBuffer);
       map.delete();
     }),
     b.add('consume JS Mappings', () => {

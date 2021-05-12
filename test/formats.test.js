@@ -75,7 +75,7 @@ describe('SourceMap - Formats', () => {
       format: 'object',
     });
 
-    assert.deepEqual(stringifiedMap.sources, ['./helloworld.coffee']);
+    assert.deepEqual(stringifiedMap.sources, ['helloworld.coffee']);
   });
 
   describe('win32', function () {
@@ -103,7 +103,7 @@ describe('SourceMap - Formats', () => {
         format: 'object',
       });
 
-      assert.deepEqual(stringifiedMap.sources, ['./helloworld.coffee']);
+      assert.deepEqual(stringifiedMap.sources, ['helloworld.coffee']);
     });
   });
 });

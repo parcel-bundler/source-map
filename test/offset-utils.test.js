@@ -24,7 +24,7 @@ describe('SourceMap - Offset Utils', () => {
     map.offsetColumns(2, 15, -4);
 
     assert.deepEqual(map.getMap(), {
-      sources: ['./helloworld.coffee'],
+      sources: ['helloworld.coffee'],
       sourcesContent: [''],
       names: [],
       mappings: [
@@ -51,16 +51,6 @@ describe('SourceMap - Offset Utils', () => {
         {
           generated: { line: 2, column: 10 },
           original: { line: 1, column: 8 },
-          source: 0,
-        },
-        {
-          generated: { line: 2, column: 13 },
-          original: { line: 1, column: 0 },
-          source: 0,
-        },
-        {
-          generated: { line: 2, column: 14 },
-          original: { line: 1, column: 12 },
           source: 0,
         },
         {
@@ -113,7 +103,7 @@ describe('SourceMap - Offset Utils', () => {
     map.offsetLines(1, 2);
 
     assert.deepEqual(map.getMap(), {
-      sources: ['./helloworld.coffee'],
+      sources: ['helloworld.coffee'],
       sourcesContent: [''],
       names: [],
       mappings: [
@@ -188,15 +178,10 @@ describe('SourceMap - Offset Utils', () => {
     map.offsetLines(2, -1);
 
     assert.deepEqual(map.getMap(), {
-      sources: ['./helloworld.coffee'],
+      sources: ['helloworld.coffee'],
       sourcesContent: [''],
       names: [],
       mappings: [
-        {
-          generated: { line: 1, column: 0 },
-          original: { line: 1, column: 0 },
-          source: 0,
-        },
         {
           generated: { line: 1, column: 0 },
           original: { line: 1, column: 0 },

@@ -1,0 +1,15 @@
+[package]
+name = "parcel_sourcemap"
+version = "0.1.0"
+authors = ["Jasper De Moor <jasperdemoor@gmail.com>"]
+edition = "2018"
+
+[profile.release]
+lto = true
+opt-level = 3
+
+[dependencies]
+"vlq" = "0.5.1"
+"napi" = "1.2.0"
+"serde" = { version = "1.0.125", features = ["derive"] }
+"bincode" = "1.3.3"

@@ -88,7 +88,7 @@ Parcel is a performance concious bundler, and therefore we like to optimise Parc
 
 Our original source-map implementation used mozilla's source-map and a bunch of javascript and had issues with memory usage and serialisation times (we were keeping all mappings in memory using JS objects and write/read it using JSON for caching).
 
-This implementation has been written from scratch in C++ minimizing the memory usage, by utilising indexes for sources and names and optimising serialisation times by using flatbuffers instead of JSON for caching.
+This implementation has been written from scratch in Rust minimizing the memory usage, by utilising indexes for sources and names and optimising serialisation times by using flatbuffers instead of JSON for caching.
 
 ### Previous works and inspiration
 

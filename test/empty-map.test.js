@@ -16,7 +16,7 @@ describe('SourceMap - Empty Map', () => {
 
     let mapContent = map.getMap();
     assert.deepEqual(mapContent, {
-      sources: ['./index.js'],
+      sources: ['index.js'],
       sourcesContent: [sourceContent],
       names: [],
       mappings: [
@@ -40,6 +40,11 @@ describe('SourceMap - Empty Map', () => {
           original: { line: 4, column: 0 },
           source: 0,
         },
+        {
+          generated: { line: 5, column: 0 },
+          original: { line: 5, column: 0 },
+          source: 0,
+        },
       ],
     });
   });
@@ -59,7 +64,7 @@ describe('SourceMap - Empty Map', () => {
 
     let mapContent = map.getMap();
     assert.deepEqual(mapContent, {
-      sources: ['./index.js'],
+      sources: ['index.js'],
       sourcesContent: [sourceContent],
       names: [],
       mappings: [
@@ -81,6 +86,11 @@ describe('SourceMap - Empty Map', () => {
         {
           generated: { line: 14, column: 0 },
           original: { line: 4, column: 0 },
+          source: 0,
+        },
+        {
+          generated: { line: 15, column: 0 },
+          original: { line: 5, column: 0 },
           source: 0,
         },
       ],

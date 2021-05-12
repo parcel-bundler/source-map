@@ -2,14 +2,14 @@
 import type { ParsedMap, VLQMap, SourceMapStringifyOptions, IndexedMapping, GenerateEmptyMapOptions } from './types';
 import path from 'path';
 import SourceMap from './SourceMap';
-import { relatifyPath } from './utils';
 
-const bindings = require('node-gyp-build')(path.join(__dirname, '..'));
+const bindings = require('../parcel_sourcemap_node/index');
 
 export default class NodeSourceMap extends SourceMap {
-  constructor(projectRoot: string = '/') {
-    super(projectRoot);
-    this.sourceMapInstance = new bindings.SourceMap();
+  constructor(opts: string | Buffer = '/') {
+    super(opts);
+    this.sourceMapInstance = new bindings.SourceMap(opts);
+    this.projectRoot = this.sourceMapInstance.getProjectRoot();
   }
 
   addRawMappings(map: VLQMap, lineOffset: number = 0, columnOffset: number = 0): SourceMap {
@@ -19,9 +19,9 @@ export default class NodeSourceMap extends SourceMap {
     } else {
       sourcesContent = sourcesContent.map((content) => (content ? content : ''));
     }
-    this.sourceMapInstance.addRawMappings(
+    this.sourceMapInstance.addVLQMap(
       mappings,
-      sources.map((source) => (source ? relatifyPath(source, this.projectRoot) : '')),
+      sources,
       sourcesContent.map((content) => (content ? content : '')),
       names,
       lineOffset,
@@ -40,18 +40,40 @@ export default class NodeSourceMap extends SourceMap {
     return this;
   }
 
+  fromBuffer(buffer: Buffer): this {
+    this.sourceMapInstance.fromBuffer(buffer);
+    return this;
+  }
+
   toBuffer(): Buffer {
     return this.sourceMapInstance.toBuffer();
   }
 
   findClosestMapping(line: number, column: number): ?IndexedMapping<string> {
-    let mapping = this.sourceMapInstance.findClosestMapping(line, column);
-    if (mapping.generated.line === -1 || mapping.generated.column === -1) {
-      return null;
-    } else {
+    let mapping = this.sourceMapInstance.findClosestMapping(line - 1, column);
+    if (mapping) {
       let v = this.indexedMappingToStringMapping(mapping);
       return v;
+    } else {
+      return null;
     }
+  }
+
+  addSourceMap(sourcemap: SourceMap, lineOffset: number = 0, columnOffset: number = 0): SourceMap {
+    this.sourceMapInstance.appendSourcemap(sourcemap.sourceMapInstance, lineOffset, columnOffset);
+    return this;
+  }
+
+  addBufferMappings(buffer: Buffer, lineOffset: number = 0, columnOffset: number = 0): SourceMap {
+    let previousMap = new NodeSourceMap(buffer);
+    return this.addSourceMap(previousMap, lineOffset, columnOffset);
+  }
+
+  extends(input: Buffer | SourceMap): SourceMap {
+    // $FlowFixMe
+    let inputSourceMap: SourceMap = Buffer.isBuffer(input) ? new NodeSourceMap(input) : input;
+    this.sourceMapInstance.extends(inputSourceMap.sourceMapInstance);
+    return this;
   }
 
   delete() {}
@@ -68,4 +90,5 @@ export default class NodeSourceMap extends SourceMap {
   }
 }
 
+// $FlowFixMe
 export const init = Promise.resolve();

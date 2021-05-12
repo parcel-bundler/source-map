@@ -1,0 +1,12 @@
+[package]
+name = "parcel_sourcemap_wasm"
+version = "0.1.0"
+authors = ["Jasper De Moor <jasperdemoor@gmail.com>"]
+edition = "2018"
+
+[profile.release]
+lto = true
+opt-level = 3
+
+[dependencies]
+parcel_sourcemap = { path = "../parcel_sourcemap" }

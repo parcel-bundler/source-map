@@ -1,9 +1,6 @@
 name: Benchmark
 on:
   push:
-    branches:
-      - master
-  pull_request:
   workflow_dispatch:
 
 jobs:
@@ -18,23 +15,12 @@ jobs:
           node-version: 14
           check-latest: true
 
-      - name: Cache cargo registry
-        uses: actions/cache@v1
-        with:
-          path: ~/.cargo/registry
-          key: bench-cargo-registry-trimmed-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Cache cargo index
-        uses: actions/cache@v1
-        with:
-          path: ~/.cargo/git
-          key: bench-cargo-index-trimmed-${{ hashFiles('**/Cargo.lock') }}
-
+      # Caching
       - name: Cache NPM dependencies
         uses: actions/cache@v1
         with:
           path: node_modules
-          key: bench-node-modules-${{ hashFiles('yarn.lock') }}
+          key: node-modules-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
 
       - name: 'Install dependencies'
         run: yarn install
@@ -58,8 +44,4 @@ jobs:
           external-data-json-path: ./benchmark-results/benchmark-data.json
           comment-always: true
           auto-push: false
-
-      - name: Clear the cargo caches
-        run: |
-          cargo install cargo-cache --no-default-features --features ci-autoclean
-          cargo-cache
+          save-data-file: ${{ github.ref == 'refs/heads/master' }}

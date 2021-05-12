@@ -12,30 +12,30 @@ describe('SourceMap - Find', () => {
 
     let mapping = map.findClosestMapping(2, 8);
     assert.deepEqual(mapping, {
-      generated: { line: 2, column: 9 },
-      original: { line: 1, column: 7 },
-      source: './helloworld.coffee',
+      generated: { line: 2, column: 2 },
+      original: { line: 1, column: 0 },
+      source: 'helloworld.coffee',
     });
 
     mapping = map.findClosestMapping(2, 14);
     assert.deepEqual(mapping, {
       generated: { line: 2, column: 14 },
       original: { line: 1, column: 12 },
-      source: './helloworld.coffee',
+      source: 'helloworld.coffee',
     });
 
     mapping = map.findClosestMapping(2, 12);
     assert.deepEqual(mapping, {
-      generated: { line: 2, column: 13 },
-      original: { line: 1, column: 0 },
-      source: './helloworld.coffee',
+      generated: { line: 2, column: 10 },
+      original: { line: 1, column: 8 },
+      source: 'helloworld.coffee',
     });
 
     mapping = map.findClosestMapping(3, 15);
     assert.deepEqual(mapping, {
       generated: { line: 3, column: 0 },
       original: { line: 1, column: 0 },
-      source: './helloworld.coffee',
+      source: 'helloworld.coffee',
     });
 
     // Edge cases

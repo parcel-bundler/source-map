@@ -34,7 +34,7 @@ describe('SourceMap - Inline Sources', () => {
 
     assert.deepEqual(stringifiedMap, {
       mappings: 'AAAA;AAAA,EAAA,OAAO,CAAC,GAAR,CAAY,aAAZ,CAAA,CAAA;AAAA',
-      sources: ['../a.js', './b.js'],
+      sources: ['../a.js', 'b.js'],
       sourcesContent: [fileOneContent, fileTwoContent],
       names: [],
       version: 3,
@@ -61,7 +61,7 @@ describe('SourceMap - Inline Sources', () => {
 
     assert.deepEqual(stringifiedMap, {
       mappings: 'AAAA;AAAA,EAAA,OAAO,CAAC,GAAR,CAAY,aAAZ,CAAA,CAAA;AAAA',
-      sources: ['../a.js', './b.js'],
+      sources: ['../a.js', 'b.js'],
       sourcesContent: [fileOneContent, null],
       names: [],
       version: 3,
@@ -89,7 +89,7 @@ describe('SourceMap - Inline Sources', () => {
 
     assert.deepEqual(stringifiedMap, {
       mappings: 'AAAA;AAAA,EAAA,OAAO,CAAC,GAAR,CAAY,aAAZ,CAAA,CAAA;AAAA',
-      sources: ['../a.js', './b.js'],
+      sources: ['../a.js', 'b.js'],
       sourcesContent: [fileOneContent, 'b-content'],
       names: [],
       version: 3,
@@ -117,7 +117,7 @@ describe('SourceMap - Inline Sources', () => {
 
     assert.deepEqual(stringifiedMap, {
       mappings: 'AAAA;AAAA,EAAA,OAAO,CAAC,GAAR,CAAY,aAAZ,CAAA,CAAA;AAAA',
-      sources: ['../a.js', './b.js'],
+      sources: ['../a.js', 'b.js'],
       sourcesContent: ['a-content', 'b-content'],
       names: [],
       version: 3,

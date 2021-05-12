@@ -10,7 +10,7 @@ const SIMPLE_SOURCE_MAP = {
 };
 
 let expectedResultOne = {
-  sources: ['./helloworld.coffee'],
+  sources: ['helloworld.coffee'],
   sourcesContent: [''],
   names: [],
   mappings: [
@@ -128,7 +128,7 @@ let expectedResultOne = {
 };
 
 let expectedResultTwo = {
-  sources: ['./helloworld.coffee'],
+  sources: ['helloworld.coffee'],
   sourcesContent: [''],
   names: [],
   mappings: [
@@ -460,7 +460,7 @@ describe('SourceMap - Append Mappings', () => {
       version: 3,
       file: 'index.js.map',
       sourceRoot: '/',
-      sources: ['./index.js', './local.js'],
+      sources: ['index.js', 'local.js'],
       sourcesContent: [null, null],
       names: ['A', 'T', 'Q'],
       mappings:
