@@ -14,7 +14,7 @@ export default class SourceMap {
   /**
    * @private
    */
-  projectRoot: any;
+  projectRoot: string;
 
   /**
    * Construct a SourceMap instance
@@ -24,7 +24,7 @@ export default class SourceMap {
   constructor(opts: string | Buffer = '/') {}
 
   // Use this to invalidate saved buffers, we don't check versioning at all in Rust
-  get libraryVersion() {
+  get libraryVersion(): string {
     return version;
   }
 
@@ -104,7 +104,7 @@ export default class SourceMap {
     mappings: Array<IndexedMapping<string>>,
     lineOffset?: number = 0,
     columnOffset?: number = 0
-  ) {
+  ): Int32Array {
     // Encode all mappings into a single typed array and make one call
     // to C++ instead of one for each mapping to improve performance.
     let mappingBuffer = new Int32Array(mappings.length * 6);

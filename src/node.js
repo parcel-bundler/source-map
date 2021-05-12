@@ -90,4 +90,5 @@ export default class NodeSourceMap extends SourceMap {
   }
 }
 
+// $FlowFixMe
 export const init = Promise.resolve();
