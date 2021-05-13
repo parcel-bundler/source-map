@@ -18,7 +18,7 @@ You can create a sourcemap from another sourcemap or by creating it one mapping 
 
 To create a sourcemap from an existing sourcemap you have to ensure it is a JS Object first by asking for the object version from whichever transpiler you're running or by parsing the serialised map using `JSON.parse` or any other JSON parser.
 
-After this you can call the function `addRawMappings(map, lineOffset, columnOffset)` this function takes in the parameters `map`, `lineOffset` and `columnOffset`. The map argument corresponds to the sourcemap object. The line and column offset are optional parameters used for offsetting the generated line and column. (this can be used when post-processing or wrapping the code linked to the sourcemap, in Parcel this is used when combining maps).
+After this you can call the function `addVLQMap(map, lineOffset, columnOffset)` this function takes in the parameters `map`, `lineOffset` and `columnOffset`. The map argument corresponds to the sourcemap object. The line and column offset are optional parameters used for offsetting the generated line and column. (this can be used when post-processing or wrapping the code linked to the sourcemap, in Parcel this is used when combining maps).
 
 Example:
 
@@ -34,7 +34,7 @@ const RAW_SOURCEMAP = {
 };
 
 let sourcemap = new SourceMap();
-sourcemap.addRawMappings(RAW_SOURCEMAP);
+sourcemap.addVLQMap(RAW_SOURCEMAP);
 
 // This function removes the underlying references in the native code
 sourcemap.delete();
@@ -78,21 +78,21 @@ sourcemap.delete();
 
 For caching sourcemaps we have a `toBuffer()` function which returns a buffer that can be saved on disk for later use and combining sourcemaps very quickly.
 
-You can add a cached map to a SourceMap instance using the `addBufferMappings(buffer, lineOffset, columnOffset)` function, where you can also offset the generated line and column.
+You can add a cached map to a SourceMap instance using the `addBuffer(buffer, lineOffset, columnOffset)` function, where you can also offset the generated line and column.
 
 ## Inspiration and purpose
 
 ### Why did we write this library
 
-Parcel is a performance concious bundler, and therefore we like to optimise Parcel's performance as much as possible.
+Parcel is a performance conscious bundler, and therefore we like to optimise Parcel's performance as much as possible.
 
-Our original source-map implementation used mozilla's source-map and a bunch of javascript and had issues with memory usage and serialisation times (we were keeping all mappings in memory using JS objects and write/read it using JSON for caching).
+Our original source-map implementation used mozilla's source-map and a bunch of javascript and had issues with memory usage and serialization times (we were keeping all mappings in memory using JS objects and write/read it using JSON for caching).
 
-This implementation has been written from scratch in Rust minimizing the memory usage, by utilising indexes for sources and names and optimising serialisation times by using flatbuffers instead of JSON for caching.
+This implementation has been written from scratch in Rust minimizing the memory usage, by utilizing indexes for sources and names and optimizing serialization times by using Buffers instead of JSON for caching.
 
 ### Previous works and inspiration
 
-Without these libraries this library wouldn't be as good as it is today. We've inspired and optimised our code using ideas and patterns used inside these libraries as well as used it to figure out how sourcemaps should be handled properly.
+Without these libraries this library wouldn't be as good as it is today. We've inspired and optimized our code using ideas and patterns used inside these libraries as well as used it to figure out how sourcemaps should be handled properly.
 
 - [source-map by Mozilla](https://github.com/mozilla/source-map)
 - [source-map-mappings by Nick Fitzgerald](https://github.com/fitzgen/source-map-mappings)
@@ -112,16 +112,10 @@ To be able to build and work on this project you need to have the following tool
 
 ### Building the project
 
-For development purposes you might want to build or rebuild the project, for this you need to build the N-API module, JS Code and WASM bindings.
+For development purposes you might want to build or rebuild the project, for this you need to build the N-API module and JS Code.
 
-To do this run the following commmand: (for more information about this you can have a look in `./package.json` and `./Makefile`)
+To do this run the following commands: (for more information about this you can have a look in `./package.json` and `./Makefile`)
 
 ```shell
-yarn transpile && yarn build:dev && make clean && make all
-```
-
-### Compile flatbuffer schema
-
-```bash
-./flatc -o ./src --cpp ./src/sourcemap-schema.fbs
+yarn transpile && yarn build:node
 ```

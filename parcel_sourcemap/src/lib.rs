@@ -311,7 +311,7 @@ impl SourceMap {
         return Ok(sourcemap);
     }
 
-    pub fn append_sourcemap(
+    pub fn add_sourcemap(
         &mut self,
         sourcemap: &SourceMap,
         line_offset: i64,

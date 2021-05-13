@@ -13,7 +13,7 @@ describe('SourceMap - Offset Utils', () => {
   it('Should be able to offset columns', () => {
     let map = new SourceMap('/test-root');
 
-    map.addRawMappings({
+    map.addVLQMap({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
       names: SIMPLE_SOURCE_MAP.names,
@@ -94,7 +94,7 @@ describe('SourceMap - Offset Utils', () => {
   it('Positive line offset', () => {
     let map = new SourceMap('/test-root');
 
-    map.addRawMappings({
+    map.addVLQMap({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
       names: SIMPLE_SOURCE_MAP.names,
@@ -169,7 +169,7 @@ describe('SourceMap - Offset Utils', () => {
   it('Negative line offset', () => {
     let map = new SourceMap('/test-root');
 
-    map.addRawMappings({
+    map.addVLQMap({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
       names: SIMPLE_SOURCE_MAP.names,

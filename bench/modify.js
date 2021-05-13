@@ -4,7 +4,7 @@ const AngularSourceMap = require('./maps/angular');
 
 exports.modify = function () {
   let sourcemapInstance = new SourceMap();
-  sourcemapInstance.addRawMappings(AngularSourceMap);
+  sourcemapInstance.addVLQMap(AngularSourceMap);
 
   return b.suite(
     'modify',

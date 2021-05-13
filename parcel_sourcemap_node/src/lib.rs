@@ -4,8 +4,8 @@ extern crate napi_derive;
 extern crate parcel_sourcemap;
 
 use napi::{
-    CallContext, Either, Env, JsBuffer, JsNull, JsNumber, JsObject, JsString, JsUndefined,
-    Property, Result, JsTypedArray,
+    CallContext, Either, Env, JsBuffer, JsNull, JsNumber, JsObject, JsString, JsTypedArray,
+    JsUndefined, Property, Result,
 };
 use parcel_sourcemap::{Mapping, OriginalLocation, SourceMap};
 
@@ -263,7 +263,7 @@ fn to_buffer(ctx: CallContext) -> Result<JsBuffer> {
 }
 
 #[js_function(3)]
-fn append_sourcemap(ctx: CallContext) -> Result<JsUndefined> {
+fn add_sourcemap(ctx: CallContext) -> Result<JsUndefined> {
     let this: JsObject = ctx.this_unchecked();
     let source_map_instance: &mut SourceMap = ctx.env.unwrap(&this)?;
 
@@ -272,7 +272,7 @@ fn append_sourcemap(ctx: CallContext) -> Result<JsUndefined> {
     let line_offset = ctx.get::<JsNumber>(1)?.get_int64()?;
     let column_offset = ctx.get::<JsNumber>(2)?.get_int64()?;
 
-    source_map_instance.append_sourcemap(previous_map_instance, line_offset, column_offset)?;
+    source_map_instance.add_sourcemap(previous_map_instance, line_offset, column_offset)?;
     return ctx.env.get_undefined();
 }
 
@@ -463,7 +463,6 @@ fn extends(ctx: CallContext) -> Result<JsUndefined> {
     let sourcemap_object = ctx.get::<JsObject>(0)?;
     let previous_map_instance = ctx.env.unwrap::<SourceMap>(&sourcemap_object)?;
     source_map_instance.extends(&previous_map_instance)?;
-    
     return ctx.env.get_undefined();
 }
 
@@ -532,8 +531,8 @@ fn init(mut exports: JsObject, env: Env) -> Result<()> {
     let get_name_index_method = Property::new(&env, "getNameIndex")?.with_method(get_name_index);
     let get_mappings_method = Property::new(&env, "getMappings")?.with_method(get_mappings);
     let to_buffer_method = Property::new(&env, "toBuffer")?.with_method(to_buffer);
-    let append_sourcemap_method =
-        Property::new(&env, "appendSourcemap")?.with_method(append_sourcemap);
+    let add_sourcemap_method =
+        Property::new(&env, "addSourceMap")?.with_method(add_sourcemap);
     let add_indexed_mappings_method =
         Property::new(&env, "addIndexedMappings")?.with_method(add_indexed_mappings);
     let add_vlq_map_method = Property::new(&env, "addVLQMap")?.with_method(add_vlq_map);
@@ -562,7 +561,7 @@ fn init(mut exports: JsObject, env: Env) -> Result<()> {
             get_names_method,
             get_name_index_method,
             get_mappings_method,
-            append_sourcemap_method,
+            add_sourcemap_method,
             add_indexed_mappings_method,
             add_vlq_map_method,
             to_buffer_method,

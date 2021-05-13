@@ -69,8 +69,8 @@ export type GenerateEmptyMapOptions = {
 export default class SourceMap {
   static generateEmptyMap(opts: GenerateEmptyMapOptions): SourceMap;
   addEmptyMap(sourceName: string, sourceContent: string, lineOffset?: number): SourceMap;
-  addRawMappings(map: VLQMap, lineOffset?: number, columnOffset?: number): SourceMap;
-  addBufferMappings(buffer: Buffer, lineOffset?: number, columnOffset?: number): SourceMap;
+  addVLQMap(map: VLQMap, lineOffset?: number, columnOffset?: number): SourceMap;
+  addBuffer(buffer: Buffer, lineOffset?: number, columnOffset?: number): SourceMap;
   addIndexedMapping(mapping: IndexedMapping<string>, lineOffset?: number, columnOffset?: number): void;
   addIndexedMappings(mappings: Array<IndexedMapping<string>>, lineOffset?: number, columnOffset?: number): void;
   addName(name: string): number;

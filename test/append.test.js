@@ -248,31 +248,31 @@ let expectedResultTwo = {
 describe('SourceMap - Append Mappings', () => {
   it('Append buffer mappings with line offset', () => {
     let map = new SourceMap('/test-root');
-    map.addRawMappings({
+    map.addVLQMap({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
       names: SIMPLE_SOURCE_MAP.names,
     });
     let buffer = map.toBuffer();
-    map.addBufferMappings(buffer, 10);
+    map.addBuffer(buffer, 10);
     assert.deepEqual(map.getMap(), expectedResultOne);
   });
 
   it('Append buffer mappings with line and column offset', () => {
     let map = new SourceMap('/test-root');
-    map.addRawMappings({
+    map.addVLQMap({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
       names: SIMPLE_SOURCE_MAP.names,
     });
     let buffer = map.toBuffer();
-    map.addBufferMappings(buffer, 10, 46);
+    map.addBuffer(buffer, 10, 46);
     assert.deepEqual(map.getMap(), expectedResultTwo);
   });
 
   it('Append buffer mappings with sourceContent', () => {
     let originalMap = new SourceMap('/test-root');
-    originalMap.addRawMappings({
+    originalMap.addVLQMap({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
       names: SIMPLE_SOURCE_MAP.names,
@@ -281,12 +281,12 @@ describe('SourceMap - Append Mappings', () => {
     let buffer = originalMap.toBuffer();
 
     let newMap = new SourceMap('/test-root');
-    newMap.addRawMappings({
+    newMap.addVLQMap({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
       names: SIMPLE_SOURCE_MAP.names,
     });
-    newMap.addBufferMappings(buffer, 10);
+    newMap.addBuffer(buffer, 10);
     assert.deepEqual(newMap.getMap(), {
       ...expectedResultOne,
       sourcesContent: ['a-content'],
@@ -295,12 +295,12 @@ describe('SourceMap - Append Mappings', () => {
 
   it('Append vlq mappings with line offset', () => {
     let map = new SourceMap('/test-root');
-    map.addRawMappings({
+    map.addVLQMap({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
       names: SIMPLE_SOURCE_MAP.names,
     });
-    map.addRawMappings(
+    map.addVLQMap(
       {
         mappings: SIMPLE_SOURCE_MAP.mappings,
         sources: SIMPLE_SOURCE_MAP.sources,
@@ -313,12 +313,12 @@ describe('SourceMap - Append Mappings', () => {
 
   it('Append vlq mappings with line and column offset', () => {
     let map = new SourceMap('/test-root');
-    map.addRawMappings({
+    map.addVLQMap({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
       names: SIMPLE_SOURCE_MAP.names,
     });
-    map.addRawMappings(
+    map.addVLQMap(
       {
         mappings: SIMPLE_SOURCE_MAP.mappings,
         sources: SIMPLE_SOURCE_MAP.sources,
