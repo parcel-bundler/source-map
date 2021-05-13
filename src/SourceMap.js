@@ -64,13 +64,6 @@ export default class SourceMap {
   }
 
   /**
-   * @deprecated use addVLQMap instead...
-   */
-  addRawMappings(map: VLQMap, lineOffset?: number, columnOffset?: number): SourceMap {
-    return this.addVLQMap(map, lineOffset, columnOffset);
-  }
-
-  /**
    * Appends another sourcemap instance to this sourcemap
    *
    * @param buffer the sourcemap buffer that should get appended to this sourcemap
@@ -79,13 +72,6 @@ export default class SourceMap {
    */
   addSourceMap(sourcemap: SourceMap, lineOffset: number = 0, columnOffset: number = 0): SourceMap {
     throw new Error('Not implemented by child class');
-  }
-
-  /**
-   * @deprecated use addBuffer instead
-   */
-  addBufferMappings(buffer: Buffer, lineOffset?: number, columnOffset?: number): SourceMap {
-    return this.addBuffer(buffer, lineOffset, columnOffset);
   }
 
   /**
