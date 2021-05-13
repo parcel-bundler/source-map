@@ -218,7 +218,7 @@ describe('SourceMap - Basics', () => {
     });
     let buffer = map.toBuffer();
     let newMap = new SourceMap();
-    newMap.addBufferMappings(buffer);
+    newMap.addBuffer(buffer);
     let stringifiedMap = JSON.parse(
       await newMap.stringify({
         file: 'index.js.map',

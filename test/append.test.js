@@ -254,7 +254,7 @@ describe('SourceMap - Append Mappings', () => {
       names: SIMPLE_SOURCE_MAP.names,
     });
     let buffer = map.toBuffer();
-    map.addBufferMappings(buffer, 10);
+    map.addBuffer(buffer, 10);
     assert.deepEqual(map.getMap(), expectedResultOne);
   });
 
@@ -266,7 +266,7 @@ describe('SourceMap - Append Mappings', () => {
       names: SIMPLE_SOURCE_MAP.names,
     });
     let buffer = map.toBuffer();
-    map.addBufferMappings(buffer, 10, 46);
+    map.addBuffer(buffer, 10, 46);
     assert.deepEqual(map.getMap(), expectedResultTwo);
   });
 
@@ -286,7 +286,7 @@ describe('SourceMap - Append Mappings', () => {
       sources: SIMPLE_SOURCE_MAP.sources,
       names: SIMPLE_SOURCE_MAP.names,
     });
-    newMap.addBufferMappings(buffer, 10);
+    newMap.addBuffer(buffer, 10);
     assert.deepEqual(newMap.getMap(), {
       ...expectedResultOne,
       sourcesContent: ['a-content'],

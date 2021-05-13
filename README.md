@@ -78,7 +78,7 @@ sourcemap.delete();
 
 For caching sourcemaps we have a `toBuffer()` function which returns a buffer that can be saved on disk for later use and combining sourcemaps very quickly.
 
-You can add a cached map to a SourceMap instance using the `addBufferMappings(buffer, lineOffset, columnOffset)` function, where you can also offset the generated line and column.
+You can add a cached map to a SourceMap instance using the `addBuffer(buffer, lineOffset, columnOffset)` function, where you can also offset the generated line and column.
 
 ## Inspiration and purpose
 
