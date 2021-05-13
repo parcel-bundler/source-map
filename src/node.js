@@ -60,7 +60,7 @@ export default class NodeSourceMap extends SourceMap {
   }
 
   addSourceMap(sourcemap: SourceMap, lineOffset: number = 0, columnOffset: number = 0): SourceMap {
-    this.sourceMapInstance.appendSourcemap(sourcemap.sourceMapInstance, lineOffset, columnOffset);
+    this.sourceMapInstance.addSourceMap(sourcemap.sourceMapInstance, lineOffset, columnOffset);
     return this;
   }
 
