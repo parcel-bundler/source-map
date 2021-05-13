@@ -59,8 +59,15 @@ export default class SourceMap {
   /**
    * Appends raw VLQ mappings to the sourcemaps
    */
-  addRawMappings(map: VLQMap, lineOffset: number = 0, columnOffset: number = 0): SourceMap {
-    throw new Error('SourceMap.addRawMappings() must be implemented when extending SourceMap');
+  addVLQMap(map: VLQMap, lineOffset: number = 0, columnOffset: number = 0): SourceMap {
+    throw new Error('SourceMap.addVLQMap() must be implemented when extending SourceMap');
+  }
+
+  /**
+   * @deprecated use addVLQMap instead...
+   */
+  addRawMappings(map: VLQMap, lineOffset?: number, columnOffset?: number): SourceMap {
+    return this.addVLQMap(map, lineOffset, columnOffset);
   }
 
   /**

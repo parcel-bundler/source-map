@@ -53,7 +53,7 @@
 //     return map;
 //   }
 
-//   addRawMappings(
+//   addVLQMap(
 //     map: VLQMap,
 //     lineOffset: number = 0,
 //     columnOffset: number = 0
@@ -68,7 +68,7 @@
 //     let sourcesVector = arrayToEmbind(Module.VectorString, sources);
 //     let namesVector = arrayToEmbind(Module.VectorString, names);
 //     let sourcesContentVector = arrayToEmbind(Module.VectorString, sourcesContent);
-//     this.sourceMapInstance.addRawMappings(
+//     this.sourceMapInstance.addVLQMap(
 //       mappings,
 //       sourcesVector,
 //       sourcesContentVector,

@@ -12,7 +12,7 @@ export default class NodeSourceMap extends SourceMap {
     this.projectRoot = this.sourceMapInstance.getProjectRoot();
   }
 
-  addRawMappings(map: VLQMap, lineOffset: number = 0, columnOffset: number = 0): SourceMap {
+  addVLQMap(map: VLQMap, lineOffset: number = 0, columnOffset: number = 0): SourceMap {
     let { sourcesContent, sources = [], mappings, names = [] } = map;
     if (!sourcesContent) {
       sourcesContent = sources.map(() => '');
