@@ -106,9 +106,8 @@ All contributions to this library are welcome as is with any part of Parcel's va
 
 To be able to build and work on this project you need to have the following tools installed:
 
-- [`emscripten`](https://emscripten.org/docs/getting_started/downloads.html)
 - [`node.js`](https://nodejs.org/en/)
-- `make`
+- [`Rust`](https://rustup.rs/)
 
 ### Building the project
 
