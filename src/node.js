@@ -60,6 +60,10 @@ export default class NodeSourceMap extends SourceMap {
   }
 
   addSourceMap(sourcemap: SourceMap, lineOffset: number = 0, columnOffset: number = 0): SourceMap {
+    if (!(sourcemap.sourceMapInstance instanceof bindings.SourceMap)) {
+      throw new Error('The sourcemap provided to addSourceMap is not a valid sourcemap instance');
+    }
+    
     this.sourceMapInstance.addSourceMap(sourcemap.sourceMapInstance, lineOffset, columnOffset);
     return this;
   }
