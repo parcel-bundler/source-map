@@ -284,47 +284,14 @@ fn add_vlq_map(ctx: CallContext) -> Result<JsUndefined> {
 
     let vlq_mappings = ctx.get::<JsString>(0)?.into_utf8()?;
 
-    let js_sources_arr = ctx.get::<JsObject>(1)?;
-    let js_sources_arr_len: u32 = js_sources_arr
-        .get_named_property::<JsNumber>("length")?
-        .get_uint32()?;
-    let mut sources = Vec::with_capacity(js_sources_arr_len as usize);
-    for i in 0..js_sources_arr_len {
-        sources.push(
-            js_sources_arr
-                .get_element::<JsString>(i)?
-                .into_utf8()?
-                .into_owned()?,
-        );
-    }
+    let js_sources_arr_input = ctx.get::<JsString>(1)?.into_utf8()?;
+    let sources: Vec<String> = from_str(js_sources_arr_input.as_str()?)?;
 
-    let js_sources_content_arr = ctx.get::<JsObject>(2)?;
-    let js_sources_content_arr_len: u32 = js_sources_arr
-        .get_named_property::<JsNumber>("length")?
-        .get_uint32()?;
-    let mut sources_content = Vec::with_capacity(js_sources_content_arr_len as usize);
-    for i in 0..js_sources_content_arr_len {
-        sources_content.push(
-            js_sources_content_arr
-                .get_element::<JsString>(i)?
-                .into_utf8()?
-                .into_owned()?,
-        );
-    }
+    let js_sources_content_arr_input = ctx.get::<JsString>(2)?.into_utf8()?;
+    let sources_content: Vec<String> = from_str(js_sources_content_arr_input.as_str()?)?;
 
-    let js_names_arr = ctx.get::<JsObject>(3)?;
-    let js_names_arr_len: u32 = js_names_arr
-        .get_named_property::<JsNumber>("length")?
-        .get_uint32()?;
-    let mut names = Vec::with_capacity(js_names_arr_len as usize);
-    for i in 0..js_names_arr_len {
-        names.push(
-            js_names_arr
-                .get_element::<JsString>(i)?
-                .into_utf8()?
-                .into_owned()?,
-        );
-    }
+    let js_names_arr_input = ctx.get::<JsString>(3)?.into_utf8()?;
+    let names: Vec<String> = from_str(js_names_arr_input.as_str()?)?;
 
     let line_offset = ctx.get::<JsNumber>(4)?.get_int64()?;
     let column_offset = ctx.get::<JsNumber>(5)?.get_int64()?;
@@ -333,7 +300,7 @@ fn add_vlq_map(ctx: CallContext) -> Result<JsUndefined> {
         vlq_mappings.as_slice(),
         sources.iter().map(|s| &s[..]).collect(),
         sources_content.iter().map(|s| &s[..]).collect(),
-        names.iter().map(|n| &n[..]).collect(),
+        names.iter().map(|s| &s[..]).collect(),
         line_offset,
         column_offset,
     )?;
