@@ -49,6 +49,16 @@ export default class NodeSourceMap extends SourceMap {
     return this.sourceMapInstance.toBuffer();
   }
 
+  toVLQ(): VLQMap {
+    let vlqMap = JSON.parse(this.sourceMapInstance.toVLQ());
+    return {
+      mappings: vlqMap.mappings,
+      names: vlqMap.names,
+      sources: vlqMap.sources,
+      sourcesContent: vlqMap.sources_content,
+    };
+  }
+
   findClosestMapping(line: number, column: number): ?IndexedMapping<string> {
     let mapping = this.sourceMapInstance.findClosestMapping(line - 1, column);
     if (mapping) {
