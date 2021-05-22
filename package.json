@@ -1,6 +1,6 @@
 {
   "name": "@parcel/source-map",
-  "version": "2.0.1-rc.6",
+  "version": "2.0.0-rc.2",
   "main": "./dist/node.js",
   "types": "index.d.ts",
   "license": "MIT",
