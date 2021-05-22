@@ -80,6 +80,14 @@ export default class NodeSourceMap extends SourceMap {
     return this;
   }
 
+  getNames(): Array<string> {
+    return JSON.parse(this.sourceMapInstance.getNames());
+  }
+
+  getSources(): Array<string> {
+    return JSON.parse(this.sourceMapInstance.getSources());
+  }
+
   delete() {}
 
   static generateEmptyMap({

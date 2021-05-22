@@ -8,7 +8,7 @@ use napi::{
     Property, Result,
 };
 use parcel_sourcemap::{Mapping, OriginalLocation, SourceMap};
-use serde_json::from_str;
+use serde_json::{from_str, to_string};
 
 #[js_function(1)]
 fn add_source(ctx: CallContext) -> Result<JsNumber> {
@@ -45,7 +45,8 @@ fn _get_sources(ctx: &CallContext) -> Result<JsObject> {
         .env
         .create_array_with_length(source_map_instance.sources.len())?;
     for (source_index, source) in source_map_instance.sources.iter().enumerate() {
-        napi_sources_array.set_element(source_index as u32, ctx.env.create_string(&source[..])?)?;
+        napi_sources_array
+            .set_element(source_index as u32, ctx.env.create_string(source.as_str())?)?;
     }
 
     // Return array
@@ -53,8 +54,11 @@ fn _get_sources(ctx: &CallContext) -> Result<JsObject> {
 }
 
 #[js_function]
-fn get_sources(ctx: CallContext) -> Result<JsObject> {
-    return _get_sources(&ctx);
+fn get_sources(ctx: CallContext) -> Result<JsString> {
+    let this: JsObject = ctx.this_unchecked();
+    let source_map_instance: &SourceMap = ctx.env.unwrap(&this)?;
+    let sources_str = to_string(&source_map_instance.sources)?;
+    return ctx.env.create_string(sources_str.as_str());
 }
 
 fn _get_sources_content(ctx: &CallContext) -> Result<JsObject> {
@@ -67,7 +71,7 @@ fn _get_sources_content(ctx: &CallContext) -> Result<JsObject> {
     for (source_index, source_content) in source_map_instance.sources_content.iter().enumerate() {
         napi_sources_content_array.set_element(
             source_index as u32,
-            ctx.env.create_string(&source_content[..])?,
+            ctx.env.create_string(source_content.as_str())?,
         )?;
     }
 
@@ -163,7 +167,7 @@ fn _get_names(ctx: &CallContext) -> Result<JsObject> {
         .env
         .create_array_with_length(source_map_instance.names.len())?;
     for (name_index, name) in source_map_instance.names.iter().enumerate() {
-        napi_names_array.set_element(name_index as u32, ctx.env.create_string(&name[..])?)?;
+        napi_names_array.set_element(name_index as u32, ctx.env.create_string(name.as_str())?)?;
     }
 
     // Return array
@@ -171,8 +175,11 @@ fn _get_names(ctx: &CallContext) -> Result<JsObject> {
 }
 
 #[js_function]
-fn get_names(ctx: CallContext) -> Result<JsObject> {
-    return _get_names(&ctx);
+fn get_names(ctx: CallContext) -> Result<JsString> {
+    let this: JsObject = ctx.this_unchecked();
+    let source_map_instance: &SourceMap = ctx.env.unwrap(&this)?;
+    let names_str = to_string(&source_map_instance.names)?;
+    return ctx.env.create_string(names_str.as_str());
 }
 
 #[js_function(1)]
@@ -298,9 +305,9 @@ fn add_vlq_map(ctx: CallContext) -> Result<JsUndefined> {
 
     source_map_instance.add_vlq_map(
         vlq_mappings.as_slice(),
-        sources.iter().map(|s| &s[..]).collect(),
-        sources_content.iter().map(|s| &s[..]).collect(),
-        names.iter().map(|s| &s[..]).collect(),
+        sources.iter().map(|s| s.as_str()).collect(),
+        sources_content.iter().map(|s| s.as_str()).collect(),
+        names.iter().map(|s| s.as_str()).collect(),
         line_offset,
         column_offset,
     )?;
@@ -315,7 +322,7 @@ fn to_vlq(ctx: CallContext) -> Result<JsObject> {
 
     let mut vlq_output: Vec<u8> = vec![];
     source_map_instance.write_vlq(&mut vlq_output)?;
-    let vlq_string = ctx.env.create_string_from_vec_u8(vlq_output)?;
+    let vlq_string = ctx.env.create_string_latin1(vlq_output.as_slice())?;
     let mut result_obj: JsObject = ctx.env.create_object()?;
     result_obj.set_named_property("mappings", vlq_string)?;
     result_obj.set_named_property("sources", _get_sources(&ctx)?)?;

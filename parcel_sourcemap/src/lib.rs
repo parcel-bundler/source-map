@@ -217,7 +217,7 @@ impl SourceMap {
     pub fn get_source(&self, index: u32) -> Result<&str, SourceMapError> {
         match self.sources.get(index as usize) {
             Some(v) => {
-                return Ok(&v[..]);
+                return Ok(v.as_str());
             }
             None => {
                 return Err(SourceMapError::new(SourceMapErrorType::SourceOutOfRange));
@@ -254,7 +254,7 @@ impl SourceMap {
     pub fn get_name(&self, index: u32) -> Result<&str, SourceMapError> {
         match self.names.get(index as usize) {
             Some(v) => {
-                return Ok(&v[..]);
+                return Ok(v.as_str());
             }
             None => {
                 return Err(SourceMapError::new(SourceMapErrorType::NameOutOfRange));
@@ -290,7 +290,7 @@ impl SourceMap {
     pub fn get_source_content(&self, index: u32) -> Result<&str, SourceMapError> {
         match self.sources_content.get(index as usize) {
             Some(v) => {
-                return Ok(&v[..]);
+                return Ok(v.as_str());
             }
             None => {
                 return Err(SourceMapError::new(SourceMapErrorType::SourceOutOfRange));
