@@ -33,7 +33,7 @@ exports.consume = function () {
       });
       map.delete();
     }),
-    b.add('consume flatbuffer', () => {
+    b.add('consume buffer', () => {
       let map = new SourceMap(sourcemapBuffer);
       map.delete();
     }),
