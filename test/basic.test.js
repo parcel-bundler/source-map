@@ -75,7 +75,7 @@ const PROCESSED_MAP = {
 describe('SourceMap - Basics', () => {
   it('Should be able to instantiate a SourceMap with vlq mappings', async () => {
     let map = new SourceMap('/test-root');
-    map.addRawMappings({
+    map.addVLQMap({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
       names: SIMPLE_SOURCE_MAP.names,
@@ -86,7 +86,7 @@ describe('SourceMap - Basics', () => {
 
   it('Should be able to output the processed map as a JS Object', () => {
     let map = new SourceMap('/test-root');
-    map.addRawMappings({
+    map.addVLQMap({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
       names: SIMPLE_SOURCE_MAP.names,
@@ -97,7 +97,7 @@ describe('SourceMap - Basics', () => {
 
   it('Should be able to output the processed mappings as JS Objects', () => {
     let map = new SourceMap('/test-root');
-    map.addRawMappings({
+    map.addVLQMap({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
       names: SIMPLE_SOURCE_MAP.names,
@@ -210,7 +210,7 @@ describe('SourceMap - Basics', () => {
 
   it('Should be able to create a SourceMap buffer and construct a new SourceMap from it', async () => {
     let map = new SourceMap('/test-root');
-    map.addRawMappings({
+    map.addVLQMap({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
       sourcesContent: ['() => "test"'],
@@ -218,7 +218,7 @@ describe('SourceMap - Basics', () => {
     });
     let buffer = map.toBuffer();
     let newMap = new SourceMap();
-    newMap.addBufferMappings(buffer);
+    newMap.addBuffer(buffer);
     let stringifiedMap = JSON.parse(
       await newMap.stringify({
         file: 'index.js.map',
@@ -239,7 +239,7 @@ describe('SourceMap - Basics', () => {
 
   it('Should be able to add sources to a sourcemap', () => {
     let map = new SourceMap('/test-root');
-    map.addRawMappings({
+    map.addVLQMap({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
       names: SIMPLE_SOURCE_MAP.names,
@@ -263,7 +263,7 @@ describe('SourceMap - Basics', () => {
 
   it('Should be able to add names to a sourcemap', () => {
     let map = new SourceMap('/test-root');
-    map.addRawMappings({
+    map.addVLQMap({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
       names: SIMPLE_SOURCE_MAP.names,
@@ -277,7 +277,7 @@ describe('SourceMap - Basics', () => {
 
   it('Should be able to return source index', () => {
     let map = new SourceMap('/test-root');
-    map.addRawMappings({
+    map.addVLQMap({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
       names: SIMPLE_SOURCE_MAP.names,
@@ -291,7 +291,7 @@ describe('SourceMap - Basics', () => {
 
   it('Should be able to return name index', () => {
     let map = new SourceMap('/test-root');
-    map.addRawMappings({
+    map.addVLQMap({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
       names: SIMPLE_SOURCE_MAP.names,
@@ -304,7 +304,7 @@ describe('SourceMap - Basics', () => {
 
   it('Should be able to return source for a certain index', () => {
     let map = new SourceMap('/test-root');
-    map.addRawMappings({
+    map.addVLQMap({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
       names: SIMPLE_SOURCE_MAP.names,
@@ -316,7 +316,7 @@ describe('SourceMap - Basics', () => {
 
   it('Should be able to return all sources', () => {
     let map = new SourceMap('/test-root');
-    map.addRawMappings({
+    map.addVLQMap({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
       names: SIMPLE_SOURCE_MAP.names,
@@ -331,7 +331,7 @@ describe('SourceMap - Basics', () => {
 
   it('Should be able to return a map of all sources and their content', () => {
     let map = new SourceMap('/test-root');
-    map.addRawMappings({
+    map.addVLQMap({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
       names: SIMPLE_SOURCE_MAP.names,
@@ -353,7 +353,7 @@ describe('SourceMap - Basics', () => {
 
   it('Should be able to return name for a certain index', () => {
     let map = new SourceMap('/test-root');
-    map.addRawMappings({
+    map.addVLQMap({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
       names: SIMPLE_SOURCE_MAP.names,
@@ -366,7 +366,7 @@ describe('SourceMap - Basics', () => {
 
   it('Should be able to return all names', () => {
     let map = new SourceMap('/test-root');
-    map.addRawMappings({
+    map.addVLQMap({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
       names: SIMPLE_SOURCE_MAP.names,
@@ -382,7 +382,7 @@ describe('SourceMap - Basics', () => {
 
   it('Should be able to store and return sourceContents', async () => {
     let map = new SourceMap('/test-root');
-    map.addRawMappings({
+    map.addVLQMap({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
       sourcesContent: ['module.exports = () => "hello world";'],

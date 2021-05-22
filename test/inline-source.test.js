@@ -18,7 +18,7 @@ const fileTwoContent = fs.readFileSync(path.join(ROOT_DIR, SIMPLE_SOURCE_MAP.sou
 describe('SourceMap - Inline Sources', () => {
   it('Should be able to inline sources', async () => {
     let map = new SourceMap(ROOT_DIR);
-    map.addRawMappings({
+    map.addVLQMap({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
       names: SIMPLE_SOURCE_MAP.names,
@@ -45,7 +45,7 @@ describe('SourceMap - Inline Sources', () => {
 
   it('Should always inline sources outside the root', async () => {
     let map = new SourceMap(ROOT_DIR);
-    map.addRawMappings({
+    map.addVLQMap({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
       names: SIMPLE_SOURCE_MAP.names,
@@ -72,7 +72,7 @@ describe('SourceMap - Inline Sources', () => {
 
   it('Should not overwrite existing sourceContent when inlining is true', async () => {
     let map = new SourceMap(ROOT_DIR);
-    map.addRawMappings({
+    map.addVLQMap({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
       names: SIMPLE_SOURCE_MAP.names,
@@ -100,7 +100,7 @@ describe('SourceMap - Inline Sources', () => {
 
   it('Should not overwrite existing sourceContent when inlining is false', async () => {
     let map = new SourceMap(ROOT_DIR);
-    map.addRawMappings({
+    map.addVLQMap({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
       names: SIMPLE_SOURCE_MAP.names,

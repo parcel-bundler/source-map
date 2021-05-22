@@ -26,7 +26,7 @@ exports.consume = function () {
     'consume',
     b.add('consume vlq mappings', () => {
       let map = new SourceMap();
-      map.addRawMappings({
+      map.addVLQMap({
         mappings: rawSourceMap.mappings,
         sources: rawSourceMap.sources,
         names: rawSourceMap.names,

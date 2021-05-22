@@ -12,7 +12,7 @@ export default class NodeSourceMap extends SourceMap {
     this.projectRoot = this.sourceMapInstance.getProjectRoot();
   }
 
-  addRawMappings(map: VLQMap, lineOffset: number = 0, columnOffset: number = 0): SourceMap {
+  addVLQMap(map: VLQMap, lineOffset: number = 0, columnOffset: number = 0): SourceMap {
     let { sourcesContent, sources = [], mappings, names = [] } = map;
     if (!sourcesContent) {
       sourcesContent = sources.map(() => '');
@@ -60,11 +60,15 @@ export default class NodeSourceMap extends SourceMap {
   }
 
   addSourceMap(sourcemap: SourceMap, lineOffset: number = 0, columnOffset: number = 0): SourceMap {
-    this.sourceMapInstance.appendSourcemap(sourcemap.sourceMapInstance, lineOffset, columnOffset);
+    if (!(sourcemap.sourceMapInstance instanceof bindings.SourceMap)) {
+      throw new Error('The sourcemap provided to addSourceMap is not a valid sourcemap instance');
+    }
+    
+    this.sourceMapInstance.addSourceMap(sourcemap.sourceMapInstance, lineOffset, columnOffset);
     return this;
   }
 
-  addBufferMappings(buffer: Buffer, lineOffset: number = 0, columnOffset: number = 0): SourceMap {
+  addBuffer(buffer: Buffer, lineOffset: number = 0, columnOffset: number = 0): SourceMap {
     let previousMap = new NodeSourceMap(buffer);
     return this.addSourceMap(previousMap, lineOffset, columnOffset);
   }
