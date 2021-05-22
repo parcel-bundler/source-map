@@ -162,7 +162,7 @@ dependencies = [
 
 [[package]]
 name = "parcel_sourcemap_node"
-version = "2.0.1-alpha.0"
+version = "2.0.1-rc.1"
 dependencies = [
  "napi",
  "napi-build",
