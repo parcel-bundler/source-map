@@ -53,7 +53,6 @@
     "@babel/preset-env": "^7.14.2",
     "@babel/preset-flow": "^7.13.13",
     "@babel/register": "^7.13.16",
-    "@iarna/toml": "^2.2.5",
     "@napi-rs/cli": "^1.0.4",
     "benny": "^3.6.15",
     "cross-env": "^7.0.3",

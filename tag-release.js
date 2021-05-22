@@ -1,4 +1,3 @@
-const toml = require('@iarna/toml');
 const path = require('path');
 const fs = require('fs');
 const { execSync } = require('child_process');
