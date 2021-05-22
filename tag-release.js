@@ -18,7 +18,7 @@ async function run() {
   fs.writeFileSync(packageJsonFilepath, JSON.stringify(parsedPkgJson, null, '  '));
 
   console.log('Updating cargo.toml...');
-  execSync(`cargo release ${version}`, {
+  execSync(`cargo release ${version} --no-confirm`, {
     cwd: __dirname,
   });
 
