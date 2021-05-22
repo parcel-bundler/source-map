@@ -6,7 +6,8 @@ edition = "2018"
 
 [profile.release]
 lto = true
-opt-level = 3
+opt-level = 's' # optimize for size
+codegen-units = 1
 
 [dependencies]
 parcel_sourcemap = { path = "../parcel_sourcemap" }

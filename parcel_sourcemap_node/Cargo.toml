@@ -10,6 +10,7 @@ crate-type = ["cdylib"]
 [profile.release]
 lto = true
 opt-level = 3
+codegen-units = 1
 
 [dependencies]
 parcel_sourcemap = { path = "../parcel_sourcemap" }
