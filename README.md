@@ -118,3 +118,11 @@ To do this run the following commands: (for more information about this you can 
 ```shell
 yarn transpile && yarn build:node
 ```
+
+### Tagging a release
+
+Before you're able to tag a release ensure to have cargo-release installed `cargo install cargo-release`, we use it to tag the cargo files with a release tag.
+
+```shell
+yarn tag-release <version>
+```
