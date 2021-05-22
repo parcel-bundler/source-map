@@ -26,14 +26,6 @@ pub struct SourceMap {
     pub mapping_lines: BTreeMap<u32, MappingLine>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct VLQMap {
-    pub mappings: String,
-    pub sources: Vec<String>,
-    pub sources_content: Vec<String>,
-    pub names: Vec<String>,
-}
-
 impl SourceMap {
     pub fn new(project_root: &str) -> Self {
         Self {
@@ -356,34 +348,38 @@ impl SourceMap {
                             generated_line as u32,
                             generated_column as u32,
                             match *original_location {
-                                Some(original_mapping_location) => Some(OriginalLocation::new(
-                                    original_mapping_location.original_line,
-                                    original_mapping_location.original_column,
-                                    match source_indexes
-                                        .get(original_mapping_location.source as usize)
-                                    {
-                                        Some(new_source_index) => *new_source_index,
-                                        None => {
-                                            return Err(SourceMapError::new(
-                                                SourceMapErrorType::SourceOutOfRange,
-                                            ));
-                                        }
-                                    },
-                                    match original_mapping_location.name {
-                                        Some(name_index) => {
-                                            match names_indexes.get(name_index as usize) {
-                                                Some(new_name_index) => Some(*new_name_index),
-                                                None => {
-                                                    return Err(SourceMapError::new(
-                                                        SourceMapErrorType::NameOutOfRange,
-                                                    ));
+                                Some(original_mapping_location) => {
+                                    Some(OriginalLocation::new(
+                                        original_mapping_location.original_line,
+                                        original_mapping_location.original_column,
+                                        match source_indexes
+                                            .get(original_mapping_location.source as usize)
+                                        {
+                                            Some(new_source_index) => *new_source_index,
+                                            None => {
+                                                return Err(SourceMapError::new(
+                                                    SourceMapErrorType::SourceOutOfRange,
+                                                ));
+                                            }
+                                        },
+                                        match original_mapping_location.name {
+                                            Some(name_index) => {
+                                                match names_indexes.get(name_index as usize) {
+                                                    Some(new_name_index) => Some(*new_name_index),
+                                                    None => {
+                                                        return Err(SourceMapError::new(
+                                                            SourceMapErrorType::NameOutOfRange,
+                                                        ));
+                                                    }
                                                 }
                                             }
-                                        }
-                                        None => None,
-                                    },
-                                )),
-                                None => None,
+                                            None => None,
+                                        },
+                                    ))
+                                }
+                                None => {
+                                    None
+                                }
                             },
                         );
                     }
@@ -393,6 +389,7 @@ impl SourceMap {
 
         return Ok(());
     }
+    
     pub fn extends(&mut self, original_sourcemap: &SourceMap) -> Result<(), SourceMapError> {
         self.sources.reserve(original_sourcemap.sources.len());
         let mut source_indexes = Vec::with_capacity(original_sourcemap.sources.len());
@@ -549,20 +546,6 @@ impl SourceMap {
         }
 
         return Ok(());
-    }
-
-    pub fn to_vlq(&mut self) -> Result<VLQMap, SourceMapError> {
-        let mut vlq_output: Vec<u8> = vec![];
-        self.write_vlq(&mut vlq_output)?;
-
-        let vlq_map = VLQMap {
-            mappings: String::from_utf8(vlq_output)?,
-            names: self.names.clone(),
-            sources: self.sources.clone(),
-            sources_content: self.sources_content.clone(),
-        };
-
-        return Ok(vlq_map);
     }
 
     pub fn offset_columns(

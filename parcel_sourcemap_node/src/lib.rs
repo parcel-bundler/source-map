@@ -8,7 +8,7 @@ use napi::{
     Property, Result,
 };
 use parcel_sourcemap::{Mapping, OriginalLocation, SourceMap};
-use serde_json::{from_str, to_string};
+use serde_json::from_str;
 
 #[js_function(1)]
 fn add_source(ctx: CallContext) -> Result<JsNumber> {
@@ -309,13 +309,20 @@ fn add_vlq_map(ctx: CallContext) -> Result<JsUndefined> {
 }
 
 #[js_function]
-fn to_vlq(ctx: CallContext) -> Result<JsString> {
+fn to_vlq(ctx: CallContext) -> Result<JsObject> {
     let this: JsObject = ctx.this_unchecked();
     let source_map_instance: &mut SourceMap = ctx.env.unwrap(&this)?;
 
-    let vlq_map = source_map_instance.to_vlq()?;
-    let vlq_str = to_string(&vlq_map)?;
-    return ctx.env.create_string(&vlq_str);
+    let mut vlq_output: Vec<u8> = vec![];
+    source_map_instance.write_vlq(&mut vlq_output)?;
+    let vlq_string = ctx.env.create_string_from_vec_u8(vlq_output)?;
+    let mut result_obj: JsObject = ctx.env.create_object()?;
+    result_obj.set_named_property("mappings", vlq_string)?;
+    result_obj.set_named_property("sources", _get_sources(&ctx)?)?;
+    result_obj.set_named_property("sourcesContent", _get_sources_content(&ctx)?)?;
+    result_obj.set_named_property("names", _get_names(&ctx)?)?;
+
+    return Ok(result_obj);
 }
 
 #[js_function(1)]
