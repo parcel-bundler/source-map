@@ -4,10 +4,11 @@ extern crate napi_derive;
 extern crate parcel_sourcemap;
 
 use napi::{
-    CallContext, Either, Env, JsBuffer, JsNull, JsNumber, JsObject, JsString, JsTypedArray,
-    JsUndefined, Property, Result,
+    CallContext, Either, Env, JsBuffer, JsNull, JsNumber, JsObject, JsString, JsUndefined,
+    Property, Result,
 };
 use parcel_sourcemap::{Mapping, OriginalLocation, SourceMap};
+use serde_json::from_str;
 
 #[js_function(1)]
 fn add_source(ctx: CallContext) -> Result<JsNumber> {
@@ -362,18 +363,17 @@ fn add_indexed_mappings(ctx: CallContext) -> Result<JsUndefined> {
     let this: JsObject = ctx.this_unchecked();
     let source_map_instance: &mut SourceMap = ctx.env.unwrap(&this)?;
 
-    let js_mapping_arr = ctx.get::<JsTypedArray>(0)?;
-    let length: u32 = js_mapping_arr
-        .get_named_property::<JsNumber>("length")?
-        .get_uint32()?;
+    let input = ctx.get::<JsString>(0)?.into_utf8()?;
+    let mappings_arr: Vec<i32> = from_str(input.as_str()?)?;
+    let mappings_count = mappings_arr.len();
 
     let mut generated_line: u32 = 0; // 0
     let mut generated_column: u32 = 0; // 1
     let mut original_line: i32 = 0; // 2
     let mut original_column: i32 = 0; // 3
     let mut original_source: i32 = 0; // 4
-    for i in 0..length {
-        let value: i32 = js_mapping_arr.get_element::<JsNumber>(i)?.get_int32()?;
+    for i in 0..mappings_count {
+        let value: i32 = mappings_arr[i];
 
         match i % 6 {
             0 => {
@@ -531,8 +531,7 @@ fn init(mut exports: JsObject, env: Env) -> Result<()> {
     let get_name_index_method = Property::new(&env, "getNameIndex")?.with_method(get_name_index);
     let get_mappings_method = Property::new(&env, "getMappings")?.with_method(get_mappings);
     let to_buffer_method = Property::new(&env, "toBuffer")?.with_method(to_buffer);
-    let add_sourcemap_method =
-        Property::new(&env, "addSourceMap")?.with_method(add_sourcemap);
+    let add_sourcemap_method = Property::new(&env, "addSourceMap")?.with_method(add_sourcemap);
     let add_indexed_mappings_method =
         Property::new(&env, "addIndexedMappings")?.with_method(add_indexed_mappings);
     let add_vlq_map_method = Property::new(&env, "addVLQMap")?.with_method(add_vlq_map);

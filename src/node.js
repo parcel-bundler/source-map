@@ -36,7 +36,7 @@ export default class NodeSourceMap extends SourceMap {
     columnOffset?: number = 0
   ): SourceMap {
     let mappingBuffer = this._indexedMappingsToInt32Array(mappings, lineOffset, columnOffset);
-    this.sourceMapInstance.addIndexedMappings(mappingBuffer);
+    this.sourceMapInstance.addIndexedMappings(JSON.stringify(mappingBuffer));
     return this;
   }
 
