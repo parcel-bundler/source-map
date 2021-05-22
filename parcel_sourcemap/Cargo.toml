@@ -6,6 +6,7 @@ edition = "2018"
 description = "Parcel Source Map Library"
 license = "MIT"
 keywords = [ "sourcemap", "Node", "Parcel" ]
+repository = "https://github.com/parcel-bundler/source-map"
 
 [profile.release]
 lto = true
