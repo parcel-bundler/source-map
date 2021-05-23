@@ -1,2 +1,0 @@
-[workspace]
-members = [ "parcel_sourcemap", "parcel_sourcemap_node", "parcel_sourcemap_wasm" ]

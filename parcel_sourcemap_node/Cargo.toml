@@ -7,11 +7,6 @@ edition = "2018"
 [lib]
 crate-type = ["cdylib"]
 
-[profile.release]
-lto = true
-opt-level = 3
-codegen-units = 1
-
 [dependencies]
 parcel_sourcemap = { path = "../parcel_sourcemap" }
 napi = { version = "1.6.1", features = ["napi4", "serde-json"] }

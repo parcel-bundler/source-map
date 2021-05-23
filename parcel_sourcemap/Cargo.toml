@@ -8,11 +8,6 @@ license = "MIT"
 keywords = [ "sourcemap", "Node", "Parcel" ]
 repository = "https://github.com/parcel-bundler/source-map"
 
-[profile.release]
-lto = true
-opt-level = 3
-codegen-units = 1
-
 [dependencies]
 "vlq" = "0.5.1"
 "napi" = "1.6.1"

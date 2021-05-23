@@ -1,0 +1,7 @@
+[workspace]
+members = [ "parcel_sourcemap", "parcel_sourcemap_node", "parcel_sourcemap_wasm" ]
+
+[profile.release]
+lto = true
+opt-level = 3
+codegen-units = 1
