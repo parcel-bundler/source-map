@@ -4,8 +4,8 @@ extern crate napi_derive;
 extern crate parcel_sourcemap;
 
 use napi::{
-    CallContext, Either, Env, JsBuffer, JsNull, JsNumber, JsObject, JsString, JsUndefined,
-    Property, Result,
+    CallContext, Either, Env, JsBuffer, JsNull, JsNumber, JsObject, JsString, JsTypedArray,
+    JsUndefined, Property, Result,
 };
 use parcel_sourcemap::{Mapping, OriginalLocation, SourceMap};
 use serde_json::{from_str, to_string};
@@ -337,8 +337,15 @@ fn add_indexed_mappings(ctx: CallContext) -> Result<JsUndefined> {
     let this: JsObject = ctx.this_unchecked();
     let source_map_instance: &mut SourceMap = ctx.env.unwrap(&this)?;
 
-    let input = ctx.get::<JsString>(0)?.into_utf8()?;
-    let mappings_arr: Vec<i32> = from_str(input.as_str()?)?;
+    let mappings = ctx.get::<JsTypedArray>(0)?;
+    let mappings_value = mappings.into_value()?;
+    let mappings_slice = mappings_value.as_ref();
+    let mappings_arr: &[i32] = unsafe {
+        std::slice::from_raw_parts(
+            mappings_slice.as_ptr() as *const i32,
+            mappings_value.length as usize,
+        )
+    };
     let mappings_count = mappings_arr.len();
 
     let mut generated_line: u32 = 0; // 0

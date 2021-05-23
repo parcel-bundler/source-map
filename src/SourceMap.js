@@ -106,7 +106,7 @@ export default class SourceMap {
   ): Array<number> {
     // Encode all mappings into a single typed array and make one call
     // to C++ instead of one for each mapping to improve performance.
-    let mappingBuffer = [];
+    let mappingBuffer = new Int32Array(mappings.length * 6);
     let sources: Map<string, number> = new Map();
     let names: Map<string, number> = new Map();
     let i = 0;
