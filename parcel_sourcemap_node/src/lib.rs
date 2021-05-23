@@ -10,6 +10,10 @@ use napi::{
 use parcel_sourcemap::{Mapping, OriginalLocation, SourceMap};
 use serde_json::{from_str, to_string};
 
+#[cfg(target_os = "macos")]
+#[global_allocator]
+static GLOBAL: jemallocator::Jemalloc = jemallocator::Jemalloc;
+
 #[js_function(1)]
 fn add_source(ctx: CallContext) -> Result<JsNumber> {
     let this: JsObject = ctx.this_unchecked();
