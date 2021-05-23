@@ -35,6 +35,9 @@ pub enum SourceMapErrorType {
 
     // FilePath is invalid
     InvalidFilePath = 10,
+
+    // Failed to convert utf-8 to array
+    FromUtf8Error = 11,
 }
 
 pub struct SourceMapError {
@@ -116,6 +119,9 @@ impl From<SourceMapError> for napi::Error {
             SourceMapErrorType::BufferError => {
                 reason.push_str("Something went wrong while writing/reading a bincode buffer");
             }
+            SourceMapErrorType::FromUtf8Error => {
+                reason.push_str("Could not convert utf-8 array to string");
+            }
         }
 
         // Add reason to error string if there is one
@@ -136,5 +142,12 @@ impl From<std::boxed::Box<bincode::ErrorKind>> for SourceMapError {
     #[inline]
     fn from(_err: std::boxed::Box<bincode::ErrorKind>) -> SourceMapError {
         return SourceMapError::new(SourceMapErrorType::BufferError);
+    }
+}
+
+impl From<std::string::FromUtf8Error> for SourceMapError {
+    #[inline]
+    fn from(_err: std::string::FromUtf8Error) -> SourceMapError {
+        return SourceMapError::new(SourceMapErrorType::FromUtf8Error);
     }
 }

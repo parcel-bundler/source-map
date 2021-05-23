@@ -1,6 +1,6 @@
 {
   "name": "@parcel/source-map",
-  "version": "2.0.0-rc.1.0",
+  "version": "2.0.0-rc.2",
   "main": "./dist/node.js",
   "types": "index.d.ts",
   "license": "MIT",
@@ -17,7 +17,8 @@
     "prepublish": "npm run transpile",
     "typecheck": "flow",
     "format": "prettier --write \"./**/*.{js,md,mdx}\"",
-    "clean": "shx rm -rf dist build"
+    "clean": "shx rm -rf dist build",
+    "tag-release": "node ./tag-release"
   },
   "husky": {
     "hooks": {
@@ -40,28 +41,28 @@
   ],
   "binary": {
     "napi_versions": [
-      3
+      4
     ]
   },
   "engines": {
     "node": "^12.18.3 || >=14"
   },
   "devDependencies": {
-    "@babel/cli": "^7.8.4",
-    "@babel/core": "^7.9.0",
-    "@babel/preset-env": "^7.9.5",
-    "@babel/preset-flow": "^7.9.0",
-    "@babel/register": "^7.11.5",
-    "@napi-rs/cli": "^1.0.3",
+    "@babel/cli": "^7.14.3",
+    "@babel/core": "^7.14.3",
+    "@babel/preset-env": "^7.14.2",
+    "@babel/preset-flow": "^7.13.13",
+    "@babel/register": "^7.13.16",
+    "@napi-rs/cli": "^1.0.4",
     "benny": "^3.6.15",
     "cross-env": "^7.0.3",
-    "flow-bin": "^0.150.0",
+    "flow-bin": "^0.151.0",
     "flow-copy-source": "^2.0.9",
     "fs-extra": "^10.0.0",
     "husky": "6.0.0",
-    "lint-staged": "^10.2.9",
-    "mocha": "^8.3.2",
-    "prettier": "^2.0.5",
+    "lint-staged": "^11.0.0",
+    "mocha": "^8.4.0",
+    "prettier": "^2.3.0",
     "shx": "^0.3.3",
     "source-map": "^0.7.3"
   },

@@ -21,9 +21,9 @@ export default class NodeSourceMap extends SourceMap {
     }
     this.sourceMapInstance.addVLQMap(
       mappings,
-      sources,
-      sourcesContent.map((content) => (content ? content : '')),
-      names,
+      JSON.stringify(sources),
+      JSON.stringify(sourcesContent.map((content) => (content ? content : ''))),
+      JSON.stringify(names),
       lineOffset,
       columnOffset
     );
@@ -63,7 +63,7 @@ export default class NodeSourceMap extends SourceMap {
     if (!(sourcemap.sourceMapInstance instanceof bindings.SourceMap)) {
       throw new Error('The sourcemap provided to addSourceMap is not a valid sourcemap instance');
     }
-    
+
     this.sourceMapInstance.addSourceMap(sourcemap.sourceMapInstance, lineOffset, columnOffset);
     return this;
   }
@@ -78,6 +78,14 @@ export default class NodeSourceMap extends SourceMap {
     let inputSourceMap: SourceMap = Buffer.isBuffer(input) ? new NodeSourceMap(input) : input;
     this.sourceMapInstance.extends(inputSourceMap.sourceMapInstance);
     return this;
+  }
+
+  getNames(): Array<string> {
+    return JSON.parse(this.sourceMapInstance.getNames());
+  }
+
+  getSources(): Array<string> {
+    return JSON.parse(this.sourceMapInstance.getSources());
   }
 
   delete() {}

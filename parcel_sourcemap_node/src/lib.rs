@@ -8,6 +8,7 @@ use napi::{
     JsUndefined, Property, Result,
 };
 use parcel_sourcemap::{Mapping, OriginalLocation, SourceMap};
+use serde_json::{from_str, to_string};
 
 #[js_function(1)]
 fn add_source(ctx: CallContext) -> Result<JsNumber> {
@@ -44,7 +45,8 @@ fn _get_sources(ctx: &CallContext) -> Result<JsObject> {
         .env
         .create_array_with_length(source_map_instance.sources.len())?;
     for (source_index, source) in source_map_instance.sources.iter().enumerate() {
-        napi_sources_array.set_element(source_index as u32, ctx.env.create_string(&source[..])?)?;
+        napi_sources_array
+            .set_element(source_index as u32, ctx.env.create_string(source.as_str())?)?;
     }
 
     // Return array
@@ -52,8 +54,11 @@ fn _get_sources(ctx: &CallContext) -> Result<JsObject> {
 }
 
 #[js_function]
-fn get_sources(ctx: CallContext) -> Result<JsObject> {
-    return _get_sources(&ctx);
+fn get_sources(ctx: CallContext) -> Result<JsString> {
+    let this: JsObject = ctx.this_unchecked();
+    let source_map_instance: &SourceMap = ctx.env.unwrap(&this)?;
+    let sources_str = to_string(&source_map_instance.sources)?;
+    return ctx.env.create_string(sources_str.as_str());
 }
 
 fn _get_sources_content(ctx: &CallContext) -> Result<JsObject> {
@@ -66,7 +71,7 @@ fn _get_sources_content(ctx: &CallContext) -> Result<JsObject> {
     for (source_index, source_content) in source_map_instance.sources_content.iter().enumerate() {
         napi_sources_content_array.set_element(
             source_index as u32,
-            ctx.env.create_string(&source_content[..])?,
+            ctx.env.create_string(source_content.as_str())?,
         )?;
     }
 
@@ -162,7 +167,7 @@ fn _get_names(ctx: &CallContext) -> Result<JsObject> {
         .env
         .create_array_with_length(source_map_instance.names.len())?;
     for (name_index, name) in source_map_instance.names.iter().enumerate() {
-        napi_names_array.set_element(name_index as u32, ctx.env.create_string(&name[..])?)?;
+        napi_names_array.set_element(name_index as u32, ctx.env.create_string(name.as_str())?)?;
     }
 
     // Return array
@@ -170,8 +175,11 @@ fn _get_names(ctx: &CallContext) -> Result<JsObject> {
 }
 
 #[js_function]
-fn get_names(ctx: CallContext) -> Result<JsObject> {
-    return _get_names(&ctx);
+fn get_names(ctx: CallContext) -> Result<JsString> {
+    let this: JsObject = ctx.this_unchecked();
+    let source_map_instance: &SourceMap = ctx.env.unwrap(&this)?;
+    let names_str = to_string(&source_map_instance.names)?;
+    return ctx.env.create_string(names_str.as_str());
 }
 
 #[js_function(1)]
@@ -283,56 +291,23 @@ fn add_vlq_map(ctx: CallContext) -> Result<JsUndefined> {
 
     let vlq_mappings = ctx.get::<JsString>(0)?.into_utf8()?;
 
-    let js_sources_arr = ctx.get::<JsObject>(1)?;
-    let js_sources_arr_len: u32 = js_sources_arr
-        .get_named_property::<JsNumber>("length")?
-        .get_uint32()?;
-    let mut sources = Vec::with_capacity(js_sources_arr_len as usize);
-    for i in 0..js_sources_arr_len {
-        sources.push(
-            js_sources_arr
-                .get_element::<JsString>(i)?
-                .into_utf8()?
-                .into_owned()?,
-        );
-    }
+    let js_sources_arr_input = ctx.get::<JsString>(1)?.into_utf8()?;
+    let sources: Vec<String> = from_str(js_sources_arr_input.as_str()?)?;
 
-    let js_sources_content_arr = ctx.get::<JsObject>(2)?;
-    let js_sources_content_arr_len: u32 = js_sources_arr
-        .get_named_property::<JsNumber>("length")?
-        .get_uint32()?;
-    let mut sources_content = Vec::with_capacity(js_sources_content_arr_len as usize);
-    for i in 0..js_sources_content_arr_len {
-        sources_content.push(
-            js_sources_content_arr
-                .get_element::<JsString>(i)?
-                .into_utf8()?
-                .into_owned()?,
-        );
-    }
+    let js_sources_content_arr_input = ctx.get::<JsString>(2)?.into_utf8()?;
+    let sources_content: Vec<String> = from_str(js_sources_content_arr_input.as_str()?)?;
 
-    let js_names_arr = ctx.get::<JsObject>(3)?;
-    let js_names_arr_len: u32 = js_names_arr
-        .get_named_property::<JsNumber>("length")?
-        .get_uint32()?;
-    let mut names = Vec::with_capacity(js_names_arr_len as usize);
-    for i in 0..js_names_arr_len {
-        names.push(
-            js_names_arr
-                .get_element::<JsString>(i)?
-                .into_utf8()?
-                .into_owned()?,
-        );
-    }
+    let js_names_arr_input = ctx.get::<JsString>(3)?.into_utf8()?;
+    let names: Vec<String> = from_str(js_names_arr_input.as_str()?)?;
 
     let line_offset = ctx.get::<JsNumber>(4)?.get_int64()?;
     let column_offset = ctx.get::<JsNumber>(5)?.get_int64()?;
 
     source_map_instance.add_vlq_map(
         vlq_mappings.as_slice(),
-        sources.iter().map(|s| &s[..]).collect(),
-        sources_content.iter().map(|s| &s[..]).collect(),
-        names.iter().map(|n| &n[..]).collect(),
+        sources.iter().map(|s| s.as_str()).collect(),
+        sources_content.iter().map(|s| s.as_str()).collect(),
+        names.iter().map(|s| s.as_str()).collect(),
         line_offset,
         column_offset,
     )?;
@@ -347,7 +322,7 @@ fn to_vlq(ctx: CallContext) -> Result<JsObject> {
 
     let mut vlq_output: Vec<u8> = vec![];
     source_map_instance.write_vlq(&mut vlq_output)?;
-    let vlq_string = ctx.env.create_string_from_vec_u8(vlq_output)?;
+    let vlq_string = ctx.env.create_string_latin1(vlq_output.as_slice())?;
     let mut result_obj: JsObject = ctx.env.create_object()?;
     result_obj.set_named_property("mappings", vlq_string)?;
     result_obj.set_named_property("sources", _get_sources(&ctx)?)?;
@@ -362,18 +337,24 @@ fn add_indexed_mappings(ctx: CallContext) -> Result<JsUndefined> {
     let this: JsObject = ctx.this_unchecked();
     let source_map_instance: &mut SourceMap = ctx.env.unwrap(&this)?;
 
-    let js_mapping_arr = ctx.get::<JsTypedArray>(0)?;
-    let length: u32 = js_mapping_arr
-        .get_named_property::<JsNumber>("length")?
-        .get_uint32()?;
+    let mappings = ctx.get::<JsTypedArray>(0)?;
+    let mappings_value = mappings.into_value()?;
+    let mappings_slice = mappings_value.as_ref();
+    let mappings_arr: &[i32] = unsafe {
+        std::slice::from_raw_parts(
+            mappings_slice.as_ptr() as *const i32,
+            mappings_value.length as usize,
+        )
+    };
+    let mappings_count = mappings_arr.len();
 
     let mut generated_line: u32 = 0; // 0
     let mut generated_column: u32 = 0; // 1
     let mut original_line: i32 = 0; // 2
     let mut original_column: i32 = 0; // 3
     let mut original_source: i32 = 0; // 4
-    for i in 0..length {
-        let value: i32 = js_mapping_arr.get_element::<JsNumber>(i)?.get_int32()?;
+    for i in 0..mappings_count {
+        let value: i32 = mappings_arr[i];
 
         match i % 6 {
             0 => {
@@ -531,8 +512,7 @@ fn init(mut exports: JsObject, env: Env) -> Result<()> {
     let get_name_index_method = Property::new(&env, "getNameIndex")?.with_method(get_name_index);
     let get_mappings_method = Property::new(&env, "getMappings")?.with_method(get_mappings);
     let to_buffer_method = Property::new(&env, "toBuffer")?.with_method(to_buffer);
-    let add_sourcemap_method =
-        Property::new(&env, "addSourceMap")?.with_method(add_sourcemap);
+    let add_sourcemap_method = Property::new(&env, "addSourceMap")?.with_method(add_sourcemap);
     let add_indexed_mappings_method =
         Property::new(&env, "addIndexedMappings")?.with_method(add_indexed_mappings);
     let add_vlq_map_method = Property::new(&env, "addVLQMap")?.with_method(add_vlq_map);

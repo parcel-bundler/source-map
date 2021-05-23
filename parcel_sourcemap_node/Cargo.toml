@@ -1,20 +1,18 @@
 [package]
 name = "parcel_sourcemap_node"
-version = "0.1.0"
+version = "2.0.0-rc.2"
 authors = ["Jasper De Moor <jasperdemoor@gmail.com>"]
 edition = "2018"
 
 [lib]
 crate-type = ["cdylib"]
 
-[profile.release]
-lto = true
-opt-level = 3
-
 [dependencies]
 parcel_sourcemap = { path = "../parcel_sourcemap" }
-napi = "1.2.0"
-napi-derive = "1.0"
+napi = { version = "1.6.1", features = ["napi4", "serde-json"] }
+napi-derive = "1.1.0"
+serde = "1"
+serde_json = "1"
 
 [build-dependencies]
-napi-build = "1.0.1"
+napi-build = "1.0.2"
