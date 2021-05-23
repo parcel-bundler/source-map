@@ -103,7 +103,7 @@ export default class SourceMap {
     mappings: Array<IndexedMapping<string>>,
     lineOffset?: number = 0,
     columnOffset?: number = 0
-  ): Array<number> {
+  ): Int32Array {
     // Encode all mappings into a single typed array and make one call
     // to C++ instead of one for each mapping to improve performance.
     let mappingBuffer = new Int32Array(mappings.length * 6);
