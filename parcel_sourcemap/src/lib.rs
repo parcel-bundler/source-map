@@ -313,83 +313,74 @@ impl SourceMap {
 
     pub fn add_sourcemap(
         &mut self,
-        sourcemap: &SourceMap,
+        sourcemap: &mut SourceMap,
         line_offset: i64,
-        column_offset: i64,
     ) -> Result<(), SourceMapError> {
         self.sources.reserve(sourcemap.sources.len());
         let mut source_indexes = Vec::with_capacity(sourcemap.sources.len());
-        for s in sourcemap.sources.iter() {
+        let sources = std::mem::take(&mut sourcemap.sources);
+        for s in sources.iter() {
             source_indexes.push(self.add_source(s));
         }
 
         self.names.reserve(sourcemap.names.len());
         let mut names_indexes = Vec::with_capacity(sourcemap.names.len());
-        for n in sourcemap.names.iter() {
+        let names = std::mem::take(&mut sourcemap.names);
+        for n in names.iter() {
             names_indexes.push(self.add_name(n));
         }
 
         self.sources_content
             .reserve(sourcemap.sources_content.len());
-        for (i, source_content_str) in sourcemap.sources_content.iter().enumerate() {
+        let sources_content = std::mem::take(&mut sourcemap.sources_content);
+        for (i, source_content_str) in sources_content.iter().enumerate() {
             if let Some(source_index) = source_indexes.get(i) {
                 self.set_source_content(*source_index as usize, source_content_str)?;
             }
         }
 
-        for (line, mapping_line) in sourcemap.mapping_lines.iter() {
-            let generated_line = (*line as i64) + line_offset;
+        let mapping_lines = std::mem::take(&mut sourcemap.mapping_lines);
+        for (line, mapping_line) in mapping_lines.into_iter() {
+            let generated_line = (line as i64) + line_offset;
             if generated_line >= 0 {
-                for (column, original_location) in mapping_line.mappings.iter() {
-                    let generated_column = (*column as i64) + column_offset;
-
-                    if generated_column >= 0 {
-                        self.add_mapping(
-                            generated_line as u32,
-                            generated_column as u32,
-                            match *original_location {
-                                Some(original_mapping_location) => {
-                                    Some(OriginalLocation::new(
-                                        original_mapping_location.original_line,
-                                        original_mapping_location.original_column,
-                                        match source_indexes
-                                            .get(original_mapping_location.source as usize)
-                                        {
-                                            Some(new_source_index) => *new_source_index,
-                                            None => {
-                                                return Err(SourceMapError::new(
-                                                    SourceMapErrorType::SourceOutOfRange,
-                                                ));
-                                            }
-                                        },
-                                        match original_mapping_location.name {
-                                            Some(name_index) => {
-                                                match names_indexes.get(name_index as usize) {
-                                                    Some(new_name_index) => Some(*new_name_index),
-                                                    None => {
-                                                        return Err(SourceMapError::new(
-                                                            SourceMapErrorType::NameOutOfRange,
-                                                        ));
-                                                    }
-                                                }
-                                            }
-                                            None => None,
-                                        },
-                                    ))
-                                }
+                let mut line = mapping_line;
+                for (_, original_location) in line.mappings.iter_mut() {
+                    match original_location {
+                        Some(original_mapping_location) => {
+                            original_mapping_location.source = match source_indexes
+                                .get(original_mapping_location.source as usize)
+                            {
+                                Some(new_source_index) => *new_source_index,
                                 None => {
-                                    None
+                                    return Err(SourceMapError::new(
+                                        SourceMapErrorType::SourceOutOfRange,
+                                    ));
                                 }
-                            },
-                        );
+                            };
+
+                            original_mapping_location.name = match original_mapping_location.name {
+                                Some(name_index) => match names_indexes.get(name_index as usize) {
+                                    Some(new_name_index) => Some(*new_name_index),
+                                    None => {
+                                        return Err(SourceMapError::new(
+                                            SourceMapErrorType::NameOutOfRange,
+                                        ));
+                                    }
+                                },
+                                None => None,
+                            };
+                        }
+                        None => {}
                     }
                 }
+
+                self.mapping_lines.insert(generated_line as u32, line);
             }
         }
 
         return Ok(());
     }
-    
+
     pub fn extends(&mut self, original_sourcemap: &SourceMap) -> Result<(), SourceMapError> {
         self.sources.reserve(original_sourcemap.sources.len());
         let mut source_indexes = Vec::with_capacity(original_sourcemap.sources.len());

@@ -270,7 +270,7 @@ fn to_buffer(ctx: CallContext) -> Result<JsBuffer> {
     return Ok(ctx.env.create_buffer_with_data(buffer_data)?.into_raw());
 }
 
-#[js_function(3)]
+#[js_function(2)]
 fn add_sourcemap(ctx: CallContext) -> Result<JsUndefined> {
     let this: JsObject = ctx.this_unchecked();
     let source_map_instance: &mut SourceMap = ctx.env.unwrap(&this)?;
@@ -278,9 +278,8 @@ fn add_sourcemap(ctx: CallContext) -> Result<JsUndefined> {
     let sourcemap_object = ctx.get::<JsObject>(0)?;
     let previous_map_instance = ctx.env.unwrap::<SourceMap>(&sourcemap_object)?;
     let line_offset = ctx.get::<JsNumber>(1)?.get_int64()?;
-    let column_offset = ctx.get::<JsNumber>(2)?.get_int64()?;
 
-    source_map_instance.add_sourcemap(previous_map_instance, line_offset, column_offset)?;
+    source_map_instance.add_sourcemap(previous_map_instance, line_offset)?;
     return ctx.env.get_undefined();
 }
 
