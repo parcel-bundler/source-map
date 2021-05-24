@@ -1,7 +1,7 @@
 extern crate parcel_sourcemap;
 
 use js_sys::Uint8Array;
-use parcel_sourcemap::{Mapping, OriginalLocation, SourceMap as NativeSourceMap, SourceMapError};
+use parcel_sourcemap::{Mapping, OriginalLocation, SourceMap as NativeSourceMap};
 use serde::Serialize;
 use std::convert::TryFrom;
 use wasm_bindgen::prelude::*;

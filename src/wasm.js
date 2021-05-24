@@ -3,7 +3,7 @@ import type { ParsedMap, VLQMap, SourceMapStringifyOptions, IndexedMapping, Gene
 import path from 'path';
 import SourceMap from './SourceMap';
 
-let bindings = require('../parcel_sourcemap_wasm/pkg/parcel_sourcemap_wasm.js');
+const bindings = require('../parcel_sourcemap_wasm/dist-node/parcel_sourcemap_wasm.js');
 // $FlowFixMe
 export const init = Promise.resolve();
 
@@ -30,35 +30,6 @@ export default class WasmSourceMap extends SourceMap {
       columnOffset
     );
     return this;
-  }
-
-  addIndexedMappings(
-    mappings: Array<IndexedMapping<string>>,
-    lineOffset?: number = 0,
-    columnOffset?: number = 0
-  ): SourceMap {
-    let mappingBuffer = this._indexedMappingsToInt32Array(mappings, lineOffset, columnOffset);
-    this.sourceMapInstance.addIndexedMappings(mappingBuffer);
-    return this;
-  }
-
-  fromBuffer(buffer: Buffer): this {
-    this.sourceMapInstance.fromBuffer(buffer);
-    return this;
-  }
-
-  toBuffer(): Buffer {
-    return this.sourceMapInstance.toBuffer();
-  }
-
-  findClosestMapping(line: number, column: number): ?IndexedMapping<string> {
-    let mapping = this.sourceMapInstance.findClosestMapping(line - 1, column);
-    if (mapping) {
-      let v = this.indexedMappingToStringMapping(mapping);
-      return v;
-    } else {
-      return null;
-    }
   }
 
   addSourceMap(sourcemap: SourceMap, lineOffset: number = 0, columnOffset: number = 0): SourceMap {
