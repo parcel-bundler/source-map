@@ -29,7 +29,7 @@ jobs:
           name: Parcel Source Map library Benchmark
           tool: 'benchmarkjs'
           output-file-path: bench.txt
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: true # ${{ github.ref == 'refs/heads/master' }}
           comment-always: true
 
