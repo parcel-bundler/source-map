@@ -15,13 +15,6 @@ jobs:
           node-version: 14
           check-latest: true
 
-      # Caching
-      - name: Cache NPM dependencies
-        uses: actions/cache@v1
-        with:
-          path: node_modules
-          key: node-modules-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
-
       - name: 'Install dependencies'
         run: yarn install
       - name: Build code
@@ -29,19 +22,15 @@ jobs:
       - name: 'Run benchmark'
         run: yarn benchmark:node
 
-      - name: Download previous benchmark data
-        uses: actions/cache@v1
-        with:
-          path: ./benchmark-results
-          key: benchmark-results-cache
-
+      # Run benchmark action
       - name: Compare benchmark results
-        uses: rhysd/github-action-benchmark@v1
+        uses: rhysd/github-action-benchmark@v1.8.1
         with:
+          name: Parcel sourcemap benchmark
           tool: 'benchmarkjs'
           output-file-path: bench.txt
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          external-data-json-path: ./benchmark-results/benchmark-data.json
+          benchmark-data-dir-path: public/bench
           comment-always: true
-          auto-push: false
-          save-data-file: ${{ github.ref == 'refs/heads/master' }}
+          max-items-in-chart: 1000
+          auto-push: ${{ github.ref == 'refs/heads/master' }}

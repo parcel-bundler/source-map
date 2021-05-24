@@ -16,11 +16,18 @@ function formatSummary(summary) {
 }
 
 async function run() {
+  console.log('Initializing sourcemap...');
   await init;
 
-  const output = [await consume(), await serialize(), await modify(), await append()].map(formatSummary).join('\n');
+  console.log('Running benchmark...');
+  const results = [await consume(), await serialize(), await modify(), await append()];
 
-  await fs.writeFile(path.join(process.cwd(), 'bench.txt'), output, 'utf8');
+  console.log('Formatting benchmark results...');
+  const output = results.map(formatSummary).join('\n');
+
+  console.log('Saving benchmark...');
+  let benchFilePath = path.join(process.cwd(), 'bench.txt');
+  await fs.writeFile(benchFilePath, output, 'utf-8');
 }
 
 run();
