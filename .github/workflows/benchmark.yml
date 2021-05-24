@@ -26,7 +26,7 @@ jobs:
       - name: Compare benchmark results
         uses: rhysd/github-action-benchmark@v1.8.1
         with:
-          name: Parcel Source Map library Benchmark
+          name: Parcel sourcemap benchmark
           tool: 'benchmarkjs'
           output-file-path: bench.txt
           github-token: ${{ secrets.GITHUB_TOKEN }}
