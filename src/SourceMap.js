@@ -81,7 +81,7 @@ export default class SourceMap {
    * @param lineOffset an offset that gets added to the sourceLine index of each mapping
    * @param columnOffset  an offset that gets added to the sourceColumn index of each mapping
    */
-  addBuffer(buffer: Buffer, lineOffset: number = 0, columnOffset: number = 0): SourceMap {
+  addBuffer(buffer: Buffer, lineOffset: number = 0): SourceMap {
     throw new Error('Not implemented by child class');
   }
 
