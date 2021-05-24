@@ -31,13 +31,6 @@ jobs:
           output-file-path: bench.txt
           github-token: ${{ secrets.GITHUB_TOKEN }}
           benchmark-data-dir-path: public/bench
-          auto-push: false # ${{ github.ref == 'refs/heads/master' }}
+          auto-push: true # ${{ github.ref == 'refs/heads/master' }}
           comment-always: true
-
-      # Deploy gh-pages
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
-        # if: ${{ github.ref == 'refs/heads/master' }}
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public
+          max-items-in-chart: 1000
