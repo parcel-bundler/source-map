@@ -24,7 +24,9 @@ jobs:
           toolchain: stable
           profile: minimal
           override: true
-
+      - name: Install wasm-pack
+        if: ${{ matrix.os == 'ubuntu-latest' && matrix.node-version == '14.x' }}
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
       # Caching
       - name: Cache NPM dependencies
         uses: actions/cache@v1
@@ -39,3 +41,9 @@ jobs:
         run: yarn run build:node-release
       - name: Run node tests
         run: yarn run test:node
+      - name: Build wasm release
+        if: ${{ matrix.os == 'ubuntu-latest' && matrix.node-version == '14.x' }}
+        run: yarn run build:wasm-node-release
+      - name: Run wasm tests
+        if: ${{ matrix.os == 'ubuntu-latest' && matrix.node-version == '14.x' }}
+        run: yarn run test:wasm
