@@ -192,6 +192,8 @@ jobs:
       - run: echo //registry.npmjs.org/:_authToken=${NPM_TOKEN} > .npmrc
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Build wasm-web
+        run: yarn run build:wasm-web-release
       - run: npm publish
 
   release-crates:
