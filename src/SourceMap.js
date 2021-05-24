@@ -161,7 +161,9 @@ export default class SourceMap {
     lineOffset?: number = 0,
     columnOffset?: number = 0
   ): SourceMap {
-    throw new Error('Should be implemented by child class');
+    let mappingBuffer = this._indexedMappingsToInt32Array(mappings, lineOffset, columnOffset);
+    this.sourceMapInstance.addIndexedMappings(mappingBuffer);
+    return this;
   }
 
   /**
@@ -361,7 +363,13 @@ export default class SourceMap {
    * @param column the column in the generated code (starts at 0)
    */
   findClosestMapping(line: number, column: number): ?IndexedMapping<string> {
-    throw new Error('SourceMap.findClosestMapping() must be implemented when extending SourceMap');
+    let mapping = this.sourceMapInstance.findClosestMapping(line - 1, column);
+    if (mapping) {
+      let v = this.indexedMappingToStringMapping(mapping);
+      return v;
+    } else {
+      return null;
+    }
   }
 
   /**
@@ -405,7 +413,7 @@ export default class SourceMap {
    * Returns a buffer that represents this sourcemap, used for caching
    */
   toBuffer(): Buffer {
-    throw new Error('SourceMap.toBuffer() must be implemented when extending SourceMap');
+    return this.sourceMapInstance.toBuffer();
   }
 
   /**

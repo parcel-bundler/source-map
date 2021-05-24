@@ -5,13 +5,20 @@
   "types": "index.d.ts",
   "license": "MIT",
   "scripts": {
-    "test": "cross-env BACKEND=node mocha ./test/*.test.js",
-    "test:node": "yarn test",
-    "benchmark": "cross-env BACKEND=node node ./bench/run",
+    "test": "mocha ./test/*.test.js",
+    "test:node": "cross-env BACKEND=node yarn test",
+    "test:wasm": "cross-env BACKEND=wasm yarn test",
+    "benchmark": "node ./bench/run",
+    "benchmark:node": "cross-env BACKEND=node yarn benchmark",
+    "benchmark:wasm": "cross-env BACKEND=wasm yarn benchmark",
     "transpile": "babel ./src/*.js --out-dir ./dist && flow-copy-source -v src dist",
     "build:clean": "cd ./parcel_sourcemap_node && rm -rf artifacts && mkdir artifacts",
     "build:node": "yarn build:clean && node parcel_sourcemap_node/build.js",
     "build:node-release": "yarn build:clean && node parcel_sourcemap_node/build.js --release",
+    "build:wasm-node": "wasm-pack build parcel_sourcemap_wasm --target nodejs --no-typescript --dev --out-dir dist-node",
+    "build:wasm-node-release": "wasm-pack build parcel_sourcemap_wasm --target nodejs --no-typescript --release --out-dir dist-node",
+    "build:wasm-web": "wasm-pack build parcel_sourcemap_wasm --no-typescript --target web --dev --out-dir dist-web",
+    "build:wasm-web-release": "wasm-pack build parcel_sourcemap_wasm --no-typescript --target web --release --out-dir dist-web",
     "rebuild": "shx rm -rf build && yarn build:node",
     "rebuild-all": "yarn transpile && yarn rebuild",
     "prepublish": "npm run transpile",
@@ -69,5 +76,8 @@
   "dependencies": {
     "detect-libc": "^1.0.3",
     "globby": "^11.0.3"
+  },
+  "browser": {
+    "./dist/wasm-bindings.js": "./dist/wasm-bindings-web.js"
   }
 }
