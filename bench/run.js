@@ -20,7 +20,7 @@ async function run() {
   await init;
 
   console.log('Running benchmark...');
-  const output = [await consume(), await serialize(), await modify(), await append()].map(formatSummary).join('\n');
+  const results = [await consume(), await serialize(), await modify(), await append()];
 
   console.log('Formatting benchmark results...');
   const output = results.map(formatSummary).join('\n');
