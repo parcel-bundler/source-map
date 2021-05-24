@@ -18,6 +18,7 @@ jobs:
           - os: macos-latest
             target: aarch64-apple-darwin
             strip: strip -x # Must use -x on macOS. This produces larger results on linux.
+            JEMALLOC_SYS_WITH_LG_PAGE: 14
           # ARM/GNU Linux
           # - os: ubuntu-latest
           #   target: arm-unknown-linux-gnueabihf
@@ -57,6 +58,7 @@ jobs:
         run: yarn run build:node-release
         env:
           RUST_TARGET: ${{ matrix.target }}
+          JEMALLOC_SYS_WITH_LG_PAGE: ${{ matrix.JEMALLOC_SYS_WITH_LG_PAGE }}
       - name: Strip debug symbols # https://github.com/rust-lang/rust/issues/46034
         if: ${{ matrix.strip }}
         run: ${{ matrix.strip }} parcel_sourcemap_node/artifacts/*.node

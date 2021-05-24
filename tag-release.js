@@ -18,7 +18,7 @@ async function run() {
   execSync(`yarn version --new-version ${version} --no-commit-hooks`, {
     cwd: __dirname,
   });
-  execSync("git add package.json", {
+  execSync('git add package.json', {
     cwd: __dirname,
   });
   execSync(`git commit -m "Release v${version}"`, {
