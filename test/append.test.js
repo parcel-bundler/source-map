@@ -258,16 +258,18 @@ describe('SourceMap - Append Mappings', () => {
     assert.deepEqual(map.getMap(), expectedResultOne);
   });
 
-  it('Append buffer mappings with line and column offset', () => {
+  it('Append source map with line offset', () => {
     let map = new SourceMap('/test-root');
     map.addVLQMap({
       mappings: SIMPLE_SOURCE_MAP.mappings,
       sources: SIMPLE_SOURCE_MAP.sources,
       names: SIMPLE_SOURCE_MAP.names,
     });
-    let buffer = map.toBuffer();
-    map.addBuffer(buffer, 10, 46);
-    assert.deepEqual(map.getMap(), expectedResultTwo);
+    let map2 = new SourceMap(map.toBuffer());
+    map.addSourceMap(map2, 10);
+    assert.deepEqual(map.getMap(), expectedResultOne);
+    // map2 is consumed
+    assert.equal(map2.getMappings().length, 0);
   });
 
   it('Append buffer mappings with sourceContent', () => {
