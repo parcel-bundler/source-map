@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1621849665456,
+  "lastUpdate": 1621880135529,
   "repoUrl": "https://github.com/parcel-bundler/source-map",
   "entries": {
     "Parcel sourcemap benchmark": [
@@ -174,6 +174,100 @@ window.BENCHMARK_DATA = {
             "range": "±1.39%",
             "unit": "ops/sec",
             "extra": "88 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jasperdemoor@gmail.com",
+            "name": "Jasper De Moor",
+            "username": "DeMoorJasper"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a7898c4a52721832b1c3ac131ce7fafff4764ff1",
+          "message": "Use gh-pages for benchmark results (#62)\n\n* use gh-pages for benchmark\r\n\r\n* remove node_modules cache for now\r\n\r\n* rename github_token to github-token\r\n\r\n* tweak benchmark script\r\n\r\n* use public/bench\r\n\r\n* add deploy pages\r\n\r\n* fix deploy?\r\n\r\n* update name\r\n\r\n* benchmark action is just outdated...\r\n\r\n* trigger new benchmark\r\n\r\n* only push on master\r\n\r\n* fix merge issues",
+          "timestamp": "2021-05-24T20:11:11+02:00",
+          "tree_id": "de5941f89eae74a5a283426c87468f8b023c823d",
+          "url": "https://github.com/parcel-bundler/source-map/commit/a7898c4a52721832b1c3ac131ce7fafff4764ff1"
+        },
+        "date": 1621880134653,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "consume#consume vlq mappings",
+            "value": 75772,
+            "range": "±1.75%",
+            "unit": "ops/sec",
+            "extra": "91 samples"
+          },
+          {
+            "name": "consume#consume buffer",
+            "value": 112139,
+            "range": "±3.19%",
+            "unit": "ops/sec",
+            "extra": "86 samples"
+          },
+          {
+            "name": "consume#consume JS Mappings",
+            "value": 38526,
+            "range": "±26.6%",
+            "unit": "ops/sec",
+            "extra": "41 samples"
+          },
+          {
+            "name": "serialize#Save buffer",
+            "value": 222,
+            "range": "±28.99%",
+            "unit": "ops/sec",
+            "extra": "38 samples"
+          },
+          {
+            "name": "serialize#Serialize to vlq",
+            "value": 328,
+            "range": "±0.83%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "modify#positive line offset",
+            "value": 105444,
+            "range": "±1.58%",
+            "unit": "ops/sec",
+            "extra": "92 samples"
+          },
+          {
+            "name": "modify#negative line offset",
+            "value": 106707,
+            "range": "±0.69%",
+            "unit": "ops/sec",
+            "extra": "95 samples"
+          },
+          {
+            "name": "modify#positive column offset",
+            "value": 5338946,
+            "range": "±0.52%",
+            "unit": "ops/sec",
+            "extra": "96 samples"
+          },
+          {
+            "name": "modify#negative column offset",
+            "value": 5364125,
+            "range": "±0.75%",
+            "unit": "ops/sec",
+            "extra": "96 samples"
+          },
+          {
+            "name": "append#addSourceMap",
+            "value": 3249939,
+            "range": "±0.49%",
+            "unit": "ops/sec",
+            "extra": "96 samples"
           }
         ]
       }
