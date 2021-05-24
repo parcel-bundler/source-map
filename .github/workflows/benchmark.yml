@@ -33,4 +33,4 @@ jobs:
           benchmark-data-dir-path: public/bench
           comment-always: true
           max-items-in-chart: 1000
-          auto-push: true # ${{ github.ref == 'refs/heads/master' }}
+          auto-push: ${{ github.ref == 'refs/heads/master' }}
