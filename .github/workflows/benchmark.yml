@@ -20,7 +20,7 @@ jobs:
       - name: Build code
         run: yarn transpile && yarn build:node-release
       - name: 'Run benchmark'
-        run: yarn benchmark
+        run: yarn benchmark:node
 
       # Run benchmark action
       - name: Compare benchmark results

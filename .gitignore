@@ -4,15 +4,13 @@ node_modules
 .idea
 report.*.json
 
-cmake-*
 *.o
 build
 dist
-prebuilds
-wasm-node
-wasm-browser
 *-lock.json
 .vscode
 target
 *.node
 bench.txt
+
+parcel_sourcemap_wasm/dist-*

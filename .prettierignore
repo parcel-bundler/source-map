@@ -1,5 +1,4 @@
 dist
 build
 node_modules
-wasm*
 *.lock

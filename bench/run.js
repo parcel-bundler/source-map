@@ -5,6 +5,7 @@ const { init } = require('./setup');
 const { consume } = require('./consume');
 const { serialize } = require('./serialize');
 const { modify } = require('./modify');
+const { append } = require('./append');
 
 function formatSummary(summary) {
   return summary.results
@@ -19,10 +20,7 @@ async function run() {
   await init;
 
   console.log('Running benchmark...');
-  const results = [];
-  results.push(await consume());
-  results.push(await serialize());
-  results.push(await modify());
+  const output = [await consume(), await serialize(), await modify(), await append()].map(formatSummary).join('\n');
 
   console.log('Formatting benchmark results...');
   const output = results.map(formatSummary).join('\n');

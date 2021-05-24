@@ -30,47 +30,18 @@ export default class NodeSourceMap extends SourceMap {
     return this;
   }
 
-  addIndexedMappings(
-    mappings: Array<IndexedMapping<string>>,
-    lineOffset?: number = 0,
-    columnOffset?: number = 0
-  ): SourceMap {
-    let mappingBuffer = this._indexedMappingsToInt32Array(mappings, lineOffset, columnOffset);
-    this.sourceMapInstance.addIndexedMappings(mappingBuffer);
-    return this;
-  }
-
-  fromBuffer(buffer: Buffer): this {
-    this.sourceMapInstance.fromBuffer(buffer);
-    return this;
-  }
-
-  toBuffer(): Buffer {
-    return this.sourceMapInstance.toBuffer();
-  }
-
-  findClosestMapping(line: number, column: number): ?IndexedMapping<string> {
-    let mapping = this.sourceMapInstance.findClosestMapping(line - 1, column);
-    if (mapping) {
-      let v = this.indexedMappingToStringMapping(mapping);
-      return v;
-    } else {
-      return null;
-    }
-  }
-
-  addSourceMap(sourcemap: SourceMap, lineOffset: number = 0, columnOffset: number = 0): SourceMap {
+  addSourceMap(sourcemap: SourceMap, lineOffset: number = 0): SourceMap {
     if (!(sourcemap.sourceMapInstance instanceof bindings.SourceMap)) {
       throw new Error('The sourcemap provided to addSourceMap is not a valid sourcemap instance');
     }
 
-    this.sourceMapInstance.addSourceMap(sourcemap.sourceMapInstance, lineOffset, columnOffset);
+    this.sourceMapInstance.addSourceMap(sourcemap.sourceMapInstance, lineOffset);
     return this;
   }
 
-  addBuffer(buffer: Buffer, lineOffset: number = 0, columnOffset: number = 0): SourceMap {
+  addBuffer(buffer: Buffer, lineOffset: number = 0): SourceMap {
     let previousMap = new NodeSourceMap(buffer);
-    return this.addSourceMap(previousMap, lineOffset, columnOffset);
+    return this.addSourceMap(previousMap, lineOffset);
   }
 
   extends(input: Buffer | SourceMap): SourceMap {
@@ -102,5 +73,4 @@ export default class NodeSourceMap extends SourceMap {
   }
 }
 
-// $FlowFixMe
-export const init = Promise.resolve();
+export const init: Promise<void> = Promise.resolve();
