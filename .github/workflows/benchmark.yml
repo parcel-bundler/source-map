@@ -29,19 +29,19 @@ jobs:
       - name: 'Run benchmark'
         run: yarn benchmark
 
-      - name: Download previous benchmark data
-        uses: actions/cache@v1
-        with:
-          path: ./benchmark-results
-          key: benchmark-results-cache
-
+      # Run benchmark action
       - name: Compare benchmark results
-        uses: rhysd/github-action-benchmark@v1
+        uses: rhysd/github-action-benchmark@v1.8.1
         with:
+          name: Parcel Source Map library Benchmark
           tool: 'benchmarkjs'
           output-file-path: bench.txt
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          external-data-json-path: ./benchmark-results/benchmark-data.json
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true # ${{ github.ref == 'refs/heads/master' }}
           comment-always: true
-          auto-push: false
-          save-data-file: ${{ github.ref == 'refs/heads/master' }}
+
+      # - name: Deploy
+      #   uses: peaceiris/actions-gh-pages@v3
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     publish_dir: ./public
