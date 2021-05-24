@@ -155,9 +155,11 @@ name = "parcel_sourcemap"
 version = "2.0.0-rc.2"
 dependencies = [
  "bincode",
+ "js-sys",
  "napi",
  "serde",
  "vlq",
+ "wasm-bindgen",
 ]
 
 [[package]]
@@ -176,7 +178,10 @@ dependencies = [
 name = "parcel_sourcemap_wasm"
 version = "2.0.0-rc.2"
 dependencies = [
+ "js-sys",
  "parcel_sourcemap",
+ "serde",
+ "wasm-bindgen",
 ]
 
 [[package]]
@@ -381,6 +386,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d54ee1d4ed486f78874278e63e4069fc1ab9f6a18ca492076ffb90c5eb2997fd"
 dependencies = [
  "cfg-if",
+ "serde",
+ "serde_json",
  "wasm-bindgen-macro",
 ]
 

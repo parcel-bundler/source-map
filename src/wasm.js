@@ -1,149 +1,97 @@
-// // @flow
-// import type { ParsedMap, VLQMap, SourceMapStringifyOptions, IndexedMapping, GenerateEmptyMapOptions } from './types';
-// import path from 'path';
-// import SourceMap from './SourceMap';
-// import {relatifyPath} from './utils';
+// @flow
+import type { ParsedMap, VLQMap, SourceMapStringifyOptions, IndexedMapping, GenerateEmptyMapOptions } from './types';
+import path from 'path';
+import SourceMap from './SourceMap';
 
-// let Module;
+let bindings = require('../parcel_sourcemap_wasm/pkg/parcel_sourcemap_wasm.js');
+// $FlowFixMe
+export const init = Promise.resolve();
 
-// function arrayFromEmbind(from, mutate): any {
-//   let arr = [];
-//   for (let i = from.size() - 1; i >= 0; i--) {
-//     arr[i] = from.get(i);
-//     if (mutate) mutate(arr[i]);
-//   }
-//   from.delete();
-//   return arr;
-// }
+export default class WasmSourceMap extends SourceMap {
+  constructor(opts: string | Buffer = '/') {
+    super(opts);
+    this.sourceMapInstance = new bindings.SourceMap(opts);
+    this.projectRoot = this.sourceMapInstance.getProjectRoot();
+  }
 
-// function patchMapping(mapping: any): any {
-//   mapping.generated.line++;
-//   if (mapping.name < 0) delete mapping.name;
-//   if (mapping.source < 0) {
-//     delete mapping.source;
-//     delete mapping.original;
-//   } else {
-//     mapping.original.line++;
-//   }
-//   return mapping;
-// }
+  addVLQMap(map: VLQMap, lineOffset: number = 0, columnOffset: number = 0): SourceMap {
+    let { sourcesContent, sources = [], mappings, names = [] } = map;
+    if (!sourcesContent) {
+      sourcesContent = sources.map(() => '');
+    } else {
+      sourcesContent = sourcesContent.map((content) => (content ? content : ''));
+    }
+    this.sourceMapInstance.addVLQMap(
+      mappings,
+      sources,
+      sourcesContent.map((content) => (content ? content : '')),
+      names,
+      lineOffset,
+      columnOffset
+    );
+    return this;
+  }
 
-// function arrayToEmbind(VectorType, from): any {
-//   let arr = new VectorType();
-//   for (let v of from) {
-//     arr.push_back(v);
-//   }
-//   return arr;
-// }
+  addIndexedMappings(
+    mappings: Array<IndexedMapping<string>>,
+    lineOffset?: number = 0,
+    columnOffset?: number = 0
+  ): SourceMap {
+    let mappingBuffer = this._indexedMappingsToInt32Array(mappings, lineOffset, columnOffset);
+    this.sourceMapInstance.addIndexedMappings(mappingBuffer);
+    return this;
+  }
 
-// export default class WasmSourceMap extends SourceMap {
-//   constructor(projectRoot: string = '/') {
-//     super(projectRoot);
-//     this.sourceMapInstance = new Module.SourceMap();
-//   }
+  fromBuffer(buffer: Buffer): this {
+    this.sourceMapInstance.fromBuffer(buffer);
+    return this;
+  }
 
-//   static generateEmptyMap({
-//     projectRoot,
-//     sourceName,
-//     sourceContent,
-//     lineOffset = 0,
-//   }: GenerateEmptyMapOptions): WasmSourceMap {
-//     let map = new WasmSourceMap(projectRoot);
-//     map.addEmptyMap(relatifyPath(sourceName, projectRoot), sourceContent, lineOffset);
-//     return map;
-//   }
+  toBuffer(): Buffer {
+    return this.sourceMapInstance.toBuffer();
+  }
 
-//   addVLQMap(
-//     map: VLQMap,
-//     lineOffset: number = 0,
-//     columnOffset: number = 0
-//   ) {
-//     let { sourcesContent, sources = [], mappings, names = [] } = map;
-//     sources = sources.map((source) => (source ? relatifyPath(source, this.projectRoot) : ''));
-//     if (!sourcesContent) {
-//       sourcesContent = sources.map(() => '');
-//     } else {
-//       sourcesContent = sourcesContent.map((content) => (content ? content : ''));
-//     }
-//     let sourcesVector = arrayToEmbind(Module.VectorString, sources);
-//     let namesVector = arrayToEmbind(Module.VectorString, names);
-//     let sourcesContentVector = arrayToEmbind(Module.VectorString, sourcesContent);
-//     this.sourceMapInstance.addVLQMap(
-//       mappings,
-//       sourcesVector,
-//       sourcesContentVector,
-//       namesVector,
-//       lineOffset,
-//       columnOffset
-//     );
-//     sourcesVector.delete();
-//     sourcesContentVector.delete();
-//     namesVector.delete();
-//     return this;
-//   }
+  findClosestMapping(line: number, column: number): ?IndexedMapping<string> {
+    let mapping = this.sourceMapInstance.findClosestMapping(line - 1, column);
+    if (mapping) {
+      let v = this.indexedMappingToStringMapping(mapping);
+      return v;
+    } else {
+      return null;
+    }
+  }
 
-//   addIndexedMappings(
-//     mappings: Array<IndexedMapping<string>>,
-//     lineOffset?: number = 0,
-//     columnOffset?: number = 0
-//   ): SourceMap {
-//     let mappingBuffer = this._indexedMappingsToInt32Array(mappings, lineOffset, columnOffset);
-//     let mappingBufferArray = arrayToEmbind(Module.VectorInt, mappingBuffer);
-//     this.sourceMapInstance.addIndexedMappings(mappingBufferArray);
-//     mappingBufferArray.delete();
-//     return this;
-//   }
+  addSourceMap(sourcemap: SourceMap, lineOffset: number = 0, columnOffset: number = 0): SourceMap {
+    if (!(sourcemap.sourceMapInstance instanceof bindings.SourceMap)) {
+      throw new Error('The sourcemap provided to addSourceMap is not a valid sourcemap instance');
+    }
 
-//   findClosestMapping(line: number, column: number): ?IndexedMapping<string> {
-//     let mapping = this.sourceMapInstance.findClosestMapping(line, column);
-//     if (mapping.generated.line === -1 || mapping.generated.column === -1) {
-//       return null;
-//     } else {
-//       let m = { ...mapping };
-//       return this.indexedMappingToStringMapping(patchMapping(m));
-//     }
-//   }
+    this.sourceMapInstance.addSourceMap(sourcemap.sourceMapInstance, lineOffset, columnOffset);
+    return this;
+  }
 
-//   getSourcesContent(): Array<string | null> {
-//     return arrayFromEmbind(this.sourceMapInstance.getSourcesContent());
-//   }
+  addBuffer(buffer: Buffer, lineOffset: number = 0, columnOffset: number = 0): SourceMap {
+    let previousMap = new WasmSourceMap(buffer);
+    return this.addSourceMap(previousMap, lineOffset, columnOffset);
+  }
 
-//   getSources(): Array<string> {
-//     return arrayFromEmbind(this.sourceMapInstance.getSources());
-//   }
+  extends(input: Buffer | SourceMap): SourceMap {
+    // $FlowFixMe
+    let inputSourceMap: SourceMap = input instanceof Uint8Array ? new WasmSourceMap(input) : input;
+    this.sourceMapInstance.extends(inputSourceMap.sourceMapInstance);
+    return this;
+  }
 
-//   getNames(): Array<string> {
-//     return arrayFromEmbind(this.sourceMapInstance.getNames());
-//   }
+  delete() {}
 
-//   getMappings(): Array<IndexedMapping<number>> {
-//     return arrayFromEmbind(this.sourceMapInstance.getMappings(), patchMapping);
-//   }
-
-//   toVLQ(): VLQMap {
-//     return {
-//       mappings: this.sourceMapInstance.getVLQMappings(),
-//       sources: arrayFromEmbind(this.sourceMapInstance.getSources()),
-//       sourcesContent: arrayFromEmbind(this.sourceMapInstance.getSourcesContent()),
-//       names: arrayFromEmbind(this.sourceMapInstance.getNames()),
-//     };
-//   }
-
-//   // $FlowFixMe don't know how we'll handle this yet...
-//   toBuffer(): Uint8Array {
-//     return new Uint8Array(this.sourceMapInstance.toBuffer());
-//   }
-
-//   delete() {
-//     this.sourceMapInstance.delete();
-//   }
-// }
-
-// export function init(RawModule: any) {
-//   return new Promise<void>((res) =>
-//     RawModule().then((v) => {
-//       Module = v;
-//       res();
-//     })
-//   );
-// }
+  static generateEmptyMap({
+    projectRoot,
+    sourceName,
+    sourceContent,
+    lineOffset = 0,
+  }: GenerateEmptyMapOptions): WasmSourceMap {
+    let map = new WasmSourceMap(projectRoot);
+    map.addEmptyMap(sourceName, sourceContent, lineOffset);
+    return map;
+  }
+}

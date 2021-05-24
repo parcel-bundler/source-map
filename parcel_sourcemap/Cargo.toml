@@ -13,3 +13,5 @@ repository = "https://github.com/parcel-bundler/source-map"
 "napi" = "1.6.1"
 "serde" = { version = "1.0.126", features = ["derive"] }
 "bincode" = "1.3.3"
+"js-sys" = "0.3"
+"wasm-bindgen" = "0.2"

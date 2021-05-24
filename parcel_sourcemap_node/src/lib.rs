@@ -388,8 +388,7 @@ fn add_indexed_mappings(ctx: CallContext) -> Result<JsUndefined> {
                     },
                 );
             }
-            // This is a rust bug? i % 6 can never return anything else...
-            _ => (),
+            _ => unreachable!(),
         }
     }
 
