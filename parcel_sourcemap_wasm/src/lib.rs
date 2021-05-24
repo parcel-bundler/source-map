@@ -232,15 +232,11 @@ impl SourceMap {
 
     pub fn addSourceMap(
         &mut self,
-        previous_map_instance: &SourceMap,
+        previous_map_instance: &mut SourceMap,
         line_offset: i32,
-        column_offset: i32,
     ) -> Result<JsValue, JsValue> {
-        self.map.add_sourcemap(
-            &previous_map_instance.map,
-            line_offset.into(),
-            column_offset.into(),
-        )?;
+        self.map
+            .add_sourcemap(&mut previous_map_instance.map, line_offset.into())?;
 
         Ok(JsValue::UNDEFINED)
     }

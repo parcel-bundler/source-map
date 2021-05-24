@@ -32,18 +32,18 @@ export default class WasmSourceMap extends SourceMap {
     return this;
   }
 
-  addSourceMap(sourcemap: SourceMap, lineOffset: number = 0, columnOffset: number = 0): SourceMap {
+  addSourceMap(sourcemap: SourceMap, lineOffset: number = 0): SourceMap {
     if (!(sourcemap.sourceMapInstance instanceof bindings.SourceMap)) {
       throw new Error('The sourcemap provided to addSourceMap is not a valid sourcemap instance');
     }
 
-    this.sourceMapInstance.addSourceMap(sourcemap.sourceMapInstance, lineOffset, columnOffset);
+    this.sourceMapInstance.addSourceMap(sourcemap.sourceMapInstance, lineOffset);
     return this;
   }
 
-  addBuffer(buffer: Buffer, lineOffset: number = 0, columnOffset: number = 0): SourceMap {
+  addBuffer(buffer: Buffer, lineOffset: number = 0): SourceMap {
     let previousMap = new WasmSourceMap(buffer);
-    return this.addSourceMap(previousMap, lineOffset, columnOffset);
+    return this.addSourceMap(previousMap, lineOffset);
   }
 
   extends(input: Buffer | SourceMap): SourceMap {
