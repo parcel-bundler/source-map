@@ -31,6 +31,6 @@ jobs:
           output-file-path: bench.txt
           github-token: ${{ secrets.GITHUB_TOKEN }}
           benchmark-data-dir-path: public/bench
-          auto-push: true # ${{ github.ref == 'refs/heads/master' }}
           comment-always: true
           max-items-in-chart: 1000
+          auto-push: true # ${{ github.ref == 'refs/heads/master' }}
