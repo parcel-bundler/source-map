@@ -73,5 +73,4 @@ export default class NodeSourceMap extends SourceMap {
   }
 }
 
-// $FlowFixMe
-export const init = Promise.resolve();
+export const init: Promise<void> = Promise.resolve();

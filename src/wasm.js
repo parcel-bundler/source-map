@@ -3,9 +3,9 @@ import type { ParsedMap, VLQMap, SourceMapStringifyOptions, IndexedMapping, Gene
 import path from 'path';
 import SourceMap from './SourceMap';
 
-const bindings = require('../parcel_sourcemap_wasm/dist-node/parcel_sourcemap_wasm.js');
-// $FlowFixMe
-export const init = Promise.resolve();
+import * as bindings from './wasm-bindings';
+
+export const init: Promise<void> = typeof bindings.default === 'function' ? bindings.default() : Promise.resolve();
 
 export default class WasmSourceMap extends SourceMap {
   constructor(opts: string | Buffer = '/') {
@@ -53,7 +53,9 @@ export default class WasmSourceMap extends SourceMap {
     return this;
   }
 
-  delete() {}
+  delete() {
+    this.sourceMapInstance.free();
+  }
 
   static generateEmptyMap({
     projectRoot,
