@@ -183,6 +183,8 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - uses: bahmutov/npm-install@v1.1.0
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
       - name: Download artifacts
         uses: actions/download-artifact@v2
         with:
@@ -192,6 +194,8 @@ jobs:
       - run: echo //registry.npmjs.org/:_authToken=${NPM_TOKEN} > .npmrc
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Build wasm-web release
+        run: yarn run build:wasm-web-release
       - run: npm publish
 
   release-crates:

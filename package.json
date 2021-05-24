@@ -38,11 +38,10 @@
     ]
   },
   "files": [
-    "parcel_sourcemap",
-    "parcel_sourcemap_node",
-    "parcel_sourcemap_wasm",
     "dist",
     "package.json",
+    "parcel_sourcemap_node",
+    "parcel_sourcemap_wasm",
     "README.md",
     "src"
   ],
@@ -78,6 +77,7 @@
     "globby": "^11.0.3"
   },
   "browser": {
+    "./dist/node.js": "./dist/wasm.js",
     "./dist/wasm-bindings.js": "./dist/wasm-bindings-web.js"
   }
 }

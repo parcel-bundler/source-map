@@ -5,7 +5,7 @@ import SourceMap from './SourceMap';
 
 import * as bindings from './wasm-bindings';
 
-export const init: Promise<void> = typeof bindings.default === 'function' ? bindings.default() : Promise.resolve();
+export const init: Promise<void> = typeof bindings.init === 'function' ? bindings.init() : Promise.resolve();
 
 export default class WasmSourceMap extends SourceMap {
   constructor(opts: string | Buffer = '/') {
