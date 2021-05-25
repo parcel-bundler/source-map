@@ -82,12 +82,6 @@ jobs:
       - name: Setup rust target
         run: rustup target add aarch64-apple-darwin
 
-      - name: Install cross compile toolchains
-        if: ${{ matrix.os == 'ubuntu-latest' }}
-        run: |
-          sudo apt-get update
-          sudo apt-get install gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu g++-aarch64-linux-gnu -y
-
       - uses: bahmutov/npm-install@v1.1.0
       - name: Transpile JavaScript
         run: yarn run transpile
