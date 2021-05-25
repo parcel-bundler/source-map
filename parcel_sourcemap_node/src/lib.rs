@@ -22,7 +22,7 @@ fn add_source(ctx: CallContext) -> Result<JsNumber> {
     let source = ctx.get::<JsString>(0)?.into_utf8()?;
     let source_index = source_map_instance.add_source(source.as_str()?);
 
-    return ctx.env.create_uint32(source_index);
+    ctx.env.create_uint32(source_index)
 }
 
 #[js_function(1)]
@@ -32,12 +32,8 @@ fn get_source(ctx: CallContext) -> Result<JsString> {
 
     let source_index = ctx.get::<JsNumber>(0)?.get_uint32()?;
     match source_map_instance.get_source(source_index) {
-        Ok(source) => {
-            return ctx.env.create_string(source);
-        }
-        Err(_err) => {
-            return ctx.env.create_string("");
-        }
+        Ok(source) => ctx.env.create_string(source),
+        Err(_err) => ctx.env.create_string(""),
     }
 }
 
@@ -54,7 +50,7 @@ fn _get_sources(ctx: &CallContext) -> Result<JsObject> {
     }
 
     // Return array
-    return Ok(napi_sources_array);
+    Ok(napi_sources_array)
 }
 
 #[js_function]
@@ -80,12 +76,12 @@ fn _get_sources_content(ctx: &CallContext) -> Result<JsObject> {
     }
 
     // Return array
-    return Ok(napi_sources_content_array);
+    Ok(napi_sources_content_array)
 }
 
 #[js_function]
 fn get_sources_content(ctx: CallContext) -> Result<JsObject> {
-    return _get_sources_content(&ctx);
+    _get_sources_content(&ctx)
 }
 
 #[js_function(1)]
@@ -97,12 +93,8 @@ fn get_source_index(ctx: CallContext) -> Result<JsNumber> {
     let source_index = source_map_instance.get_source_index(source.as_str()?)?;
 
     match source_index {
-        Some(i) => {
-            return ctx.env.create_uint32(i);
-        }
-        None => {
-            return ctx.env.create_int32(-1);
-        }
+        Some(i) => ctx.env.create_uint32(i),
+        None => ctx.env.create_int32(-1),
     }
 }
 
@@ -116,7 +108,7 @@ fn set_source_content_by_source(ctx: CallContext) -> Result<JsUndefined> {
     let source_content = ctx.get::<JsString>(1)?.into_utf8()?;
     source_map_instance.set_source_content(source_index, source_content.as_str()?)?;
 
-    return ctx.env.get_undefined();
+    ctx.env.get_undefined()
 }
 
 #[js_function(1)]
@@ -129,11 +121,9 @@ fn get_source_content_by_source(ctx: CallContext) -> Result<JsString> {
     match source_index {
         Some(i) => {
             let source_content = source_map_instance.get_source_content(i)?;
-            return ctx.env.create_string(source_content);
+            ctx.env.create_string(source_content)
         }
-        None => {
-            return ctx.env.create_string("");
-        }
+        None => ctx.env.create_string(""),
     }
 }
 
@@ -144,7 +134,7 @@ fn add_name(ctx: CallContext) -> Result<JsNumber> {
 
     let name = ctx.get::<JsString>(0)?.into_utf8()?;
     let name_index = source_map_instance.add_name(name.as_str()?);
-    return ctx.env.create_uint32(name_index);
+    ctx.env.create_uint32(name_index)
 }
 
 #[js_function(1)]
@@ -154,12 +144,8 @@ fn get_name(ctx: CallContext) -> Result<JsString> {
 
     let name_index = ctx.get::<JsNumber>(0)?.get_uint32()?;
     match source_map_instance.get_name(name_index) {
-        Ok(name) => {
-            return ctx.env.create_string(name);
-        }
-        Err(_err) => {
-            return ctx.env.create_string("");
-        }
+        Ok(name) => ctx.env.create_string(name),
+        Err(_err) => ctx.env.create_string(""),
     }
 }
 
@@ -175,7 +161,7 @@ fn _get_names(ctx: &CallContext) -> Result<JsObject> {
     }
 
     // Return array
-    return Ok(napi_names_array);
+    Ok(napi_names_array)
 }
 
 #[js_function]
@@ -195,12 +181,8 @@ fn get_name_index(ctx: CallContext) -> Result<JsNumber> {
     let name_index = source_map_instance.get_name_index(name.as_str()?);
 
     match name_index {
-        Some(i) => {
-            return ctx.env.create_uint32(i);
-        }
-        None => {
-            return ctx.env.create_int32(-1);
-        }
+        Some(i) => ctx.env.create_uint32(i),
+        None => ctx.env.create_int32(-1),
     }
 }
 
@@ -235,7 +217,7 @@ fn mapping_to_js_object(ctx: &CallContext, mapping: &Mapping) -> Result<JsObject
         }
     }
 
-    return Ok(mapping_obj);
+    Ok(mapping_obj)
 }
 
 #[js_function]
@@ -261,7 +243,7 @@ fn get_mappings(ctx: CallContext) -> Result<JsObject> {
             index += 1;
         }
     }
-    return Ok(mappings_arr);
+    Ok(mappings_arr)
 }
 
 #[js_function]
@@ -271,7 +253,7 @@ fn to_buffer(ctx: CallContext) -> Result<JsBuffer> {
 
     let mut buffer_data = Vec::new();
     source_map_instance.to_buffer(&mut buffer_data)?;
-    return Ok(ctx.env.create_buffer_with_data(buffer_data)?.into_raw());
+    Ok(ctx.env.create_buffer_with_data(buffer_data)?.into_raw())
 }
 
 #[js_function(2)]
@@ -284,7 +266,7 @@ fn add_sourcemap(ctx: CallContext) -> Result<JsUndefined> {
     let line_offset = ctx.get::<JsNumber>(1)?.get_int64()?;
 
     source_map_instance.add_sourcemap(previous_map_instance, line_offset)?;
-    return ctx.env.get_undefined();
+    ctx.env.get_undefined()
 }
 
 #[js_function(6)]
@@ -315,7 +297,7 @@ fn add_vlq_map(ctx: CallContext) -> Result<JsUndefined> {
         column_offset,
     )?;
 
-    return ctx.env.get_undefined();
+    ctx.env.get_undefined()
 }
 
 #[js_function]
@@ -332,7 +314,7 @@ fn to_vlq(ctx: CallContext) -> Result<JsObject> {
     result_obj.set_named_property("sourcesContent", _get_sources_content(&ctx)?)?;
     result_obj.set_named_property("names", _get_names(&ctx)?)?;
 
-    return Ok(result_obj);
+    Ok(result_obj)
 }
 
 #[js_function(1)]
@@ -342,13 +324,7 @@ fn add_indexed_mappings(ctx: CallContext) -> Result<JsUndefined> {
 
     let mappings = ctx.get::<JsTypedArray>(0)?;
     let mappings_value = mappings.into_value()?;
-    let mappings_slice = mappings_value.as_ref();
-    let mappings_arr: &[i32] = unsafe {
-        std::slice::from_raw_parts(
-            mappings_slice.as_ptr() as *const i32,
-            mappings_value.length as usize,
-        )
-    };
+    let mappings_arr: &[i32] = mappings_value.as_ref();
     let mappings_count = mappings_arr.len();
 
     let mut generated_line: u32 = 0; // 0
@@ -356,9 +332,8 @@ fn add_indexed_mappings(ctx: CallContext) -> Result<JsUndefined> {
     let mut original_line: i32 = 0; // 2
     let mut original_column: i32 = 0; // 3
     let mut original_source: i32 = 0; // 4
-    for i in 0..mappings_count {
-        let value: i32 = mappings_arr[i];
-
+    for (i, value) in mappings_arr.iter().enumerate().take(mappings_count) {
+        let value = *value;
         match i % 6 {
             0 => {
                 generated_line = value as u32;
@@ -395,7 +370,7 @@ fn add_indexed_mappings(ctx: CallContext) -> Result<JsUndefined> {
         }
     }
 
-    return ctx.env.get_undefined();
+    ctx.env.get_undefined()
 }
 
 #[js_function(2)]
@@ -406,7 +381,7 @@ fn offset_lines(ctx: CallContext) -> Result<JsUndefined> {
     let generated_line = ctx.get::<JsNumber>(0)?.get_uint32()?;
     let generated_line_offset = ctx.get::<JsNumber>(1)?.get_int64()?;
     source_map_instance.offset_lines(generated_line, generated_line_offset)?;
-    return ctx.env.get_undefined();
+    ctx.env.get_undefined()
 }
 
 #[js_function(3)]
@@ -423,7 +398,7 @@ fn offset_columns(ctx: CallContext) -> Result<JsUndefined> {
         generated_column,
         generated_column_offset,
     )?;
-    return ctx.env.get_undefined();
+    ctx.env.get_undefined()
 }
 
 #[js_function(3)]
@@ -435,7 +410,7 @@ fn add_empty_map(ctx: CallContext) -> Result<JsUndefined> {
     let source_content = ctx.get::<JsString>(1)?.into_utf8()?;
     let line_offset = ctx.get::<JsNumber>(2)?.get_int64()?;
     source_map_instance.add_empty_map(source.as_str()?, source_content.as_str()?, line_offset)?;
-    return ctx.env.get_undefined();
+    ctx.env.get_undefined()
 }
 
 #[js_function(1)]
@@ -446,7 +421,7 @@ fn extends(ctx: CallContext) -> Result<JsUndefined> {
     let sourcemap_object = ctx.get::<JsObject>(0)?;
     let previous_map_instance = ctx.env.unwrap::<SourceMap>(&sourcemap_object)?;
     source_map_instance.extends(&previous_map_instance)?;
-    return ctx.env.get_undefined();
+    ctx.env.get_undefined()
 }
 
 #[js_function(2)]
@@ -457,12 +432,8 @@ fn find_closest_mapping(ctx: CallContext) -> Result<Either<JsObject, JsNull>> {
     let generated_line = ctx.get::<JsNumber>(0)?.get_uint32()?;
     let generated_column = ctx.get::<JsNumber>(1)?.get_uint32()?;
     match source_map_instance.find_closest_mapping(generated_line, generated_column) {
-        Some(mapping) => {
-            return mapping_to_js_object(&ctx, &mapping).map(Either::A);
-        }
-        None => {
-            return ctx.env.get_null().map(Either::B);
-        }
+        Some(mapping) => mapping_to_js_object(&ctx, &mapping).map(Either::A),
+        None => ctx.env.get_null().map(Either::B),
     }
 }
 
@@ -492,7 +463,7 @@ fn constructor(ctx: CallContext) -> Result<JsUndefined> {
                 .wrap(&mut this, SourceMap::new(project_root.as_str()?))?;
         }
     }
-    return ctx.env.get_undefined();
+    ctx.env.get_undefined()
 }
 
 #[module_exports]
@@ -557,5 +528,5 @@ fn init(mut exports: JsObject, env: Env) -> Result<()> {
         ],
     )?;
     exports.set_named_property("SourceMap", sourcemap_class)?;
-    return Ok(());
+    Ok(())
 }
