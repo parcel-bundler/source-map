@@ -23,7 +23,7 @@ where
 
     *previous = new;
 
-    return Ok(());
+    Ok(())
 }
 
 #[inline]

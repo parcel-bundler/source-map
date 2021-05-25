@@ -55,6 +55,6 @@ impl MappingLine {
             );
         }
 
-        return Ok(());
+        Ok(())
     }
 }

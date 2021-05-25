@@ -1,3 +1,5 @@
+#![deny(clippy::all)]
+
 extern crate bincode;
 
 pub mod mapping;
@@ -14,7 +16,7 @@ use std::collections::BTreeMap;
 use std::io;
 
 use serde::{Deserialize, Serialize};
-use vlq;
+
 use vlq_utils::{is_mapping_separator, read_relative_vlq};
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -47,7 +49,7 @@ impl SourceMap {
         let line = self
             .mapping_lines
             .entry(generated_line)
-            .or_insert(MappingLine::new(generated_line));
+            .or_insert_with(|| MappingLine::new(generated_line));
         line.add_mapping(generated_column, original);
     }
 
@@ -94,7 +96,7 @@ impl SourceMap {
             generated_column as u32,
             mapping.original,
         );
-        return Ok(());
+        Ok(())
     }
 
     pub fn find_closest_mapping(
@@ -103,21 +105,16 @@ impl SourceMap {
         generated_column: u32,
     ) -> Option<Mapping> {
         match self.mapping_lines.get(&generated_line) {
-            Some(line) => match line.mappings.range(..(generated_column + 1)).next_back() {
-                Some((column_number, original)) => {
-                    return Some(Mapping {
-                        generated_line,
-                        generated_column: *column_number,
-                        original: *original,
-                    });
-                }
-                None => {
-                    return None;
-                }
-            },
-            None => {
-                return None;
-            }
+            Some(line) => line
+                .mappings
+                .range(..(generated_column + 1))
+                .next_back()
+                .map(|(column_number, original)| Mapping {
+                    generated_line,
+                    generated_column: *column_number,
+                    original: *original,
+                }),
+            None => None,
         }
     }
 
@@ -136,14 +133,15 @@ impl SourceMap {
             let cloned_generated_line = *generated_line as u32;
             if cloned_generated_line > 0 {
                 // Write a ';' for each line between this and last line, way more efficient than storing empty lines or looping...
-                output
-                    .write(&b";".repeat((cloned_generated_line - last_generated_line) as usize))?;
+                output.write_all(
+                    &b";".repeat((cloned_generated_line - last_generated_line) as usize),
+                )?;
             }
 
             let mut is_first_mapping: bool = true;
             for (generated_column, original_location_option) in &line_content.mappings {
                 if !is_first_mapping {
-                    output.write(b",")?;
+                    output.write_all(b",")?;
                 }
 
                 vlq::encode(
@@ -179,18 +177,18 @@ impl SourceMap {
             last_generated_line = cloned_generated_line;
         }
 
-        return Ok(());
+        Ok(())
     }
 
     pub fn add_source(&mut self, source: &str) -> u32 {
         let relative_source = make_relative_path(self.project_root.as_str(), source);
         match self.sources.iter().position(|s| relative_source.eq(s)) {
-            Some(i) => return i as u32,
+            Some(i) => i as u32,
             None => {
                 self.sources.push(relative_source);
-                return (self.sources.len() - 1) as u32;
+                (self.sources.len() - 1) as u32
             }
-        };
+        }
     }
 
     pub fn add_sources(&mut self, sources: Vec<&str>) -> Vec<u32> {
@@ -199,30 +197,22 @@ impl SourceMap {
         for s in sources.iter() {
             result_vec.push(self.add_source(s));
         }
-        return result_vec;
+        result_vec
     }
 
     pub fn get_source_index(&self, source: &str) -> Result<Option<u32>, SourceMapError> {
         let normalized_source = make_relative_path(self.project_root.as_str(), source);
         match self.sources.iter().position(|s| normalized_source.eq(s)) {
-            Some(i) => {
-                return Ok(Some(i as u32));
-            }
-            None => {
-                return Ok(None);
-            }
-        };
+            Some(i) => Ok(Some(i as u32)),
+            None => Ok(None),
+        }
     }
 
     pub fn get_source(&self, index: u32) -> Result<&str, SourceMapError> {
-        match self.sources.get(index as usize) {
-            Some(v) => {
-                return Ok(v.as_str());
-            }
-            None => {
-                return Err(SourceMapError::new(SourceMapErrorType::SourceOutOfRange));
-            }
-        }
+        self.sources
+            .get(index as usize)
+            .map(|v| v.as_str())
+            .ok_or_else(|| SourceMapError::new(SourceMapErrorType::SourceOutOfRange))
     }
 
     pub fn add_name(&mut self, name: &str) -> u32 {
@@ -241,25 +231,14 @@ impl SourceMap {
     }
 
     pub fn get_name_index(&self, name: &str) -> Option<u32> {
-        match self.names.iter().position(|n| name.eq(n)) {
-            Some(i) => {
-                return Some(i as u32);
-            }
-            None => {
-                return None;
-            }
-        };
+        self.names.iter().position(|n| name.eq(n)).map(|v| v as u32)
     }
 
     pub fn get_name(&self, index: u32) -> Result<&str, SourceMapError> {
-        match self.names.get(index as usize) {
-            Some(v) => {
-                return Ok(v.as_str());
-            }
-            None => {
-                return Err(SourceMapError::new(SourceMapErrorType::NameOutOfRange));
-            }
-        }
+        self.names
+            .get(index as usize)
+            .map(|v| v.as_str())
+            .ok_or_else(|| SourceMapError::new(SourceMapErrorType::NameOutOfRange))
     }
 
     pub fn set_source_content(
@@ -267,12 +246,12 @@ impl SourceMap {
         source_index: usize,
         source_content: &str,
     ) -> Result<(), SourceMapError> {
-        if self.sources.len() == 0 || source_index > self.sources.len() - 1 {
+        if self.sources.is_empty() || source_index > self.sources.len() - 1 {
             return Err(SourceMapError::new(SourceMapErrorType::SourceOutOfRange));
         }
 
         let sources_content_len = self.sources_content.len();
-        if sources_content_len >= source_index + 1 {
+        if sources_content_len > source_index {
             self.sources_content[source_index] = String::from(source_content);
         } else {
             self.sources_content
@@ -284,31 +263,27 @@ impl SourceMap {
             self.sources_content.push(String::from(source_content));
         }
 
-        return Ok(());
+        Ok(())
     }
 
     pub fn get_source_content(&self, index: u32) -> Result<&str, SourceMapError> {
-        match self.sources_content.get(index as usize) {
-            Some(v) => {
-                return Ok(v.as_str());
-            }
-            None => {
-                return Err(SourceMapError::new(SourceMapErrorType::SourceOutOfRange));
-            }
-        }
+        self.sources_content
+            .get(index as usize)
+            .map(|v| v.as_str())
+            .ok_or_else(|| SourceMapError::new(SourceMapErrorType::SourceOutOfRange))
     }
 
     // Write the sourcemap instance to a buffer
     pub fn to_buffer(&self, output: &mut Vec<u8>) -> Result<(), SourceMapError> {
         output.clear();
         bincode::serialize_into(output, self)?;
-        return Ok(());
+        Ok(())
     }
 
     // Create a sourcemap instance from a buffer
     pub fn from_buffer(buf: &[u8]) -> Result<SourceMap, SourceMapError> {
         let sourcemap: SourceMap = bincode::deserialize::<SourceMap>(buf)?;
-        return Ok(sourcemap);
+        Ok(sourcemap)
     }
 
     pub fn add_sourcemap(
@@ -378,7 +353,7 @@ impl SourceMap {
             }
         }
 
-        return Ok(());
+        Ok(())
     }
 
     pub fn extends(&mut self, original_sourcemap: &SourceMap) -> Result<(), SourceMapError> {
@@ -452,7 +427,7 @@ impl SourceMap {
             }
         }
 
-        return Ok(());
+        Ok(())
     }
 
     pub fn add_vlq_map(
@@ -536,7 +511,7 @@ impl SourceMap {
             }
         }
 
-        return Ok(());
+        Ok(())
     }
 
     pub fn offset_columns(
@@ -546,12 +521,8 @@ impl SourceMap {
         generated_column_offset: i64,
     ) -> Result<(), SourceMapError> {
         match self.mapping_lines.get_mut(&generated_line) {
-            Some(line) => {
-                return line.offset_columns(generated_column, generated_column_offset);
-            }
-            None => {
-                return Ok(());
-            }
+            Some(line) => line.offset_columns(generated_column, generated_column_offset),
+            None => Ok(()),
         }
     }
 
@@ -588,7 +559,7 @@ impl SourceMap {
             );
         }
 
-        return Ok(());
+        Ok(())
     }
 
     pub fn add_empty_map(
@@ -600,24 +571,27 @@ impl SourceMap {
         let source_index = self.add_source(source);
         self.set_source_content(source_index as usize, source_content)?;
 
-        let mut line_count: u32 = 0;
-        for _line in source_content.lines() {
+        for (line_count, _line) in source_content.lines().enumerate() {
             let generated_line = (line_count as i64) + line_offset;
             if generated_line >= 0 {
                 self.add_mapping(
                     generated_line as u32,
                     0,
-                    Some(OriginalLocation::new(line_count, 0, source_index, None)),
+                    Some(OriginalLocation::new(
+                        line_count as u32,
+                        0,
+                        source_index,
+                        None,
+                    )),
                 )
             }
-
-            line_count += 1;
         }
 
-        return Ok(());
+        Ok(())
     }
 }
 
+#[allow(non_fmt_panic)]
 #[test]
 fn test_buffers() {
     let map = SourceMap::new("/");
