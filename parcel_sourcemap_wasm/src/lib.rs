@@ -1,3 +1,5 @@
+#![deny(clippy::all)]
+
 extern crate parcel_sourcemap;
 
 use js_sys::Uint8Array;
@@ -66,9 +68,9 @@ impl SourceMap {
             });
         }
 
-        return Ok(SourceMap {
+        Ok(SourceMap {
             map: NativeSourceMap::from_buffer(&Uint8Array::from(opts).to_vec())?,
-        });
+        })
     }
 
     pub fn getProjectRoot(&self) -> String {
@@ -184,8 +186,8 @@ impl SourceMap {
         let mut original_line: i32 = 0; // 2
         let mut original_column: i32 = 0; // 3
         let mut original_source: i32 = 0; // 4
-        for i in 0..mappings_count {
-            let value: i32 = mappings_arr[i];
+        for (i, item) in mappings_arr.iter().enumerate().take(mappings_count) {
+            let value = *item;
 
             match i % 6 {
                 0 => {

@@ -1,5 +1,4 @@
 use std::io;
-use vlq;
 
 // Errors that can occur during processing/modifying source map
 #[derive(Copy, Clone, Debug)]
@@ -77,7 +76,7 @@ impl From<vlq::Error> for SourceMapError {
 impl From<io::Error> for SourceMapError {
     #[inline]
     fn from(_err: io::Error) -> SourceMapError {
-        return SourceMapError::new(SourceMapErrorType::IOError);
+        SourceMapError::new(SourceMapErrorType::IOError)
     }
 }
 
@@ -125,16 +124,14 @@ impl From<SourceMapError> for napi::Error {
         }
 
         // Add reason to error string if there is one
-        match err.reason {
-            Some(r) => {
-                reason.push_str(", ");
-                reason.push_str(&r[..]);
-            }
-            None => (),
+
+        if let Some(r) = err.reason {
+            reason.push_str(", ");
+            reason.push_str(&r[..]);
         }
 
         // Return a napi error :)
-        return napi::Error::new(napi::Status::GenericFailure, reason);
+        napi::Error::new(napi::Status::GenericFailure, reason)
     }
 }
 
@@ -182,29 +179,26 @@ impl From<SourceMapError> for wasm_bindgen::JsValue {
         }
 
         // Add reason to error string if there is one
-        match err.reason {
-            Some(r) => {
-                reason.push_str(", ");
-                reason.push_str(&r[..]);
-            }
-            None => (),
+        if let Some(r) = err.reason {
+            reason.push_str(", ");
+            reason.push_str(&r[..]);
         }
 
-        // Return a napi error :)
-        return js_sys::Error::new(&reason).into();
+        // Return a JavaScript error :)
+        js_sys::Error::new(&reason).into()
     }
 }
 
 impl From<std::boxed::Box<bincode::ErrorKind>> for SourceMapError {
     #[inline]
     fn from(_err: std::boxed::Box<bincode::ErrorKind>) -> SourceMapError {
-        return SourceMapError::new(SourceMapErrorType::BufferError);
+        SourceMapError::new(SourceMapErrorType::BufferError)
     }
 }
 
 impl From<std::string::FromUtf8Error> for SourceMapError {
     #[inline]
     fn from(_err: std::string::FromUtf8Error) -> SourceMapError {
-        return SourceMapError::new(SourceMapErrorType::FromUtf8Error);
+        SourceMapError::new(SourceMapErrorType::FromUtf8Error)
     }
 }

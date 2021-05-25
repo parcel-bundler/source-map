@@ -16,7 +16,7 @@ pub fn is_abs_path(s: &str) -> bool {
     }
 
     // fallback to false
-    return false;
+    false
 }
 
 fn get_common_prefix_len<'a>(items: &'a [Cow<'a, [&'a str]>]) -> usize {
@@ -40,9 +40,9 @@ fn get_common_prefix_len<'a>(items: &'a [Cow<'a, [&'a str]>]) -> usize {
     }
 
     if let Some(max_idx) = max_idx {
-        return max_idx + 1;
+        max_idx + 1
     } else {
-        return 0;
+        0
     }
 }
 
@@ -61,8 +61,8 @@ pub fn make_relative_path(base: &str, target: &str) -> String {
     }
 
     if !is_abs_path(target_str) {
-        if target_str.contains(":") {
-            return String::from(target_str);
+        if target_str.contains(':') {
+            String::from(target_str)
         } else {
             return chunk_path(target_str).join("/");
         }
@@ -76,7 +76,7 @@ pub fn make_relative_path(base: &str, target: &str) -> String {
         let prefix_len = get_common_prefix_len(&items);
         let mut rel_list: Vec<&str> = repeat("..").take(base_dir.len() - prefix_len).collect();
         rel_list.extend_from_slice(&target_path[prefix_len..]);
-        return rel_list.join("/");
+        rel_list.join("/")
     }
 }
 

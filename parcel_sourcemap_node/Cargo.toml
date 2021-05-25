@@ -1,21 +1,21 @@
 [package]
-name = "parcel_sourcemap_node"
-version = "2.0.0-rc.3"
 authors = ["Jasper De Moor <jasperdemoor@gmail.com>"]
 edition = "2018"
+name = "parcel_sourcemap_node"
+version = "2.0.0-rc.2"
 
 [lib]
 crate-type = ["cdylib"]
 
 [dependencies]
-parcel_sourcemap = { path = "../parcel_sourcemap" }
-napi = { version = "1.6.1", features = ["napi4", "serde-json"] }
+napi = {version = "1.7.0", features = ["napi4", "serde-json"]}
 napi-derive = "1.1.0"
+parcel_sourcemap = {path = "../parcel_sourcemap"}
 serde = "1"
 serde_json = "1"
 
 [target.'cfg(target_os = "macos")'.dependencies]
-jemallocator = { version = "0.3.2", features = ["disable_initial_exec_tls"] }
+jemallocator = {version = "0.3.2", features = ["disable_initial_exec_tls"]}
 
 [build-dependencies]
 napi-build = "1.0.2"
