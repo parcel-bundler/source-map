@@ -342,13 +342,7 @@ fn add_indexed_mappings(ctx: CallContext) -> Result<JsUndefined> {
 
     let mappings = ctx.get::<JsTypedArray>(0)?;
     let mappings_value = mappings.into_value()?;
-    let mappings_slice = mappings_value.as_ref();
-    let mappings_arr: &[i32] = unsafe {
-        std::slice::from_raw_parts(
-            mappings_slice.as_ptr() as *const i32,
-            mappings_value.length as usize,
-        )
-    };
+    let mappings_arr: &[i32] = mappings_value.as_ref();
     let mappings_count = mappings_arr.len();
 
     let mut generated_line: u32 = 0; // 0
