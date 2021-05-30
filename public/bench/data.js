@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1621926018659,
+  "lastUpdate": 1622372377292,
   "repoUrl": "https://github.com/parcel-bundler/source-map",
   "entries": {
     "Parcel sourcemap benchmark": [
@@ -456,6 +456,100 @@ window.BENCHMARK_DATA = {
             "range": "±0.98%",
             "unit": "ops/sec",
             "extra": "92 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jasperdemoor@gmail.com",
+            "name": "Jasper De Moor",
+            "username": "DeMoorJasper"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "32401c9eb98abdd12f6aba21c6be2d18856901e7",
+          "message": "Release 2.0.0-rc.4 (#64)\n\n* Release v2.0.0-rc.3\r\n\r\n* (cargo-release) version 2.0.0-rc.3\r\n\r\n* (cargo-release) version 2.0.0-rc.3\r\n\r\n* (cargo-release) version 2.0.0-rc.3\r\n\r\n* actually fail on failed build\r\n\r\n* apple silicon, seperate workflow\r\n\r\n* Release v2.0.0-rc.4\r\n\r\n* update cargo file\r\n\r\n* (cargo-release) version 2.0.0-rc.4\r\n\r\n* (cargo-release) version 2.0.0-rc.4\r\n\r\n* (cargo-release) version 2.0.0-rc.4\r\n\r\n* remove toolchain on apple silicon workflow\r\n\r\n* update napi",
+          "timestamp": "2021-05-30T12:55:19+02:00",
+          "tree_id": "ceb5b3e54d75ffc564a35b129c98380bdc28ffd1",
+          "url": "https://github.com/parcel-bundler/source-map/commit/32401c9eb98abdd12f6aba21c6be2d18856901e7"
+        },
+        "date": 1622372376439,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "consume#consume vlq mappings",
+            "value": 68299,
+            "range": "±1.59%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "consume#consume buffer",
+            "value": 106097,
+            "range": "±3.44%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "consume#consume JS Mappings",
+            "value": 43127,
+            "range": "±9.56%",
+            "unit": "ops/sec",
+            "extra": "62 samples"
+          },
+          {
+            "name": "serialize#Save buffer",
+            "value": 175,
+            "range": "±36.14%",
+            "unit": "ops/sec",
+            "extra": "34 samples"
+          },
+          {
+            "name": "serialize#Serialize to vlq",
+            "value": 268,
+            "range": "±1.06%",
+            "unit": "ops/sec",
+            "extra": "83 samples"
+          },
+          {
+            "name": "modify#positive line offset",
+            "value": 92899,
+            "range": "±1.96%",
+            "unit": "ops/sec",
+            "extra": "85 samples"
+          },
+          {
+            "name": "modify#negative line offset",
+            "value": 97061,
+            "range": "±0.98%",
+            "unit": "ops/sec",
+            "extra": "91 samples"
+          },
+          {
+            "name": "modify#positive column offset",
+            "value": 4471872,
+            "range": "±0.94%",
+            "unit": "ops/sec",
+            "extra": "92 samples"
+          },
+          {
+            "name": "modify#negative column offset",
+            "value": 4433321,
+            "range": "±1.18%",
+            "unit": "ops/sec",
+            "extra": "93 samples"
+          },
+          {
+            "name": "append#addSourceMap",
+            "value": 2808533,
+            "range": "±1.11%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
           }
         ]
       }
