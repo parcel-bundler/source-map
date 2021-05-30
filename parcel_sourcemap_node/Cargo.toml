@@ -8,7 +8,7 @@ version = "2.0.0-rc.4"
 crate-type = ["cdylib"]
 
 [dependencies]
-napi = {version = "1.7.0", features = ["napi4", "serde-json"]}
+napi = {version = "1.7.3", features = ["napi4", "serde-json"]}
 napi-derive = "1.1.0"
 parcel_sourcemap = {path = "../parcel_sourcemap"}
 serde = "1"
