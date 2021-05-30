@@ -15,10 +15,6 @@ jobs:
           - os: macos-latest
             target: x86_64-apple-darwin
             strip: strip -x # Must use -x on macOS. This produces larger results on linux.
-          - os: macos-latest
-            target: aarch64-apple-darwin
-            strip: strip -x # Must use -x on macOS. This produces larger results on linux.
-            JEMALLOC_SYS_WITH_LG_PAGE: 14
           # ARM/GNU Linux
           # - os: ubuntu-latest
           #   target: arm-unknown-linux-gnueabihf
@@ -58,7 +54,6 @@ jobs:
         run: yarn run build:node-release
         env:
           RUST_TARGET: ${{ matrix.target }}
-          JEMALLOC_SYS_WITH_LG_PAGE: ${{ matrix.JEMALLOC_SYS_WITH_LG_PAGE }}
       - name: Strip debug symbols # https://github.com/rust-lang/rust/issues/46034
         if: ${{ matrix.strip }}
         run: ${{ matrix.strip }} parcel_sourcemap_node/artifacts/*.node
@@ -66,6 +61,41 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: bindings-${{ matrix.target }}
+          path: parcel_sourcemap_node/artifacts/*.node
+
+  build-apple-silicon:
+    name: build-apple-silicon
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Node.JS
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+
+      - name: Setup rust target
+        run: rustup target add aarch64-apple-darwin
+
+      - uses: bahmutov/npm-install@v1.1.0
+      - name: Transpile JavaScript
+        run: yarn run transpile
+      - name: Build node release
+        run: yarn run build:node-release
+        env:
+          RUST_TARGET: aarch64-apple-darwin
+          JEMALLOC_SYS_WITH_LG_PAGE: 14
+      - name: Strip debug symbols # https://github.com/rust-lang/rust/issues/46034
+        run: strip -x parcel_sourcemap_node/artifacts/*.node
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: bindings-aarch64-apple-darwin
           path: parcel_sourcemap_node/artifacts/*.node
 
   build-linux-gnu-x64:
@@ -180,6 +210,7 @@ jobs:
       - build
       - build-linux-gnu-x64
       - build-linux-musl
+      - build-apple-silicon
     steps:
       - uses: actions/checkout@v1
       - uses: bahmutov/npm-install@v1.1.0
