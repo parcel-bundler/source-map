@@ -2,12 +2,14 @@ extern crate napi;
 #[macro_use]
 extern crate napi_derive;
 extern crate parcel_sourcemap;
+extern crate rkyv;
 
 use napi::{
     CallContext, Either, Env, JsBuffer, JsNull, JsNumber, JsObject, JsString, JsTypedArray,
     JsUndefined, Property, Result,
 };
 use parcel_sourcemap::{Mapping, OriginalLocation, SourceMap};
+use rkyv::AlignedVec;
 use serde_json::{from_str, to_string};
 
 #[cfg(target_os = "macos")]
@@ -227,16 +229,16 @@ fn get_mappings(ctx: CallContext) -> Result<JsObject> {
 
     let mut mappings_arr = ctx.env.create_array()?;
     let mut index: u32 = 0;
-    for (generated_line, mapping_line) in source_map_instance.mapping_lines.iter() {
-        for (generated_column, original_position) in mapping_line.mappings.iter() {
+    for (generated_line, mapping_line) in source_map_instance.mapping_lines.iter().enumerate() {
+        for mapping in mapping_line.mappings.iter() {
             mappings_arr.set_element(
                 index,
                 mapping_to_js_object(
                     &ctx,
                     &Mapping {
-                        generated_line: *generated_line,
-                        generated_column: *generated_column,
-                        original: *original_position,
+                        generated_line: generated_line as u32,
+                        generated_column: mapping.generated_column,
+                        original: mapping.original,
                     },
                 )?,
             )?;
@@ -251,9 +253,12 @@ fn to_buffer(ctx: CallContext) -> Result<JsBuffer> {
     let this: JsObject = ctx.this_unchecked();
     let source_map_instance: &SourceMap = ctx.env.unwrap(&this)?;
 
-    let mut buffer_data = Vec::new();
+    let mut buffer_data = AlignedVec::new();
     source_map_instance.to_buffer(&mut buffer_data)?;
-    Ok(ctx.env.create_buffer_with_data(buffer_data)?.into_raw())
+    Ok(ctx
+        .env
+        .create_buffer_with_data(buffer_data.into_vec())?
+        .into_raw())
 }
 
 #[js_function(2)]
@@ -419,8 +424,8 @@ fn extends(ctx: CallContext) -> Result<JsUndefined> {
     let source_map_instance: &mut SourceMap = ctx.env.unwrap(&this)?;
 
     let sourcemap_object = ctx.get::<JsObject>(0)?;
-    let previous_map_instance = ctx.env.unwrap::<SourceMap>(&sourcemap_object)?;
-    source_map_instance.extends(&previous_map_instance)?;
+    let mut previous_map_instance = ctx.env.unwrap::<SourceMap>(&sourcemap_object)?;
+    source_map_instance.extends(&mut previous_map_instance)?;
     ctx.env.get_undefined()
 }
 

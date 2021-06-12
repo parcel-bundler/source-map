@@ -1,25 +1,74 @@
 use crate::mapping::OriginalLocation;
 use crate::sourcemap_error::{SourceMapError, SourceMapErrorType};
-use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
+use rkyv::{Archive, Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Archive, Serialize, Deserialize, Debug, Clone, Copy, Default)]
+pub struct LineMapping {
+    pub generated_column: u32,
+    pub original: Option<OriginalLocation>,
+}
+
+#[derive(Archive, Serialize, Deserialize, Debug, Default)]
 pub struct MappingLine {
-    pub mappings: BTreeMap<u32, Option<OriginalLocation>>,
-    pub line_number: u32,
+    pub mappings: Vec<LineMapping>,
+    pub last_column: u32,
+    pub is_sorted: bool,
 }
 
 impl MappingLine {
-    pub fn new(line_number: u32) -> Self {
+    pub fn new() -> Self {
         Self {
-            line_number,
-            mappings: BTreeMap::new(),
+            mappings: Vec::new(),
+            last_column: 0,
+            is_sorted: true,
         }
     }
 
     pub fn add_mapping(&mut self, generated_column: u32, original: Option<OriginalLocation>) {
-        // This should insert or overwrite the value at this key, hopefully it works...
-        self.mappings.insert(generated_column, original);
+        if self.is_sorted && self.last_column > generated_column {
+            self.is_sorted = false;
+        }
+
+        self.mappings.push(LineMapping {
+            generated_column,
+            original,
+        });
+
+        self.last_column = generated_column;
+    }
+
+    pub fn ensure_sorted(&mut self) {
+        if !self.is_sorted {
+            self.mappings
+                .sort_by(|a, b| a.generated_column.cmp(&b.generated_column));
+            self.is_sorted = true
+        }
+    }
+
+    pub fn find_closest_mapping(&mut self, generated_column: u32) -> Option<LineMapping> {
+        if self.mappings.is_empty() {
+            return None;
+        }
+
+        self.ensure_sorted();
+        let index = match self
+            .mappings
+            .binary_search_by(|m| m.generated_column.cmp(&generated_column))
+        {
+            Ok(index) => index,
+            Err(index) => {
+                if index == 0 || index == self.mappings.len() {
+                    return Some(LineMapping {
+                        generated_column: 0,
+                        original: self.mappings[0].original,
+                    });
+                }
+
+                index - 1
+            }
+        };
+
+        Some(self.mappings[index])
     }
 
     pub fn offset_columns(
@@ -36,23 +85,37 @@ impl MappingLine {
             ));
         }
 
-        let part_to_remap = self.mappings.split_off(&generated_column);
+        self.ensure_sorted();
+        let mut index = match self
+            .mappings
+            .binary_search_by(|m| m.generated_column.cmp(&generated_column))
+        {
+            Ok(index) => index,
+            Err(index) => index,
+        };
 
-        // Remove mappings that are within the range that'll get replaced
-        let u_start_column = start_column as u32;
-        self.mappings.split_off(&u_start_column);
+        if generated_column_offset < 0 {
+            let u_start_column = start_column as u32;
+            let start_index = match self
+                .mappings
+                .binary_search_by(|m| m.generated_column.cmp(&u_start_column))
+            {
+                Ok(index) => index,
+                Err(index) => index,
+            };
 
-        // re-add remapped mappings
+            self.mappings.drain(start_index..index);
+            index = start_index;
+        }
+
         let abs_offset = generated_column_offset.abs() as u32;
-        for (key, value) in part_to_remap {
-            self.mappings.insert(
-                if generated_column_offset < 0 {
-                    key - abs_offset
-                } else {
-                    key + abs_offset
-                },
-                value,
-            );
+        for i in index..self.mappings.len() {
+            let mapping = &mut self.mappings[i];
+            mapping.generated_column = if generated_column_offset < 0 {
+                mapping.generated_column - abs_offset
+            } else {
+                mapping.generated_column + abs_offset
+            };
         }
 
         Ok(())

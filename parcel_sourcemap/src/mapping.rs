@@ -1,6 +1,6 @@
-use serde::{Deserialize, Serialize};
+use rkyv::{Archive, Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
+#[derive(Archive, Serialize, Deserialize, Debug, Clone, Copy)]
 pub struct OriginalLocation {
     pub original_line: u32,
     pub original_column: u32,
@@ -19,7 +19,7 @@ impl OriginalLocation {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Archive, Serialize, Deserialize, Debug)]
 pub struct Mapping {
     pub generated_line: u32,
     pub generated_column: u32,
