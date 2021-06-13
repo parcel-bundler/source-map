@@ -332,7 +332,7 @@ fn to_json_buffer(ctx: CallContext) -> Result<JsBuffer> {
 
     let buf = source_map_instance.write_to_json_buffer(
         file.as_str()?.to_string(),
-        source_root.as_str()?.to_string()
+        source_root.as_str()?.to_string(),
     )?;
 
     let buffer = ctx.env.create_buffer_with_data(buf)?.into_raw();
@@ -349,7 +349,7 @@ fn to_data_url(ctx: CallContext) -> Result<JsString> {
 
     let string = source_map_instance.write_to_data_url(
         file.as_str()?.to_string(),
-        source_root.as_str()?.to_string()
+        source_root.as_str()?.to_string(),
     )?;
 
     let s = ctx.env.create_string(&string)?;

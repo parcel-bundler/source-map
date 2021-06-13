@@ -39,7 +39,7 @@ struct JSONSourceMap<'a> {
     mappings: String,
     sources: &'a Vec<String>,
     sources_content: &'a Vec<String>,
-    names: &'a Vec<String>
+    names: &'a Vec<String>,
 }
 
 impl SourceMap {
@@ -620,7 +620,11 @@ impl SourceMap {
         Ok(())
     }
 
-    pub fn write_to_json_buffer(&mut self, file: String, source_root: String) -> Result<Vec<u8>, SourceMapError> {
+    pub fn write_to_json_buffer(
+        &mut self,
+        file: String,
+        source_root: String,
+    ) -> Result<Vec<u8>, SourceMapError> {
         let mut vlq_output: Vec<u8> = vec![];
         self.write_vlq(&mut vlq_output)?;
 
@@ -638,10 +642,17 @@ impl SourceMap {
         Ok(buf)
     }
 
-    pub fn write_to_data_url(&mut self, file: String, source_root: String) -> Result<String, SourceMapError> {
+    pub fn write_to_data_url(
+        &mut self,
+        file: String,
+        source_root: String,
+    ) -> Result<String, SourceMapError> {
         let buf = self.write_to_json_buffer(file, source_root)?;
         let b64 = base64::encode(&buf);
-        Ok(format!("data:application/json;charset=utf-8;base64,{}", b64))
+        Ok(format!(
+            "data:application/json;charset=utf-8;base64,{}",
+            b64
+        ))
     }
 }
 
