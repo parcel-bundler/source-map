@@ -11,6 +11,6 @@ repository = "https://github.com/parcel-bundler/source-map"
 [dependencies]
 "vlq" = "0.5.1"
 "napi" = "1.6.1"
-rkyv = "0.6.6"
+rkyv = "0.6.7"
 "js-sys" = "0.3"
 "wasm-bindgen" = "0.2"
