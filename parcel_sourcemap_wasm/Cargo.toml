@@ -12,3 +12,4 @@ parcel_sourcemap = { path = "../parcel_sourcemap" }
 serde = { version = "1.0", features = ["derive"] }
 wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
 js-sys = "0.3"
+rkyv = "0.6.7"

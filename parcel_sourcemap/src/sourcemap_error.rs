@@ -116,7 +116,7 @@ impl From<SourceMapError> for napi::Error {
                 reason.push_str("Invalid FilePath");
             }
             SourceMapErrorType::BufferError => {
-                reason.push_str("Something went wrong while writing/reading a bincode buffer");
+                reason.push_str("Something went wrong while writing/reading a sourcemap buffer");
             }
             SourceMapErrorType::FromUtf8Error => {
                 reason.push_str("Could not convert utf-8 array to string");
@@ -171,7 +171,7 @@ impl From<SourceMapError> for wasm_bindgen::JsValue {
                 reason.push_str("Invalid FilePath");
             }
             SourceMapErrorType::BufferError => {
-                reason.push_str("Something went wrong while writing/reading a bincode buffer");
+                reason.push_str("Something went wrong while writing/reading a sourcemap buffer");
             }
             SourceMapErrorType::FromUtf8Error => {
                 reason.push_str("Could not convert utf-8 array to string");
@@ -189,9 +189,9 @@ impl From<SourceMapError> for wasm_bindgen::JsValue {
     }
 }
 
-impl From<std::boxed::Box<bincode::ErrorKind>> for SourceMapError {
+impl From<rkyv::Unreachable> for SourceMapError {
     #[inline]
-    fn from(_err: std::boxed::Box<bincode::ErrorKind>) -> SourceMapError {
+    fn from(_err: rkyv::Unreachable) -> SourceMapError {
         SourceMapError::new(SourceMapErrorType::BufferError)
     }
 }

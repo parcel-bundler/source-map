@@ -4,6 +4,7 @@ extern crate parcel_sourcemap;
 
 use js_sys::Uint8Array;
 use parcel_sourcemap::{Mapping, OriginalLocation, SourceMap as NativeSourceMap};
+use rkyv::AlignedVec;
 use serde::Serialize;
 use std::convert::TryFrom;
 use wasm_bindgen::prelude::*;
@@ -101,7 +102,7 @@ impl SourceMap {
         Ok(JsValue::UNDEFINED)
     }
 
-    pub fn toVLQ(&self) -> Result<JsValue, JsValue> {
+    pub fn toVLQ(&mut self) -> Result<JsValue, JsValue> {
         let mut vlq_output: Vec<u8> = vec![];
         self.map.write_vlq(&mut vlq_output)?;
 
@@ -116,19 +117,19 @@ impl SourceMap {
 
     pub fn getMappings(&self) -> Result<JsValue, JsValue> {
         let mut mappings: Vec<MappingResult> = vec![];
-        for (generated_line, mapping_line) in self.map.mapping_lines.iter() {
-            for (generated_column, original_position) in mapping_line.mappings.iter() {
+        for (generated_line, mapping_line) in self.map.mapping_lines.iter().enumerate() {
+            for mapping in mapping_line.mappings.iter() {
                 mappings.push(MappingResult {
                     generated: PositionResult {
-                        line: *generated_line + 1,
-                        column: *generated_column,
+                        line: (generated_line + 1) as u32,
+                        column: mapping.generated_column,
                     },
-                    original: original_position.map(|p| PositionResult {
+                    original: mapping.original.map(|p| PositionResult {
                         line: p.original_line + 1,
                         column: p.original_column,
                     }),
-                    name: original_position.and_then(|p| p.name),
-                    source: original_position.map(|p| p.source),
+                    name: mapping.original.and_then(|p| p.name),
+                    source: mapping.original.map(|p| p.source),
                 });
             }
         }
@@ -227,7 +228,7 @@ impl SourceMap {
     }
 
     pub fn toBuffer(&self) -> Result<JsValue, JsValue> {
-        let mut buffer_data = Vec::new();
+        let mut buffer_data = AlignedVec::new();
         self.map.to_buffer(&mut buffer_data)?;
         Ok(Uint8Array::from(buffer_data.as_slice()).into())
     }
@@ -278,13 +279,13 @@ impl SourceMap {
         Ok(JsValue::UNDEFINED)
     }
 
-    pub fn extends(&mut self, previous_map_instance: &SourceMap) -> Result<JsValue, JsValue> {
-        self.map.extends(&previous_map_instance.map)?;
+    pub fn extends(&mut self, previous_map_instance: &mut SourceMap) -> Result<JsValue, JsValue> {
+        self.map.extends(&mut previous_map_instance.map)?;
 
         Ok(JsValue::UNDEFINED)
     }
 
-    pub fn findClosestMapping(&self, generated_line: u32, generated_column: u32) -> JsValue {
+    pub fn findClosestMapping(&mut self, generated_line: u32, generated_column: u32) -> JsValue {
         match self
             .map
             .find_closest_mapping(generated_line, generated_column)

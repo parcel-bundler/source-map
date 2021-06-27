@@ -1,7 +1,5 @@
 #![deny(clippy::all)]
 
-extern crate bincode;
-
 pub mod mapping;
 pub mod mapping_line;
 pub mod sourcemap_error;
@@ -12,20 +10,24 @@ use crate::utils::make_relative_path;
 pub use mapping::{Mapping, OriginalLocation};
 use mapping_line::MappingLine;
 pub use sourcemap_error::{SourceMapError, SourceMapErrorType};
-use std::collections::BTreeMap;
 use std::io;
 
-use serde::{Deserialize, Serialize};
+use rkyv::{
+    archived_root,
+    de::deserializers::AllocDeserializer,
+    ser::{serializers::AlignedSerializer, Serializer},
+    AlignedVec, Archive, Deserialize, Serialize,
+};
 
 use vlq_utils::{is_mapping_separator, read_relative_vlq};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Archive, Serialize, Deserialize, Debug)]
 pub struct SourceMap {
     pub project_root: String,
     pub sources: Vec<String>,
     pub sources_content: Vec<String>,
     pub names: Vec<String>,
-    pub mapping_lines: BTreeMap<u32, MappingLine>,
+    pub mapping_lines: Vec<MappingLine>,
 }
 
 impl SourceMap {
@@ -35,7 +37,19 @@ impl SourceMap {
             sources: Vec::new(),
             sources_content: Vec::new(),
             names: Vec::new(),
-            mapping_lines: BTreeMap::new(),
+            mapping_lines: Vec::new(),
+        }
+    }
+
+    fn ensure_lines(&mut self, generated_line: usize) {
+        let mut line = self.mapping_lines.len();
+        if line <= generated_line {
+            self.mapping_lines
+                .reserve(generated_line - self.mapping_lines.len() + 1);
+            while line <= generated_line {
+                self.mapping_lines.push(MappingLine::new());
+                line += 1;
+            }
         }
     }
 
@@ -46,11 +60,8 @@ impl SourceMap {
         original: Option<OriginalLocation>,
     ) {
         // TODO: Create new public function that validates if source and name exist?
-        let line = self
-            .mapping_lines
-            .entry(generated_line)
-            .or_insert_with(|| MappingLine::new(generated_line));
-        line.add_mapping(generated_column, original);
+        self.ensure_lines(generated_line as usize);
+        self.mapping_lines[generated_line as usize].add_mapping(generated_column, original);
     }
 
     pub fn add_mapping_with_offset(
@@ -100,25 +111,24 @@ impl SourceMap {
     }
 
     pub fn find_closest_mapping(
-        &self,
+        &mut self,
         generated_line: u32,
         generated_column: u32,
     ) -> Option<Mapping> {
-        match self.mapping_lines.get(&generated_line) {
-            Some(line) => line
-                .mappings
-                .range(..(generated_column + 1))
-                .next_back()
-                .map(|(column_number, original)| Mapping {
+        if let Some(line) = self.mapping_lines.get_mut(generated_line as usize) {
+            if let Some(line_mapping) = line.find_closest_mapping(generated_column) {
+                return Some(Mapping {
                     generated_line,
-                    generated_column: *column_number,
-                    original: *original,
-                }),
-            None => None,
+                    generated_column: line_mapping.generated_column,
+                    original: line_mapping.original,
+                });
+            }
         }
+
+        None
     }
 
-    pub fn write_vlq<W>(&self, output: &mut W) -> Result<(), SourceMapError>
+    pub fn write_vlq<W>(&mut self, output: &mut W) -> Result<(), SourceMapError>
     where
         W: io::Write,
     {
@@ -128,9 +138,9 @@ impl SourceMap {
         let mut previous_original_column: i64 = 0;
         let mut previous_name: i64 = 0;
 
-        for (generated_line, line_content) in &self.mapping_lines {
+        for (generated_line, line_content) in self.mapping_lines.iter_mut().enumerate() {
             let mut previous_generated_column: u32 = 0;
-            let cloned_generated_line = *generated_line as u32;
+            let cloned_generated_line = generated_line as u32;
             if cloned_generated_line > 0 {
                 // Write a ';' for each line between this and last line, way more efficient than storing empty lines or looping...
                 output.write_all(
@@ -138,8 +148,12 @@ impl SourceMap {
                 )?;
             }
 
+            line_content.ensure_sorted();
+
             let mut is_first_mapping: bool = true;
-            for (generated_column, original_location_option) in &line_content.mappings {
+            for mapping in &line_content.mappings {
+                let generated_column = mapping.generated_column;
+                let original_location_option = &mapping.original;
                 if !is_first_mapping {
                     output.write_all(b",")?;
                 }
@@ -148,7 +162,7 @@ impl SourceMap {
                     (generated_column - previous_generated_column) as i64,
                     output,
                 )?;
-                previous_generated_column = *generated_column;
+                previous_generated_column = generated_column;
 
                 // Source should only be written if there is any
                 if let Some(original) = &original_location_option {
@@ -274,15 +288,19 @@ impl SourceMap {
     }
 
     // Write the sourcemap instance to a buffer
-    pub fn to_buffer(&self, output: &mut Vec<u8>) -> Result<(), SourceMapError> {
+    pub fn to_buffer(&self, output: &mut AlignedVec) -> Result<(), SourceMapError> {
         output.clear();
-        bincode::serialize_into(output, self)?;
+        let mut serializer = AlignedSerializer::new(output);
+        serializer.serialize_value(self)?;
         Ok(())
     }
 
     // Create a sourcemap instance from a buffer
     pub fn from_buffer(buf: &[u8]) -> Result<SourceMap, SourceMapError> {
-        let sourcemap: SourceMap = bincode::deserialize::<SourceMap>(buf)?;
+        let archived = unsafe { archived_root::<SourceMap>(buf) };
+        // TODO: see if we can use the archived data directly rather than deserializing at all...
+        let mut deserializer = AllocDeserializer;
+        let sourcemap = archived.deserialize(&mut deserializer)?;
         Ok(sourcemap)
     }
 
@@ -315,12 +333,12 @@ impl SourceMap {
         }
 
         let mapping_lines = std::mem::take(&mut sourcemap.mapping_lines);
-        for (line, mapping_line) in mapping_lines.into_iter() {
+        for (line, mapping_line) in mapping_lines.into_iter().enumerate() {
             let generated_line = (line as i64) + line_offset;
             if generated_line >= 0 {
                 let mut line = mapping_line;
-                for (_, original_location) in line.mappings.iter_mut() {
-                    match original_location {
+                for mapping in line.mappings.iter_mut() {
+                    match &mut mapping.original {
                         Some(original_mapping_location) => {
                             original_mapping_location.source = match source_indexes
                                 .get(original_mapping_location.source as usize)
@@ -349,14 +367,15 @@ impl SourceMap {
                     }
                 }
 
-                self.mapping_lines.insert(generated_line as u32, line);
+                self.ensure_lines(generated_line as usize);
+                self.mapping_lines[generated_line as usize] = line;
             }
         }
 
         Ok(())
     }
 
-    pub fn extends(&mut self, original_sourcemap: &SourceMap) -> Result<(), SourceMapError> {
+    pub fn extends(&mut self, original_sourcemap: &mut SourceMap) -> Result<(), SourceMapError> {
         self.sources.reserve(original_sourcemap.sources.len());
         let mut source_indexes = Vec::with_capacity(original_sourcemap.sources.len());
         for s in original_sourcemap.sources.iter() {
@@ -377,8 +396,9 @@ impl SourceMap {
             }
         }
 
-        for (_generated_line, line_content) in self.mapping_lines.iter_mut() {
-            for (_generated_column, original_location_option) in line_content.mappings.iter_mut() {
+        for (_generated_line, line_content) in self.mapping_lines.iter_mut().enumerate() {
+            for mapping in line_content.mappings.iter_mut() {
+                let original_location_option = &mut mapping.original;
                 if let Some(original_location) = original_location_option {
                     let found_mapping = original_sourcemap.find_closest_mapping(
                         original_location.original_line,
@@ -520,7 +540,7 @@ impl SourceMap {
         generated_column: u32,
         generated_column_offset: i64,
     ) -> Result<(), SourceMapError> {
-        match self.mapping_lines.get_mut(&generated_line) {
+        match self.mapping_lines.get_mut(generated_line as usize) {
             Some(line) => line.offset_columns(generated_column, generated_column_offset),
             None => Ok(()),
         }
@@ -531,6 +551,10 @@ impl SourceMap {
         generated_line: u32,
         generated_line_offset: i64,
     ) -> Result<(), SourceMapError> {
+        if generated_line_offset == 0 || self.mapping_lines.is_empty() {
+            return Ok(());
+        }
+
         let (start_line, overflowed) =
             (generated_line as i64).overflowing_add(generated_line_offset);
         if overflowed || start_line > (u32::MAX as i64) {
@@ -540,23 +564,17 @@ impl SourceMap {
             ));
         }
 
-        let part_to_remap = self.mapping_lines.split_off(&generated_line);
-
-        // Remove mappings that are within the range that'll get replaced
-        let u_start_line = start_line as u32;
-        self.mapping_lines.split_off(&u_start_line);
-
-        // re-add remapped mappings
-        let abs_offset = generated_line_offset.abs() as u32;
-        for (key, value) in part_to_remap {
-            self.mapping_lines.insert(
-                if generated_line_offset < 0 {
-                    key - abs_offset
-                } else {
-                    key + abs_offset
-                },
-                value,
-            );
+        let line = generated_line as usize;
+        let abs_offset = generated_line_offset.abs() as usize;
+        if generated_line_offset > 0 {
+            if line > self.mapping_lines.len() {
+                self.ensure_lines(line + abs_offset);
+            } else {
+                self.mapping_lines
+                    .splice(line..line, (0..abs_offset).map(|_| MappingLine::new()));
+            }
+        } else {
+            self.mapping_lines.drain(line - abs_offset..line);
         }
 
         Ok(())
@@ -595,7 +613,7 @@ impl SourceMap {
 #[test]
 fn test_buffers() {
     let map = SourceMap::new("/");
-    let mut output = Vec::new();
+    let mut output = AlignedVec::new();
     match map.to_buffer(&mut output) {
         Ok(_) => {}
         Err(err) => panic!(err),
