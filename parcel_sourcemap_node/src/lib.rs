@@ -45,8 +45,8 @@ fn _get_sources(ctx: &CallContext) -> Result<JsObject> {
 
     let mut napi_sources_array = ctx
         .env
-        .create_array_with_length(source_map_instance.sources.len())?;
-    for (source_index, source) in source_map_instance.sources.iter().enumerate() {
+        .create_array_with_length(source_map_instance.get_sources().len())?;
+    for (source_index, source) in source_map_instance.get_sources().iter().enumerate() {
         napi_sources_array
             .set_element(source_index as u32, ctx.env.create_string(source.as_str())?)?;
     }
@@ -59,7 +59,7 @@ fn _get_sources(ctx: &CallContext) -> Result<JsObject> {
 fn get_sources(ctx: CallContext) -> Result<JsString> {
     let this: JsObject = ctx.this_unchecked();
     let source_map_instance: &SourceMap = ctx.env.unwrap(&this)?;
-    let sources_str = to_string(&source_map_instance.sources)?;
+    let sources_str = to_string(&source_map_instance.get_sources())?;
     return ctx.env.create_string(sources_str.as_str());
 }
 
@@ -69,8 +69,10 @@ fn _get_sources_content(ctx: &CallContext) -> Result<JsObject> {
 
     let mut napi_sources_content_array = ctx
         .env
-        .create_array_with_length(source_map_instance.sources_content.len())?;
-    for (source_index, source_content) in source_map_instance.sources_content.iter().enumerate() {
+        .create_array_with_length(source_map_instance.get_sources_content().len())?;
+    for (source_index, source_content) in
+        source_map_instance.get_sources_content().iter().enumerate()
+    {
         napi_sources_content_array.set_element(
             source_index as u32,
             ctx.env.create_string(source_content.as_str())?,
@@ -157,8 +159,8 @@ fn _get_names(ctx: &CallContext) -> Result<JsObject> {
 
     let mut napi_names_array = ctx
         .env
-        .create_array_with_length(source_map_instance.names.len())?;
-    for (name_index, name) in source_map_instance.names.iter().enumerate() {
+        .create_array_with_length(source_map_instance.get_names().len())?;
+    for (name_index, name) in source_map_instance.get_names().iter().enumerate() {
         napi_names_array.set_element(name_index as u32, ctx.env.create_string(name.as_str())?)?;
     }
 
@@ -170,7 +172,7 @@ fn _get_names(ctx: &CallContext) -> Result<JsObject> {
 fn get_names(ctx: CallContext) -> Result<JsString> {
     let this: JsObject = ctx.this_unchecked();
     let source_map_instance: &SourceMap = ctx.env.unwrap(&this)?;
-    let names_str = to_string(&source_map_instance.names)?;
+    let names_str = to_string(&source_map_instance.get_names())?;
     return ctx.env.create_string(names_str.as_str());
 }
 
@@ -228,22 +230,8 @@ fn get_mappings(ctx: CallContext) -> Result<JsObject> {
     let source_map_instance: &SourceMap = ctx.env.unwrap(&this)?;
 
     let mut mappings_arr = ctx.env.create_array()?;
-    let mut index: u32 = 0;
-    for (generated_line, mapping_line) in source_map_instance.mapping_lines.iter().enumerate() {
-        for mapping in mapping_line.mappings.iter() {
-            mappings_arr.set_element(
-                index,
-                mapping_to_js_object(
-                    &ctx,
-                    &Mapping {
-                        generated_line: generated_line as u32,
-                        generated_column: mapping.generated_column,
-                        original: mapping.original,
-                    },
-                )?,
-            )?;
-            index += 1;
-        }
+    for (index, mapping) in source_map_instance.get_mappings().iter().enumerate() {
+        mappings_arr.set_element(index as u32, mapping_to_js_object(&ctx, &mapping)?)?;
     }
     Ok(mappings_arr)
 }
@@ -452,18 +440,18 @@ fn get_project_root(ctx: CallContext) -> Result<JsString> {
         .create_string(source_map_instance.project_root.as_str());
 }
 
-#[js_function(1)]
+#[js_function(2)]
 fn constructor(ctx: CallContext) -> Result<JsUndefined> {
     let mut this: JsObject = ctx.this_unchecked();
-    let second_argument = ctx.get::<Either<JsBuffer, JsString>>(0)?;
+    let project_root = ctx.get::<JsString>(0)?.into_utf8()?;
+    let second_argument = ctx.get::<Either<JsBuffer, JsUndefined>>(1)?;
     match second_argument {
         Either::A(js_buffer) => {
             let buffer = js_buffer.into_value()?;
-            let sourcemap = SourceMap::from_buffer(&buffer[..])?;
+            let sourcemap = SourceMap::from_buffer(project_root.as_str()?, &buffer[..])?;
             ctx.env.wrap(&mut this, sourcemap)?;
         }
-        Either::B(js_string) => {
-            let project_root = js_string.into_utf8()?;
+        Either::B(_) => {
             ctx.env
                 .wrap(&mut this, SourceMap::new(project_root.as_str()?))?;
         }

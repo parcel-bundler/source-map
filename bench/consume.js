@@ -34,7 +34,7 @@ exports.consume = function () {
       map.delete();
     }),
     b.add('consume buffer', () => {
-      let map = new SourceMap(sourcemapBuffer);
+      let map = new SourceMap('/', sourcemapBuffer);
       map.delete();
     }),
     b.add('consume JS Mappings', () => {

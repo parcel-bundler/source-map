@@ -35,8 +35,8 @@ async function build() {
 // This forces Clang/LLVM to be used as a C compiler instead of GCC.
 // This is necessary for cross-compilation for Apple Silicon in GitHub Actions.
 function setupMacBuild() {
-  process.env.CC = execSync('xcrun -f clang', {encoding: 'utf8'}).trim();
-  process.env.CXX = execSync('xcrun -f clang++', {encoding: 'utf8'}).trim();
+  process.env.CC = execSync('xcrun -f clang', { encoding: 'utf8' }).trim();
+  process.env.CXX = execSync('xcrun -f clang++', { encoding: 'utf8' }).trim();
 
   let sysRoot = execSync('xcrun --sdk macosx --show-sdk-path', {
     encoding: 'utf8',
