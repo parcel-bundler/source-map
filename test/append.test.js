@@ -265,7 +265,7 @@ describe('SourceMap - Append Mappings', () => {
       sources: SIMPLE_SOURCE_MAP.sources,
       names: SIMPLE_SOURCE_MAP.names,
     });
-    let map2 = new SourceMap(map.toBuffer());
+    let map2 = new SourceMap('/test-root', map.toBuffer());
     map.addSourceMap(map2, 10);
     assert.deepEqual(map.getMap(), expectedResultOne);
     // map2 is consumed

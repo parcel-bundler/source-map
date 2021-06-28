@@ -21,7 +21,7 @@ export default class SourceMap {
    *
    * @param projectRoot root directory of the project, this is to ensure all source paths are relative to this path
    */
-  constructor(opts: string | Buffer = '/') {}
+  constructor(projectRoot: string = '/', buffer?: Buffer) {}
 
   // Use this to invalidate saved buffers, we don't check versioning at all in Rust
   get libraryVersion(): string {

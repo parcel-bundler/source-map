@@ -8,9 +8,9 @@ import * as bindings from './wasm-bindings';
 export const init: Promise<void> = typeof bindings.init === 'function' ? bindings.init() : Promise.resolve();
 
 export default class WasmSourceMap extends SourceMap {
-  constructor(opts: string | Buffer = '/') {
-    super(opts);
-    this.sourceMapInstance = new bindings.SourceMap(opts);
+  constructor(projectRoot: string = '/', buffer?: Buffer) {
+    super(projectRoot, buffer);
+    this.sourceMapInstance = new bindings.SourceMap(projectRoot, buffer);
     this.projectRoot = this.sourceMapInstance.getProjectRoot();
   }
 
@@ -42,13 +42,13 @@ export default class WasmSourceMap extends SourceMap {
   }
 
   addBuffer(buffer: Buffer, lineOffset: number = 0): SourceMap {
-    let previousMap = new WasmSourceMap(buffer);
+    let previousMap = new WasmSourceMap(this.projectRoot, buffer);
     return this.addSourceMap(previousMap, lineOffset);
   }
 
   extends(input: Buffer | SourceMap): SourceMap {
     // $FlowFixMe
-    let inputSourceMap: SourceMap = input instanceof Uint8Array ? new WasmSourceMap(input) : input;
+    let inputSourceMap: SourceMap = input instanceof Uint8Array ? new WasmSourceMap(this.projectRoot, input) : input;
     this.sourceMapInstance.extends(inputSourceMap.sourceMapInstance);
     return this;
   }

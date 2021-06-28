@@ -62,15 +62,18 @@ pub struct SourceMap {
 #[allow(non_snake_case)]
 impl SourceMap {
     #[wasm_bindgen(constructor)]
-    pub fn new(opts: JsValue) -> Result<SourceMap, JsValue> {
-        if let Some(str) = opts.as_string() {
+    pub fn new(project_root: String, buffer: JsValue) -> Result<SourceMap, JsValue> {
+        if !buffer.is_undefined() {
             return Ok(SourceMap {
-                map: NativeSourceMap::new(&str),
+                map: NativeSourceMap::from_buffer(
+                    &project_root,
+                    &Uint8Array::from(buffer).to_vec(),
+                )?,
             });
         }
 
         Ok(SourceMap {
-            map: NativeSourceMap::from_buffer(&Uint8Array::from(opts).to_vec())?,
+            map: NativeSourceMap::new(&project_root),
         })
     }
 
@@ -108,44 +111,42 @@ impl SourceMap {
 
         let result = VLQResult {
             mappings: String::from_utf8(vlq_output).unwrap(),
-            sources: self.map.sources.clone(),
-            sourcesContent: self.map.sources_content.clone(),
-            names: self.map.names.clone(),
+            sources: self.map.get_sources().clone(),
+            sourcesContent: self.map.get_sources_content().clone(),
+            names: self.map.get_names().clone(),
         };
         Ok(JsValue::from_serde(&result).unwrap())
     }
 
     pub fn getMappings(&self) -> Result<JsValue, JsValue> {
         let mut mappings: Vec<MappingResult> = vec![];
-        for (generated_line, mapping_line) in self.map.mapping_lines.iter().enumerate() {
-            for mapping in mapping_line.mappings.iter() {
-                mappings.push(MappingResult {
-                    generated: PositionResult {
-                        line: (generated_line + 1) as u32,
-                        column: mapping.generated_column,
-                    },
-                    original: mapping.original.map(|p| PositionResult {
-                        line: p.original_line + 1,
-                        column: p.original_column,
-                    }),
-                    name: mapping.original.and_then(|p| p.name),
-                    source: mapping.original.map(|p| p.source),
-                });
-            }
+        for mapping in self.map.get_mappings().iter() {
+            mappings.push(MappingResult {
+                generated: PositionResult {
+                    line: (mapping.generated_line + 1) as u32,
+                    column: mapping.generated_column,
+                },
+                original: mapping.original.map(|p| PositionResult {
+                    line: p.original_line + 1,
+                    column: p.original_column,
+                }),
+                name: mapping.original.and_then(|p| p.name),
+                source: mapping.original.map(|p| p.source),
+            });
         }
         Ok(JsValue::from_serde(&mappings).unwrap())
     }
 
     pub fn getSources(&self) -> Result<JsValue, JsValue> {
-        Ok(JsValue::from_serde(&self.map.sources).unwrap())
+        Ok(JsValue::from_serde(&self.map.get_sources()).unwrap())
     }
 
     pub fn getSourcesContent(&self) -> Result<JsValue, JsValue> {
-        Ok(JsValue::from_serde(&self.map.sources_content).unwrap())
+        Ok(JsValue::from_serde(&self.map.get_sources_content()).unwrap())
     }
 
     pub fn getNames(&self) -> Result<JsValue, JsValue> {
-        Ok(JsValue::from_serde(&self.map.names).unwrap())
+        Ok(JsValue::from_serde(&self.map.get_names()).unwrap())
     }
 
     pub fn addName(&mut self, name: &str) -> u32 {
