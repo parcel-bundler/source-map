@@ -7,10 +7,11 @@ const { serialize } = require('./serialize');
 const { modify } = require('./modify');
 const { append } = require('./append');
 
-function formatSummary(summary) {
-  return summary.results
+function formatSummary(results) {
+  return results
     .map((result) => {
-      return `${summary.name}#${result.name} x ${result.ops} ops/sec ±${result.margin}% (${result.samples} runs sampled)`;
+      // TODO: Add margin to result stats
+      return `${result.title} x ${result.stats.opsPerSec()} ops/sec ±0.00% (${result.stats.samples()} runs sampled)`;
     })
     .join('\n');
 }
