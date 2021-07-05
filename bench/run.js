@@ -11,9 +11,9 @@ function formatSummary(results) {
   return results
     .map((result) => {
       // TODO: Add margin to result stats
-      return `${result.title} x ${Math.round(
-        result.stats.opsPerSec()
-      )} ops/sec ±0.00% (${result.stats.samples()} runs sampled)`;
+      return `${result.title} x ${Math.round(result.stats.opsPerSec())} ops/sec ±${result.stats
+        .relativeMarginOfError()
+        .toPrecision(2)}% (${result.stats.samples()} runs sampled)`;
     })
     .join('\n');
 }
