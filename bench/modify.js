@@ -10,7 +10,7 @@ const setup = () => {
 
 exports.modify = function () {
   const suite = new Benchmark({
-    iterations: 10,
+    iterations: 100,
   });
 
   suite.add(

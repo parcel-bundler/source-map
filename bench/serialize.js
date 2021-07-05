@@ -10,7 +10,7 @@ const setup = () => {
 
 exports.serialize = function () {
   const suite = new Benchmark({
-    iterations: 25,
+    iterations: 75,
   });
 
   suite.add(

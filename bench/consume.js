@@ -18,7 +18,7 @@ const MAPPINGS = new Array(100).fill('').map((item, index) => {
 
 exports.consume = function () {
   const suite = new Benchmark({
-    iterations: 250,
+    iterations: 100,
   });
 
   suite.add(
