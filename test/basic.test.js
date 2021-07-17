@@ -249,6 +249,7 @@ describe('SourceMap - Basics', () => {
     assert.deepEqual(map.addSources(['test.js', 'execute.js']), [2, 3]);
 
     assert.deepEqual(map.addSource('abc.js'), 4);
+    assert.deepEqual(map.addSource("dist/rörfokus/4784.js"), 5);
   });
 
   it('Should be able to handle absolute url sources', () => {
