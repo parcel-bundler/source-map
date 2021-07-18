@@ -56,8 +56,11 @@ fn chunk_path(p: &str) -> Vec<&str> {
 // Helper function to calculate the path from a base file to a target file.
 pub fn make_relative_path(base: &str, target: &str) -> String {
     let mut target_str = target;
-    if target.len() > 7 && "file://".eq_ignore_ascii_case(&target[0..7]) {
-        target_str = &target[7..];
+    {
+        let target_lower = target.to_ascii_lowercase();
+        if target_lower.strip_prefix("file://").is_some() {
+            target_str = &target[7..];
+        }
     }
 
     if !is_abs_path(target_str) {
