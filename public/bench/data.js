@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1624865246953,
+  "lastUpdate": 1626596970477,
   "repoUrl": "https://github.com/parcel-bundler/source-map",
   "entries": {
     "Parcel sourcemap benchmark": [
@@ -832,6 +832,100 @@ window.BENCHMARK_DATA = {
             "range": "±1.44%",
             "unit": "ops/sec",
             "extra": "80 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "4586894+mischnic@users.noreply.github.com",
+            "name": "Niklas Mischkulnig",
+            "username": "mischnic"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "98658f989ecaa6588ea1b7b156c99fa8d316cf4c",
+          "message": "Correctly handle non-ascii chars in make_relative_path (#75)\n\n* Update package version version in lockfile\r\n\r\n* Add test for non-ascii characters at the 7th position in source\r\n\r\n* Correctly handle non-ascii chars in make_relative_path",
+          "timestamp": "2021-07-18T10:24:15+02:00",
+          "tree_id": "71ed38c16ab262bbb96bf262cc6d1d67d82b15ac",
+          "url": "https://github.com/parcel-bundler/source-map/commit/98658f989ecaa6588ea1b7b156c99fa8d316cf4c"
+        },
+        "date": 1626596969080,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "consume#consume vlq mappings",
+            "value": 80519,
+            "range": "±2.2%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
+          },
+          {
+            "name": "consume#consume buffer",
+            "value": 221221,
+            "range": "±5.7%",
+            "unit": "ops/sec",
+            "extra": "79 samples"
+          },
+          {
+            "name": "consume#consume JS Mappings",
+            "value": 51526,
+            "range": "±4.43%",
+            "unit": "ops/sec",
+            "extra": "74 samples"
+          },
+          {
+            "name": "serialize#Save buffer",
+            "value": 182,
+            "range": "±31.27%",
+            "unit": "ops/sec",
+            "extra": "30 samples"
+          },
+          {
+            "name": "serialize#Serialize to vlq",
+            "value": 298,
+            "range": "±1.95%",
+            "unit": "ops/sec",
+            "extra": "88 samples"
+          },
+          {
+            "name": "modify#positive line offset",
+            "value": 206,
+            "range": "±96.41%",
+            "unit": "ops/sec",
+            "extra": "5 samples"
+          },
+          {
+            "name": "modify#negative line offset",
+            "value": 89,
+            "range": "±1.1%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "modify#positive column offset",
+            "value": 4181956,
+            "range": "±1.03%",
+            "unit": "ops/sec",
+            "extra": "89 samples"
+          },
+          {
+            "name": "modify#negative column offset",
+            "value": 4013494,
+            "range": "±1.07%",
+            "unit": "ops/sec",
+            "extra": "93 samples"
+          },
+          {
+            "name": "append#addSourceMap",
+            "value": 2344356,
+            "range": "±1.62%",
+            "unit": "ops/sec",
+            "extra": "87 samples"
           }
         ]
       }
