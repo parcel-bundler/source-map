@@ -160,7 +160,7 @@ jobs:
     name: build-${{ matrix.target }}
     runs-on: ${{ matrix.os }}
     container:
-      image: docker.pkg.github.com/napi-rs/napi-rs/rust-nodejs-alpine:lts
+      image: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-alpine
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
@@ -179,6 +179,9 @@ jobs:
 
       - name: Setup rust target
         run: rustup target add ${{ matrix.target }}
+
+      - name: Install build tools
+        run: apk add --no-cache python3 make gcc g++ musl-dev curl
 
       - name: Install cross compile toolchains
         if: ${{ matrix.target == 'aarch64-unknown-linux-musl' }}
