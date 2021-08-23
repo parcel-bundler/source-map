@@ -39,6 +39,7 @@
   },
   "files": [
     "dist",
+    "index.d.ts",
     "package.json",
     "parcel_sourcemap_node",
     "parcel_sourcemap_wasm",
