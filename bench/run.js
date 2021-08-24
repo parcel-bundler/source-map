@@ -5,11 +5,15 @@ const { init } = require('./setup');
 const { consume } = require('./consume');
 const { serialize } = require('./serialize');
 const { modify } = require('./modify');
+const { append } = require('./append');
 
-function formatSummary(summary) {
-  return summary.results
+function formatSummary(results) {
+  return results
     .map((result) => {
-      return `${summary.name}#${result.name} x ${result.ops} ops/sec ±${result.margin}% (${result.samples} runs sampled)`;
+      // TODO: Add margin to result stats
+      return `${result.title} x ${Math.round(result.stats.opsPerSec())} ops/sec ±${result.stats
+        .relativeMarginOfError()
+        .toPrecision(2)}% (${result.stats.samples()} runs sampled)`;
     })
     .join('\n');
 }
@@ -19,10 +23,7 @@ async function run() {
   await init;
 
   console.log('Running benchmark...');
-  const results = [];
-  results.push(await consume());
-  results.push(await serialize());
-  results.push(await modify());
+  const results = [await consume(), await serialize(), await modify(), await append()];
 
   console.log('Formatting benchmark results...');
   const output = results.map(formatSummary).join('\n');

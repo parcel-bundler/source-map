@@ -15,16 +15,6 @@ jobs:
           - os: macos-latest
             target: x86_64-apple-darwin
             strip: strip -x # Must use -x on macOS. This produces larger results on linux.
-          - os: macos-latest
-            target: aarch64-apple-darwin
-            strip: strip -x # Must use -x on macOS. This produces larger results on linux.
-          # ARM/GNU Linux
-          # - os: ubuntu-latest
-          #   target: arm-unknown-linux-gnueabihf
-          #   strip: arm-linux-gnueabihf-strip
-          # - os: ubuntu-latest
-          #   target: aarch64-unknown-linux-gnu
-          #   strip: aarch64-linux-gnu-strip
 
     name: build-${{ matrix.target }}
     runs-on: ${{ matrix.os }}
@@ -34,59 +24,6 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: 14
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-          override: true
-
-      - name: Setup rust target
-        run: rustup target add ${{ matrix.target }}
-
-      - name: Install cross compile toolchains
-        if: ${{ matrix.os == 'ubuntu-latest' }}
-        run: |
-          sudo apt-get update
-          sudo apt-get install gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu g++-aarch64-linux-gnu -y
-
-      - uses: bahmutov/npm-install@v1.1.0
-      - name: Transpile JavaScript
-        run: yarn run transpile
-      - name: Build node release
-        run: yarn run build:node-release
-        env:
-          RUST_TARGET: ${{ matrix.target }}
-      - name: Strip debug symbols # https://github.com/rust-lang/rust/issues/46034
-        if: ${{ matrix.strip }}
-        run: ${{ matrix.strip }} parcel_sourcemap_node/artifacts/*.node
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: bindings-${{ matrix.target }}
-          path: parcel_sourcemap_node/artifacts/*.node
-
-  build-linux-gnu-x64:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-            strip: strip
-
-    name: build-${{ matrix.target }}
-    runs-on: ${{ matrix.os }}
-    container:
-      image: docker.io/centos/nodejs-12-centos7
-    steps:
-      - uses: actions/checkout@v2
-      - name: Install Node.JS
-        uses: actions/setup-node@v2
-        with:
-          node-version: 14
-      - name: Install yarn
-        run: npm install --global yarn@1
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
@@ -113,25 +50,9 @@ jobs:
           name: bindings-${{ matrix.target }}
           path: parcel_sourcemap_node/artifacts/*.node
 
-  build-linux-musl:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          # - os: ubuntu-latest
-          #   target: aarch64-unknown-linux-musl
-          #   strip: aarch64-linux-musl-strip
-          - os: ubuntu-latest
-            target: x86_64-unknown-linux-musl
-            strip: strip
-
-    name: build-${{ matrix.target }}
-    runs-on: ${{ matrix.os }}
-    container:
-      image: docker.pkg.github.com/napi-rs/napi-rs/rust-nodejs-alpine:lts
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+  build-apple-silicon:
+    name: build-apple-silicon
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
       - name: Install Node.JS
@@ -146,14 +67,71 @@ jobs:
           override: true
 
       - name: Setup rust target
-        run: rustup target add ${{ matrix.target }}
+        run: rustup target add aarch64-apple-darwin
 
-      - name: Install cross compile toolchains
-        if: ${{ matrix.target == 'aarch64-unknown-linux-musl' }}
-        run: |
-          curl -O https://musl.cc/aarch64-linux-musl-cross.tgz
-          tar xzf aarch64-linux-musl-cross.tgz
-          cp -R aarch64-linux-musl-cross/* /usr
+      - uses: bahmutov/npm-install@v1.1.0
+      - name: Transpile JavaScript
+        run: yarn run transpile
+      - name: Build node release
+        run: yarn run build:node-release
+        env:
+          RUST_TARGET: aarch64-apple-darwin
+          JEMALLOC_SYS_WITH_LG_PAGE: 14
+      - name: Strip debug symbols # https://github.com/rust-lang/rust/issues/46034
+        run: strip -x parcel_sourcemap_node/artifacts/*.node
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: bindings-aarch64-apple-darwin
+          path: parcel_sourcemap_node/artifacts/*.node
+
+  build-linux:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            strip: strip
+            image: docker.io/centos/nodejs-12-centos7
+            setup: npm install --global yarn@1
+          - target: aarch64-unknown-linux-gnu
+            strip: aarch64-linux-gnu-strip
+            image: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian
+          - target: armv7-unknown-linux-gnueabihf
+            strip: arm-linux-gnueabihf-strip
+            image: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian
+            setup: apt install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf -y
+          - target: aarch64-unknown-linux-musl
+            image: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-alpine
+            strip: aarch64-linux-musl-strip
+          - target: x86_64-unknown-linux-musl
+            image: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-alpine
+            strip: strip
+
+    name: build-${{ matrix.target }}
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ matrix.image }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Node.JS
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+
+      - name: Setup cross compile toolchain
+        if: ${{ matrix.setup }}
+        run: ${{ matrix.setup }}
+
+      - name: Setup rust target
+        run: rustup target add ${{ matrix.target }}
 
       - uses: bahmutov/npm-install@v1.1.0
       - name: Transpile JavaScript
@@ -176,11 +154,13 @@ jobs:
     name: Build and release
     needs:
       - build
-      - build-linux-gnu-x64
-      - build-linux-musl
+      - build-linux
+      - build-apple-silicon
     steps:
       - uses: actions/checkout@v1
       - uses: bahmutov/npm-install@v1.1.0
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
       - name: Download artifacts
         uses: actions/download-artifact@v2
         with:
@@ -190,6 +170,8 @@ jobs:
       - run: echo //registry.npmjs.org/:_authToken=${NPM_TOKEN} > .npmrc
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Build wasm-web release
+        run: yarn run build:wasm-web-release
       - run: npm publish
 
   release-crates:

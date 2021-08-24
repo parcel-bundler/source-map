@@ -20,21 +20,17 @@ jobs:
       - name: Build code
         run: yarn transpile && yarn build:node-release
       - name: 'Run benchmark'
-        run: yarn benchmark
+        run: yarn benchmark:node
 
       # Run benchmark action
       - name: Compare benchmark results
         uses: rhysd/github-action-benchmark@v1.8.1
         with:
-          name: Parcel Source Map library Benchmark
+          name: Parcel sourcemap benchmark
           tool: 'benchmarkjs'
           output-file-path: bench.txt
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          auto-push: true # ${{ github.ref == 'refs/heads/master' }}
+          benchmark-data-dir-path: public/bench
           comment-always: true
-
-      # - name: Deploy
-      #   uses: peaceiris/actions-gh-pages@v3
-      #   with:
-      #     github_token: ${{ secrets.GITHUB_TOKEN }}
-      #     publish_dir: ./public
+          max-items-in-chart: 1000
+          auto-push: ${{ github.ref == 'refs/heads/master' }}
