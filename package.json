@@ -4,6 +4,10 @@
   "main": "./dist/node.js",
   "types": "index.d.ts",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/parcel-bundler/source-map.git"
+  },
   "scripts": {
     "test": "mocha ./test/*.test.js",
     "test:node": "cross-env BACKEND=node yarn test",
