@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1633731298232,
+  "lastUpdate": 1634661621985,
   "repoUrl": "https://github.com/parcel-bundler/source-map",
   "entries": {
     "Parcel sourcemap benchmark": [
@@ -1394,6 +1394,100 @@ window.BENCHMARK_DATA = {
             "name": "append#addSourceMap",
             "value": 226,
             "range": "±5.4%",
+            "unit": "ops/sec",
+            "extra": "10 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "v-rr@microsoft.com",
+            "name": "rancyr",
+            "username": "v-rr"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "93c0627a91eebaad2592f7ccbc900fccd6101a4e",
+          "message": " Update package.json to include the repository (#82)\n\nHi there!\r\nThis change adds the repository property to your package.json file(s). Having this available provides a number of benefits to security tooling. For example, it allows for greater trust by checking for signed commits, contributors to a release and validating history with the project. It also allows for comparison between the source code and the published artifact in order to detect attacks on authors during the publication process.\r\nWe validate that we're making a PR against the correct repository by comparing the metadata for the published artifact on [npmjs.com](www.npmjs.com) against the metadata in the package.json file in the repository.\r\nThis change is provided by a team at Microsoft -- we're happy to answer any questions you may have. (Members of this team include [@s-tuli](https://github.com/s-tuli), [@iarna](https://github.com/iarna), [@rancyr](https://github.com/v-rr), [@Jaydon Peng](https://github.com/v-jiepeng), [@Zhongpeng Zhou](https://github.com/v-zhzhou) and [@Jingying Gu](https://github.com/v-gjy)). If you would prefer that we not make these sorts of PRs to projects you maintain, please just say. If you'd like to learn more about what we're doing here, we've prepared a document talking about both this project and some of our other activities around supply chain security here: [microsoft/Secure-Supply-Chain](https://github.com/microsoft/Secure-Supply-Chain)\r\nThis PR provides repository metadata for the following packages:\r\n*@parcel/source-map",
+          "timestamp": "2021-10-19T18:38:21+02:00",
+          "tree_id": "f8485ae42b0b5c269d1e5f43ba9ca030898b2804",
+          "url": "https://github.com/parcel-bundler/source-map/commit/93c0627a91eebaad2592f7ccbc900fccd6101a4e"
+        },
+        "date": 1634661621158,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "consume#consume buffer",
+            "value": 126155,
+            "range": "±8.9%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "consume#consume JS Mappings",
+            "value": 45897,
+            "range": "±5.7%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "consume#consume vlq mappings",
+            "value": 45033,
+            "range": "±13%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "serialize#Save buffer",
+            "value": 414,
+            "range": "±0.85%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "serialize#Serialize to vlq",
+            "value": 291,
+            "range": "±1.6%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "modify#negative column offset",
+            "value": 105143,
+            "range": "±17%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "modify#positive column offset",
+            "value": 99950,
+            "range": "±25%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "modify#positive line offset",
+            "value": 38577,
+            "range": "±6.8%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "modify#negative line offset",
+            "value": 36065,
+            "range": "±6.5%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "append#addSourceMap",
+            "value": 176,
+            "range": "±1.4%",
             "unit": "ops/sec",
             "extra": "10 samples"
           }
