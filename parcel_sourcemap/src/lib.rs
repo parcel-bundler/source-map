@@ -529,7 +529,9 @@ impl SourceMap {
 
         self.inner.sources_content.reserve(sources_content.len());
         for (i, source_content) in sources_content.iter().enumerate() {
-            self.set_source_content(i, source_content)?;
+            if let Some(source_index) = source_indexes.get(i) {
+                self.set_source_content(*source_index as usize, source_content)?;
+            }
         }
 
         let mut input = input.iter().cloned().peekable();
