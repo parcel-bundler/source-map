@@ -173,10 +173,10 @@ impl SourceMap {
     }
 
     pub fn getSourceIndex(&self, source: &str) -> Result<JsValue, JsValue> {
-        let mut mapped_val: i32 = -1;
-        if let Some(found_source_index) = self.map.get_source_index(source) {
-            mapped_val = i32::try_from(found_source_index).unwrap_or(-1);
-        }
+        let mapped_val: i32 = match self.map.get_source_index(source) {
+            Some(found_source_index) => i32::try_from(found_source_index).unwrap_or(-1),
+            None => -1,
+        };
         Ok(JsValue::from(mapped_val))
     }
 
