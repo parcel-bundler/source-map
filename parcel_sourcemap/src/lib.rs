@@ -238,15 +238,11 @@ impl SourceMap {
 
     pub fn get_source_index(&self, source: &str) -> Option<u32> {
         let normalized_source = make_relative_path(self.project_root.as_str(), source);
-        match self
-            .inner
+        self.inner
             .sources
             .iter()
             .position(|s| normalized_source.eq(s))
-        {
-            Some(i) => Some(i as u32),
-            None => None,
-        }
+            .map(|v| v as u32)
     }
 
     pub fn get_source(&self, index: u32) -> Result<&str, SourceMapError> {
