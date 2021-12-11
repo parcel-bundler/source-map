@@ -94,7 +94,7 @@ fn get_source_index(ctx: CallContext) -> Result<JsNumber> {
     let source_map_instance: &SourceMap = ctx.env.unwrap(&this)?;
 
     let source = ctx.get::<JsString>(0)?.into_utf8()?;
-    let source_index = source_map_instance.get_source_index(source.as_str()?)?;
+    let source_index = source_map_instance.get_source_index(source.as_str()?);
 
     match source_index {
         Some(i) => ctx.env.create_uint32(i),
@@ -121,7 +121,7 @@ fn get_source_content_by_source(ctx: CallContext) -> Result<JsString> {
     let source_map_instance: &mut SourceMap = ctx.env.unwrap(&this)?;
 
     let source = ctx.get::<JsString>(0)?.into_utf8()?;
-    let source_index = source_map_instance.get_source_index(source.as_str()?)?;
+    let source_index = source_map_instance.get_source_index(source.as_str()?);
     match source_index {
         Some(i) => {
             let source_content = source_map_instance.get_source_content(i)?;

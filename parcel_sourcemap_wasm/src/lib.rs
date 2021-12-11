@@ -173,12 +173,8 @@ impl SourceMap {
     }
 
     pub fn getSourceIndex(&self, source: &str) -> Result<JsValue, JsValue> {
-        Ok(JsValue::from(
-            self.map
-                .get_source_index(source)?
-                .map(|v| i32::try_from(v).unwrap())
-                .unwrap_or(-1),
-        ))
+        let mapped_val: i32 = i32::try_from(self.map.get_source_index(source)).unwrap_or(-1);
+        Ok(JsValue::from(mapped_val))
     }
 
     pub fn addIndexedMappings(&mut self, mappings_arr: &[i32]) {
@@ -257,7 +253,7 @@ impl SourceMap {
     }
 
     pub fn getSourceContentBySource(&self, source: &str) -> Result<JsValue, JsValue> {
-        let source_index = self.map.get_source_index(source)?;
+        let source_index = self.map.get_source_index(source);
 
         match source_index {
             Some(i) => {

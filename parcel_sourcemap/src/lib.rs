@@ -236,7 +236,7 @@ impl SourceMap {
         result_vec
     }
 
-    pub fn get_source_index(&self, source: &str) -> Result<Option<u32>, SourceMapError> {
+    pub fn get_source_index(&self, source: &str) -> Option<u32> {
         let normalized_source = make_relative_path(self.project_root.as_str(), source);
         match self
             .inner
@@ -244,8 +244,8 @@ impl SourceMap {
             .iter()
             .position(|s| normalized_source.eq(s))
         {
-            Some(i) => Ok(Some(i as u32)),
-            None => Ok(None),
+            Some(i) => Some(i as u32),
+            None => None,
         }
     }
 
