@@ -236,13 +236,14 @@ impl SourceMap {
         result_vec
     }
 
-    pub fn get_source_index(&self, source: &str) -> Option<u32> {
+    pub fn get_source_index(&self, source: &str) -> Result<Option<u32>, SourceMapError> {
         let normalized_source = make_relative_path(self.project_root.as_str(), source);
-        self.inner
+        Ok(self
+            .inner
             .sources
             .iter()
             .position(|s| normalized_source.eq(s))
-            .map(|v| v as u32)
+            .map(|v| v as u32))
     }
 
     pub fn get_source(&self, index: u32) -> Result<&str, SourceMapError> {
