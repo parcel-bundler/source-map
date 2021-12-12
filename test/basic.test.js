@@ -249,7 +249,7 @@ describe('SourceMap - Basics', () => {
     assert.deepEqual(map.addSources(['test.js', 'execute.js']), [2, 3]);
 
     assert.deepEqual(map.addSource('abc.js'), 4);
-    assert.deepEqual(map.addSource("dist/rörfokus/4784.js"), 5);
+    assert.deepEqual(map.addSource('dist/rörfokus/4784.js'), 5);
   });
 
   it('Should be able to handle absolute url sources', () => {
@@ -408,5 +408,21 @@ describe('SourceMap - Basics', () => {
     });
 
     assert.equal(map.getSourceContent('helloworld.coffee'), 'module.exports = () => "hello world";');
+  });
+
+  it('Should deduplicate sources and sourcesContent from a VLQ Map', () => {
+    let map = new SourceMap('/test-root');
+    map.addVLQMap({
+      mappings: SIMPLE_SOURCE_MAP.mappings,
+      sources: ['./index.js', './index.js'],
+      sourcesContent: ['first', 'second'],
+      names: ['a'],
+    });
+
+    const stringifiedMap = map.toVLQ();
+    assert.equal(stringifiedMap.mappings, SIMPLE_SOURCE_MAP.mappings);
+    assert.deepEqual(stringifiedMap.sources, ['index.js']);
+    assert.deepEqual(stringifiedMap.sourcesContent, ['second']);
+    assert.deepEqual(stringifiedMap.names, ['a']);
   });
 });

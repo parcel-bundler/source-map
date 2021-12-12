@@ -238,15 +238,12 @@ impl SourceMap {
 
     pub fn get_source_index(&self, source: &str) -> Result<Option<u32>, SourceMapError> {
         let normalized_source = make_relative_path(self.project_root.as_str(), source);
-        match self
+        Ok(self
             .inner
             .sources
             .iter()
             .position(|s| normalized_source.eq(s))
-        {
-            Some(i) => Ok(Some(i as u32)),
-            None => Ok(None),
-        }
+            .map(|v| v as u32))
     }
 
     pub fn get_source(&self, index: u32) -> Result<&str, SourceMapError> {
@@ -529,7 +526,9 @@ impl SourceMap {
 
         self.inner.sources_content.reserve(sources_content.len());
         for (i, source_content) in sources_content.iter().enumerate() {
-            self.set_source_content(i, source_content)?;
+            if let Some(source_index) = source_indexes.get(i) {
+                self.set_source_content(*source_index as usize, source_content)?;
+            }
         }
 
         let mut input = input.iter().cloned().peekable();

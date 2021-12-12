@@ -95,7 +95,6 @@ fn get_source_index(ctx: CallContext) -> Result<JsNumber> {
 
     let source = ctx.get::<JsString>(0)?.into_utf8()?;
     let source_index = source_map_instance.get_source_index(source.as_str()?)?;
-
     match source_index {
         Some(i) => ctx.env.create_uint32(i),
         None => ctx.env.create_int32(-1),
