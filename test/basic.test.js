@@ -410,7 +410,7 @@ describe('SourceMap - Basics', () => {
     assert.equal(map.getSourceContent('helloworld.coffee'), 'module.exports = () => "hello world";');
   });
 
-  it('Should deduplicate sources and sources_content', () => {
+  it('Should deduplicate sources and sourcesContent from a VLQ Map', () => {
     let map = new SourceMap('/test-root');
     map.addVLQMap({
       mappings: SIMPLE_SOURCE_MAP.mappings,
