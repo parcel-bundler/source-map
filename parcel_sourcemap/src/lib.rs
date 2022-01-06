@@ -667,19 +667,19 @@ impl SourceMap {
     }
 }
 
-#[allow(non_fmt_panic)]
+#[allow(non_fmt_panics)]
 #[test]
 fn test_buffers() {
     let map = SourceMap::new("/");
     let mut output = AlignedVec::new();
     match map.to_buffer(&mut output) {
         Ok(_) => {}
-        Err(err) => panic!(err),
+        Err(err) => panic!("{:?}", err),
     }
     match SourceMap::from_buffer("/", &output) {
         Ok(map) => {
             println!("{:?}", map)
         }
-        Err(err) => panic!(err),
+        Err(err) => panic!("{:?}", err),
     }
 }

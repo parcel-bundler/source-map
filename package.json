@@ -50,11 +50,6 @@
     "README.md",
     "src"
   ],
-  "binary": {
-    "napi_versions": [
-      4
-    ]
-  },
   "engines": {
     "node": "^12.18.3 || >=14"
   },
@@ -64,11 +59,12 @@
     "@babel/preset-env": "^7.14.2",
     "@babel/preset-flow": "^7.13.13",
     "@babel/register": "^7.13.16",
-    "@napi-rs/cli": "^1.0.4",
+    "@napi-rs/cli": "^2.2.1",
     "cross-env": "^7.0.3",
     "flow-bin": "^0.151.0",
     "flow-copy-source": "^2.0.9",
     "fs-extra": "^10.0.0",
+    "globby": "^11.0.3",
     "husky": "6.0.0",
     "lint-staged": "^11.0.0",
     "mocha": "^8.4.0",
@@ -76,10 +72,6 @@
     "shx": "^0.3.3",
     "source-map": "^0.7.3",
     "tiny-benchy": "^2.1.0"
-  },
-  "dependencies": {
-    "detect-libc": "^1.0.3",
-    "globby": "^11.0.3"
   },
   "browser": {
     "./dist/node.js": "./dist/wasm.js",
