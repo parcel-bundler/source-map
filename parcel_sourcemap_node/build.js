@@ -12,7 +12,16 @@ async function build() {
   }
 
   await new Promise((resolve, reject) => {
-    let args = ['build', '--platform', '-c', '../package.json', './artifacts'];
+    let args = [
+      'build',
+      '--platform',
+      '--cargo-name',
+      'parcel_sourcemap_node',
+      '--cargo-flags="-p parcel_sourcemap_node"',
+      '--js',
+      'false',
+      './parcel_sourcemap_node/artifacts',
+    ];
     if (release) {
       args.push('--release');
     }
@@ -23,7 +32,7 @@ async function build() {
 
     let yarn = spawn('napi', args, {
       stdio: 'inherit',
-      cwd: __dirname,
+      cwd: process.cwd(),
       shell: true,
     });
 

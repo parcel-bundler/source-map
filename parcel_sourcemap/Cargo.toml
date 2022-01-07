@@ -1,16 +1,35 @@
 [package]
-name = "parcel_sourcemap"
-version = "2.0.1"
-authors = [ "Jasper De Moor <jasperdemoor@gmail.com>" ]
-edition = "2018"
+authors = ["Jasper De Moor <jasperdemoor@gmail.com>"]
 description = "Parcel Source Map Library"
+edition = "2021"
+keywords = ["sourcemap", "Node", "Parcel"]
 license = "MIT"
-keywords = [ "sourcemap", "Node", "Parcel" ]
+name = "parcel_sourcemap"
 repository = "https://github.com/parcel-bundler/source-map"
+version = "2.0.0"
+
+[features]
+native = ["napi"]
+skip_napi = ["napi-derive/noop"]
+wasm = ["js-sys", "wasm-bindgen", "napi-derive/noop"]
 
 [dependencies]
-"vlq" = "0.5.1"
-"napi" = "1.6.1"
 rkyv = "0.6.7"
-"js-sys" = "0.3"
-"wasm-bindgen" = "0.2"
+vlq = "0.5.1"
+
+[dependencies.napi]
+default-features = false
+optional = true
+version = "2"
+
+[dependencies.napi-derive]
+default-features = false
+version = "2"
+
+[dependencies.js-sys]
+optional = true
+version = "0.3"
+
+[dependencies.wasm-bindgen]
+optional = true
+version = "0.2"
