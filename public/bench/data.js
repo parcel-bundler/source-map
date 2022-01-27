@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1643251799151,
+  "lastUpdate": 1643253027468,
   "repoUrl": "https://github.com/parcel-bundler/source-map",
   "entries": {
     "Parcel sourcemap benchmark": [
@@ -1864,6 +1864,100 @@ window.BENCHMARK_DATA = {
             "name": "append#addSourceMap",
             "value": 205,
             "range": "±0.42%",
+            "unit": "ops/sec",
+            "extra": "10 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "devongovett@gmail.com",
+            "name": "Devon Govett",
+            "username": "devongovett"
+          },
+          "committer": {
+            "email": "devongovett@gmail.com",
+            "name": "Devon Govett",
+            "username": "devongovett"
+          },
+          "distinct": true,
+          "id": "c0e877fb23b6c351ecc452cdec209b46fd496db0",
+          "message": "Remove dependency on napi from core crate",
+          "timestamp": "2022-01-26T22:07:13-05:00",
+          "tree_id": "f6e25ebb960049827803ca32c48d8c24e0a37e3b",
+          "url": "https://github.com/parcel-bundler/source-map/commit/c0e877fb23b6c351ecc452cdec209b46fd496db0"
+        },
+        "date": 1643253026115,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "consume#consume buffer",
+            "value": 127240,
+            "range": "±14%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "consume#consume JS Mappings",
+            "value": 46317,
+            "range": "±6.3%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "consume#consume vlq mappings",
+            "value": 45342,
+            "range": "±17%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "serialize#Save buffer",
+            "value": 380,
+            "range": "±0.94%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "serialize#Serialize to vlq",
+            "value": 272,
+            "range": "±0.98%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "modify#negative column offset",
+            "value": 94902,
+            "range": "±17%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "modify#positive column offset",
+            "value": 85651,
+            "range": "±23%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "modify#positive line offset",
+            "value": 38478,
+            "range": "±6.9%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "modify#negative line offset",
+            "value": 34315,
+            "range": "±5.1%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "append#addSourceMap",
+            "value": 156,
+            "range": "±0.38%",
             "unit": "ops/sec",
             "extra": "10 samples"
           }
