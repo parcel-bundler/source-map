@@ -80,14 +80,13 @@ impl From<io::Error> for SourceMapError {
     }
 }
 
-impl From<SourceMapError> for napi::Error {
-    #[inline]
-    fn from(err: SourceMapError) -> napi::Error {
+impl ToString for SourceMapError {
+    fn to_string(&self) -> String {
         // Prefix all errors, so it's obvious they originate from this library
         let mut reason = String::from("[parcel-sourcemap] ");
 
         // Convert error type into an error message...
-        match err.error_type {
+        match self.error_type {
             SourceMapErrorType::UnexpectedNegativeNumber => {
                 reason.push_str("Unexpected Negative Number");
             }
@@ -125,67 +124,12 @@ impl From<SourceMapError> for napi::Error {
 
         // Add reason to error string if there is one
 
-        if let Some(r) = err.reason {
+        if let Some(r) = &self.reason {
             reason.push_str(", ");
             reason.push_str(&r[..]);
         }
 
-        // Return a napi error :)
-        napi::Error::new(napi::Status::GenericFailure, reason)
-    }
-}
-
-impl From<SourceMapError> for wasm_bindgen::JsValue {
-    #[inline]
-    fn from(err: SourceMapError) -> wasm_bindgen::JsValue {
-        // Prefix all errors, so it's obvious they originate from this library
-        let mut reason = String::from("[parcel-sourcemap] ");
-
-        // Convert error type into an error message...
-        match err.error_type {
-            SourceMapErrorType::UnexpectedNegativeNumber => {
-                reason.push_str("Unexpected Negative Number");
-            }
-            SourceMapErrorType::UnexpectedlyBigNumber => {
-                reason.push_str("Unexpected Big Number");
-            }
-            SourceMapErrorType::VlqUnexpectedEof => {
-                reason.push_str("VLQ Unexpected end of file");
-            }
-            SourceMapErrorType::VlqInvalidBase64 => {
-                reason.push_str("VLQ Invalid Base 64 value");
-            }
-            SourceMapErrorType::VlqOverflow => {
-                reason.push_str("VLQ Value overflowed, does not fit in u32");
-            }
-            SourceMapErrorType::IOError => {
-                reason.push_str("IO Error");
-            }
-            SourceMapErrorType::NameOutOfRange => {
-                reason.push_str("Name out of range");
-            }
-            SourceMapErrorType::SourceOutOfRange => {
-                reason.push_str("Source out of range");
-            }
-            SourceMapErrorType::InvalidFilePath => {
-                reason.push_str("Invalid FilePath");
-            }
-            SourceMapErrorType::BufferError => {
-                reason.push_str("Something went wrong while writing/reading a sourcemap buffer");
-            }
-            SourceMapErrorType::FromUtf8Error => {
-                reason.push_str("Could not convert utf-8 array to string");
-            }
-        }
-
-        // Add reason to error string if there is one
-        if let Some(r) = err.reason {
-            reason.push_str(", ");
-            reason.push_str(&r[..]);
-        }
-
-        // Return a JavaScript error :)
-        js_sys::Error::new(&reason).into()
+        reason
     }
 }
 

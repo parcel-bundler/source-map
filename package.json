@@ -69,6 +69,7 @@
     "flow-bin": "^0.151.0",
     "flow-copy-source": "^2.0.9",
     "fs-extra": "^10.0.0",
+    "globby": "^11.0.3",
     "husky": "6.0.0",
     "lint-staged": "^11.0.0",
     "mocha": "^8.4.0",
@@ -78,8 +79,7 @@
     "tiny-benchy": "^2.1.0"
   },
   "dependencies": {
-    "detect-libc": "^1.0.3",
-    "globby": "^11.0.3"
+    "detect-libc": "^1.0.3"
   },
   "browser": {
     "./dist/node.js": "./dist/wasm.js",

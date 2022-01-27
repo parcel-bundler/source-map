@@ -667,7 +667,7 @@ impl SourceMap {
     }
 }
 
-#[allow(non_fmt_panic)]
+#[allow(non_fmt_panics)]
 #[test]
 fn test_buffers() {
     let map = SourceMap::new("/");
