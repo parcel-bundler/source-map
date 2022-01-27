@@ -1,11 +1,10 @@
 let parts = [process.platform, process.arch];
-// Only GNU system has this field
-const { glibcVersionRuntime } = process.report.getReport().header;
 if (process.platform === 'linux') {
-  if (process.arch === 'arm') {
-    parts.push('gnueabihf');
-  } else if (!glibcVersionRuntime) {
+  const { MUSL, family } = require('detect-libc');
+  if (family === MUSL) {
     parts.push('musl');
+  } else if (process.arch === 'arm') {
+    parts.push('gnueabihf');
   } else {
     parts.push('gnu');
   }
