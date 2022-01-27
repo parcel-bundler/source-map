@@ -39,7 +39,6 @@ pub enum SourceMapErrorType {
     FromUtf8Error = 11,
 }
 
-#[derive(Debug)]
 pub struct SourceMapError {
     pub error_type: SourceMapErrorType,
     pub reason: Option<String>,
@@ -81,7 +80,6 @@ impl From<io::Error> for SourceMapError {
     }
 }
 
-#[cfg(feature = "native")]
 impl From<SourceMapError> for napi::Error {
     #[inline]
     fn from(err: SourceMapError) -> napi::Error {
@@ -137,7 +135,6 @@ impl From<SourceMapError> for napi::Error {
     }
 }
 
-#[cfg(feature = "wasm")]
 impl From<SourceMapError> for wasm_bindgen::JsValue {
     #[inline]
     fn from(err: SourceMapError) -> wasm_bindgen::JsValue {

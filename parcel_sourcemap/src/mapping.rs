@@ -1,7 +1,5 @@
-use napi_derive::napi;
 use rkyv::{Archive, Deserialize, Serialize};
 
-#[napi(object)]
 #[derive(Archive, Serialize, Deserialize, Debug, Clone, Copy)]
 pub struct OriginalLocation {
     pub original_line: u32,
@@ -21,7 +19,6 @@ impl OriginalLocation {
     }
 }
 
-#[napi(object)]
 #[derive(Archive, Serialize, Deserialize, Debug)]
 pub struct Mapping {
     pub generated_line: u32,
