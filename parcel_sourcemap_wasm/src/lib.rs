@@ -68,7 +68,8 @@ impl SourceMap {
                 map: NativeSourceMap::from_buffer(
                     &project_root,
                     &Uint8Array::from(buffer).to_vec(),
-                ).map_err(to_wasm_error)?,
+                )
+                .map_err(to_wasm_error)?,
             });
         }
 
@@ -93,14 +94,16 @@ impl SourceMap {
         let sources_string: Vec<String> = sources.into_serde().unwrap();
         let sources_content_string: Vec<String> = sources_content.into_serde().unwrap();
         let names_string: Vec<String> = names.into_serde().unwrap();
-        self.map.add_vlq_map(
-            vlq_mappings.as_bytes(),
-            sources_string.iter().map(|s| s.as_str()).collect(),
-            sources_content_string.iter().map(|s| s.as_str()).collect(),
-            names_string.iter().map(|s| s.as_str()).collect(),
-            line_offset.into(),
-            column_offset.into(),
-        ).map_err(to_wasm_error)?;
+        self.map
+            .add_vlq_map(
+                vlq_mappings.as_bytes(),
+                sources_string.iter().map(|s| s.as_str()).collect(),
+                sources_content_string.iter().map(|s| s.as_str()).collect(),
+                names_string.iter().map(|s| s.as_str()).collect(),
+                line_offset.into(),
+                column_offset.into(),
+            )
+            .map_err(to_wasm_error)?;
 
         Ok(JsValue::UNDEFINED)
     }
@@ -229,7 +232,9 @@ impl SourceMap {
 
     pub fn toBuffer(&self) -> Result<JsValue, JsValue> {
         let mut buffer_data = AlignedVec::new();
-        self.map.to_buffer(&mut buffer_data).map_err(to_wasm_error)?;
+        self.map
+            .to_buffer(&mut buffer_data)
+            .map_err(to_wasm_error)?;
         Ok(Uint8Array::from(buffer_data.as_slice()).into())
     }
 
@@ -239,7 +244,8 @@ impl SourceMap {
         line_offset: i32,
     ) -> Result<JsValue, JsValue> {
         self.map
-            .add_sourcemap(&mut previous_map_instance.map, line_offset.into()).map_err(to_wasm_error)?;
+            .add_sourcemap(&mut previous_map_instance.map, line_offset.into())
+            .map_err(to_wasm_error)?;
 
         Ok(JsValue::UNDEFINED)
     }
@@ -250,7 +256,9 @@ impl SourceMap {
         source_content: &str,
     ) -> Result<JsValue, JsValue> {
         let source_index = self.addSource(source) as usize;
-        self.map.set_source_content(source_index, source_content).map_err(to_wasm_error)?;
+        self.map
+            .set_source_content(source_index, source_content)
+            .map_err(to_wasm_error)?;
 
         Ok(JsValue::UNDEFINED)
     }
@@ -273,13 +281,16 @@ impl SourceMap {
         line_offset: i32,
     ) -> Result<JsValue, JsValue> {
         self.map
-            .add_empty_map(source, source_content, line_offset.into()).map_err(to_wasm_error)?;
+            .add_empty_map(source, source_content, line_offset.into())
+            .map_err(to_wasm_error)?;
 
         Ok(JsValue::UNDEFINED)
     }
 
     pub fn extends(&mut self, previous_map_instance: &mut SourceMap) -> Result<JsValue, JsValue> {
-        self.map.extends(&mut previous_map_instance.map).map_err(to_wasm_error)?;
+        self.map
+            .extends(&mut previous_map_instance.map)
+            .map_err(to_wasm_error)?;
 
         Ok(JsValue::UNDEFINED)
     }
@@ -300,7 +311,8 @@ impl SourceMap {
         generated_line_offset: i32,
     ) -> Result<JsValue, JsValue> {
         self.map
-            .offset_lines(generated_line, generated_line_offset.into()).map_err(to_wasm_error)?;
+            .offset_lines(generated_line, generated_line_offset.into())
+            .map_err(to_wasm_error)?;
 
         Ok(JsValue::UNDEFINED)
     }
@@ -311,11 +323,13 @@ impl SourceMap {
         generated_column: u32,
         generated_column_offset: i32,
     ) -> Result<JsValue, JsValue> {
-        self.map.offset_columns(
-            generated_line,
-            generated_column,
-            generated_column_offset.into(),
-        ).map_err(to_wasm_error)?;
+        self.map
+            .offset_columns(
+                generated_line,
+                generated_column,
+                generated_column_offset.into(),
+            )
+            .map_err(to_wasm_error)?;
 
         Ok(JsValue::UNDEFINED)
     }

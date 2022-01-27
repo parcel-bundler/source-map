@@ -94,7 +94,9 @@ fn get_source_index(ctx: CallContext) -> Result<JsNumber> {
     let source_map_instance: &SourceMap = ctx.env.unwrap(&this)?;
 
     let source = ctx.get::<JsString>(0)?.into_utf8()?;
-    let source_index = source_map_instance.get_source_index(source.as_str()?).map_err(to_napi_error)?;
+    let source_index = source_map_instance
+        .get_source_index(source.as_str()?)
+        .map_err(to_napi_error)?;
     match source_index {
         Some(i) => ctx.env.create_uint32(i),
         None => ctx.env.create_int32(-1),
@@ -109,7 +111,9 @@ fn set_source_content_by_source(ctx: CallContext) -> Result<JsUndefined> {
     let source = ctx.get::<JsString>(0)?.into_utf8()?;
     let source_index: usize = source_map_instance.add_source(source.as_str()?) as usize;
     let source_content = ctx.get::<JsString>(1)?.into_utf8()?;
-    source_map_instance.set_source_content(source_index, source_content.as_str()?).map_err(to_napi_error)?;
+    source_map_instance
+        .set_source_content(source_index, source_content.as_str()?)
+        .map_err(to_napi_error)?;
 
     ctx.env.get_undefined()
 }
@@ -120,10 +124,14 @@ fn get_source_content_by_source(ctx: CallContext) -> Result<JsString> {
     let source_map_instance: &mut SourceMap = ctx.env.unwrap(&this)?;
 
     let source = ctx.get::<JsString>(0)?.into_utf8()?;
-    let source_index = source_map_instance.get_source_index(source.as_str()?).map_err(to_napi_error)?;
+    let source_index = source_map_instance
+        .get_source_index(source.as_str()?)
+        .map_err(to_napi_error)?;
     match source_index {
         Some(i) => {
-            let source_content = source_map_instance.get_source_content(i).map_err(to_napi_error)?;
+            let source_content = source_map_instance
+                .get_source_content(i)
+                .map_err(to_napi_error)?;
             ctx.env.create_string(source_content)
         }
         None => ctx.env.create_string(""),
@@ -241,7 +249,9 @@ fn to_buffer(ctx: CallContext) -> Result<JsBuffer> {
     let source_map_instance: &SourceMap = ctx.env.unwrap(&this)?;
 
     let mut buffer_data = AlignedVec::new();
-    source_map_instance.to_buffer(&mut buffer_data).map_err(to_napi_error)?;
+    source_map_instance
+        .to_buffer(&mut buffer_data)
+        .map_err(to_napi_error)?;
     Ok(ctx
         .env
         .create_buffer_with_data(buffer_data.into_vec())?
@@ -257,7 +267,9 @@ fn add_sourcemap(ctx: CallContext) -> Result<JsUndefined> {
     let previous_map_instance = ctx.env.unwrap::<SourceMap>(&sourcemap_object)?;
     let line_offset = ctx.get::<JsNumber>(1)?.get_int64()?;
 
-    source_map_instance.add_sourcemap(previous_map_instance, line_offset).map_err(to_napi_error)?;
+    source_map_instance
+        .add_sourcemap(previous_map_instance, line_offset)
+        .map_err(to_napi_error)?;
     ctx.env.get_undefined()
 }
 
@@ -280,14 +292,16 @@ fn add_vlq_map(ctx: CallContext) -> Result<JsUndefined> {
     let line_offset = ctx.get::<JsNumber>(4)?.get_int64()?;
     let column_offset = ctx.get::<JsNumber>(5)?.get_int64()?;
 
-    source_map_instance.add_vlq_map(
-        vlq_mappings.as_slice(),
-        sources.iter().map(|s| s.as_str()).collect(),
-        sources_content.iter().map(|s| s.as_str()).collect(),
-        names.iter().map(|s| s.as_str()).collect(),
-        line_offset,
-        column_offset,
-    ).map_err(to_napi_error)?;
+    source_map_instance
+        .add_vlq_map(
+            vlq_mappings.as_slice(),
+            sources.iter().map(|s| s.as_str()).collect(),
+            sources_content.iter().map(|s| s.as_str()).collect(),
+            names.iter().map(|s| s.as_str()).collect(),
+            line_offset,
+            column_offset,
+        )
+        .map_err(to_napi_error)?;
 
     ctx.env.get_undefined()
 }
@@ -298,7 +312,9 @@ fn to_vlq(ctx: CallContext) -> Result<JsObject> {
     let source_map_instance: &mut SourceMap = ctx.env.unwrap(&this)?;
 
     let mut vlq_output: Vec<u8> = vec![];
-    source_map_instance.write_vlq(&mut vlq_output).map_err(to_napi_error)?;
+    source_map_instance
+        .write_vlq(&mut vlq_output)
+        .map_err(to_napi_error)?;
     let vlq_string = ctx.env.create_string_latin1(vlq_output.as_slice())?;
     let mut result_obj: JsObject = ctx.env.create_object()?;
     result_obj.set_named_property("mappings", vlq_string)?;
@@ -372,7 +388,9 @@ fn offset_lines(ctx: CallContext) -> Result<JsUndefined> {
 
     let generated_line = ctx.get::<JsNumber>(0)?.get_uint32()?;
     let generated_line_offset = ctx.get::<JsNumber>(1)?.get_int64()?;
-    source_map_instance.offset_lines(generated_line, generated_line_offset).map_err(to_napi_error)?;
+    source_map_instance
+        .offset_lines(generated_line, generated_line_offset)
+        .map_err(to_napi_error)?;
     ctx.env.get_undefined()
 }
 
@@ -385,11 +403,9 @@ fn offset_columns(ctx: CallContext) -> Result<JsUndefined> {
     let generated_column = ctx.get::<JsNumber>(1)?.get_uint32()?;
     let generated_column_offset = ctx.get::<JsNumber>(2)?.get_int64()?;
 
-    source_map_instance.offset_columns(
-        generated_line,
-        generated_column,
-        generated_column_offset,
-    ).map_err(to_napi_error)?;
+    source_map_instance
+        .offset_columns(generated_line, generated_column, generated_column_offset)
+        .map_err(to_napi_error)?;
     ctx.env.get_undefined()
 }
 
@@ -401,7 +417,9 @@ fn add_empty_map(ctx: CallContext) -> Result<JsUndefined> {
     let source = ctx.get::<JsString>(0)?.into_utf8()?;
     let source_content = ctx.get::<JsString>(1)?.into_utf8()?;
     let line_offset = ctx.get::<JsNumber>(2)?.get_int64()?;
-    source_map_instance.add_empty_map(source.as_str()?, source_content.as_str()?, line_offset).map_err(to_napi_error)?;
+    source_map_instance
+        .add_empty_map(source.as_str()?, source_content.as_str()?, line_offset)
+        .map_err(to_napi_error)?;
     ctx.env.get_undefined()
 }
 
@@ -412,7 +430,9 @@ fn extends(ctx: CallContext) -> Result<JsUndefined> {
 
     let sourcemap_object = ctx.get::<JsObject>(0)?;
     let mut previous_map_instance = ctx.env.unwrap::<SourceMap>(&sourcemap_object)?;
-    source_map_instance.extends(&mut previous_map_instance).map_err(to_napi_error)?;
+    source_map_instance
+        .extends(&mut previous_map_instance)
+        .map_err(to_napi_error)?;
     ctx.env.get_undefined()
 }
 
@@ -447,7 +467,8 @@ fn constructor(ctx: CallContext) -> Result<JsUndefined> {
     match second_argument {
         Either::A(js_buffer) => {
             let buffer = js_buffer.into_value()?;
-            let sourcemap = SourceMap::from_buffer(project_root.as_str()?, &buffer[..]).map_err(to_napi_error)?;
+            let sourcemap = SourceMap::from_buffer(project_root.as_str()?, &buffer[..])
+                .map_err(to_napi_error)?;
             ctx.env.wrap(&mut this, sourcemap)?;
         }
         Either::B(_) => {
