@@ -1,4 +1,5 @@
 #![deny(clippy::all)]
+#![allow(clippy::unused_unit)]
 
 extern crate parcel_sourcemap;
 
