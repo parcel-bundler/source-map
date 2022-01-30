@@ -53,15 +53,12 @@ impl From<&Mapping> for MappingResult {
     }
 }
 
-#[wasm_bindgen]
 pub struct SourceMap {
     map: NativeSourceMap,
 }
 
-#[wasm_bindgen]
 #[allow(non_snake_case)]
 impl SourceMap {
-    #[wasm_bindgen(constructor)]
     pub fn new(project_root: String, buffer: JsValue) -> Result<SourceMap, JsValue> {
         if !buffer.is_undefined() {
             return Ok(SourceMap {
