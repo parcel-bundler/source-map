@@ -238,7 +238,7 @@ fn get_mappings(ctx: CallContext) -> Result<JsObject> {
 
     let mut mappings_arr = ctx.env.create_array()?;
     for (index, mapping) in source_map_instance.get_mappings().iter().enumerate() {
-        mappings_arr.set_element(index as u32, mapping_to_js_object(&ctx, &mapping)?)?;
+        mappings_arr.set_element(index as u32, mapping_to_js_object(&ctx, mapping)?)?;
     }
     Ok(mappings_arr)
 }
@@ -429,9 +429,9 @@ fn extends(ctx: CallContext) -> Result<JsUndefined> {
     let source_map_instance: &mut SourceMap = ctx.env.unwrap(&this)?;
 
     let sourcemap_object = ctx.get::<JsObject>(0)?;
-    let mut previous_map_instance = ctx.env.unwrap::<SourceMap>(&sourcemap_object)?;
+    let previous_map_instance = ctx.env.unwrap::<SourceMap>(&sourcemap_object)?;
     source_map_instance
-        .extends(&mut previous_map_instance)
+        .extends(previous_map_instance)
         .map_err(to_napi_error)?;
     ctx.env.get_undefined()
 }
