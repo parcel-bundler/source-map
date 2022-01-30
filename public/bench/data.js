@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1643548569554,
+  "lastUpdate": 1643549980220,
   "repoUrl": "https://github.com/parcel-bundler/source-map",
   "entries": {
     "Parcel sourcemap benchmark": [
@@ -2428,6 +2428,100 @@ window.BENCHMARK_DATA = {
             "name": "append#addSourceMap",
             "value": 154,
             "range": "±0.32%",
+            "unit": "ops/sec",
+            "extra": "10 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jasperdemoor@gmail.com",
+            "name": "Jasper De Moor",
+            "username": "DeMoorJasper"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "40f00a59745763cde5b54edf31b0314afd6cf3d5",
+          "message": "chore: Fix clippy and use lockfile in lint script (#93)\n\n* remove wasm_bindgen\r\n\r\n* just allow it for now",
+          "timestamp": "2022-01-30T14:37:55+01:00",
+          "tree_id": "a3864a1c974c05ff78d5c97f5f64fcf0e1b731aa",
+          "url": "https://github.com/parcel-bundler/source-map/commit/40f00a59745763cde5b54edf31b0314afd6cf3d5"
+        },
+        "date": 1643549979506,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "consume#consume buffer",
+            "value": 119701,
+            "range": "±17%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "consume#consume JS Mappings",
+            "value": 52017,
+            "range": "±7.2%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "consume#consume vlq mappings",
+            "value": 47641,
+            "range": "±13%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "serialize#Save buffer",
+            "value": 410,
+            "range": "±1.3%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "serialize#Serialize to vlq",
+            "value": 292,
+            "range": "±1.5%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "modify#negative column offset",
+            "value": 102478,
+            "range": "±18%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "modify#positive column offset",
+            "value": 93736,
+            "range": "±24%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "modify#positive line offset",
+            "value": 40928,
+            "range": "±6.3%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "modify#negative line offset",
+            "value": 38671,
+            "range": "±5.5%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "append#addSourceMap",
+            "value": 182,
+            "range": "±4.2%",
             "unit": "ops/sec",
             "extra": "10 samples"
           }
