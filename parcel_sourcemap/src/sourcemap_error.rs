@@ -39,6 +39,7 @@ pub enum SourceMapErrorType {
     FromUtf8Error = 11,
 }
 
+#[derive(Debug)]
 pub struct SourceMapError {
     pub error_type: SourceMapErrorType,
     pub reason: Option<String>,
@@ -60,6 +61,64 @@ impl SourceMapError {
     }
 }
 
+impl std::error::Error for SourceMapError {}
+
+impl std::fmt::Display for SourceMapError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        // Prefix all errors, so it's obvious they originate from this library
+        write!(f, "[parcel-sourcemap] ")?;
+
+        // Convert error type into an error message...
+        match self.error_type {
+            SourceMapErrorType::UnexpectedNegativeNumber => {
+                write!(f, "Unexpected Negative Number")?;
+            }
+            SourceMapErrorType::UnexpectedlyBigNumber => {
+                write!(f, "Unexpected Big Number")?;
+            }
+            SourceMapErrorType::VlqUnexpectedEof => {
+                write!(f, "VLQ Unexpected end of file")?;
+            }
+            SourceMapErrorType::VlqInvalidBase64 => {
+                write!(f, "VLQ Invalid Base 64 value")?;
+            }
+            SourceMapErrorType::VlqOverflow => {
+                write!(f, "VLQ Value overflowed, does not fit in u32")?;
+            }
+            SourceMapErrorType::IOError => {
+                write!(f, "IO Error")?;
+            }
+            SourceMapErrorType::NameOutOfRange => {
+                write!(f, "Name out of range")?;
+            }
+            SourceMapErrorType::SourceOutOfRange => {
+                write!(f, "Source out of range")?;
+            }
+            SourceMapErrorType::InvalidFilePath => {
+                write!(f, "Invalid FilePath")?;
+            }
+            SourceMapErrorType::BufferError => {
+                write!(
+                    f,
+                    "Something went wrong while writing/reading a sourcemap buffer"
+                )?;
+            }
+            SourceMapErrorType::FromUtf8Error => {
+                write!(f, "Could not convert utf-8 array to string")?;
+            }
+        }
+
+        // Add reason to error string if there is one
+
+        if let Some(r) = &self.reason {
+            write!(f, ", ")?;
+            write!(f, "{}", &r[..])?;
+        }
+
+        Ok(())
+    }
+}
+
 impl From<vlq::Error> for SourceMapError {
     #[inline]
     fn from(e: vlq::Error) -> SourceMapError {
@@ -77,59 +136,6 @@ impl From<io::Error> for SourceMapError {
     #[inline]
     fn from(_err: io::Error) -> SourceMapError {
         SourceMapError::new(SourceMapErrorType::IOError)
-    }
-}
-
-impl ToString for SourceMapError {
-    fn to_string(&self) -> String {
-        // Prefix all errors, so it's obvious they originate from this library
-        let mut reason = String::from("[parcel-sourcemap] ");
-
-        // Convert error type into an error message...
-        match self.error_type {
-            SourceMapErrorType::UnexpectedNegativeNumber => {
-                reason.push_str("Unexpected Negative Number");
-            }
-            SourceMapErrorType::UnexpectedlyBigNumber => {
-                reason.push_str("Unexpected Big Number");
-            }
-            SourceMapErrorType::VlqUnexpectedEof => {
-                reason.push_str("VLQ Unexpected end of file");
-            }
-            SourceMapErrorType::VlqInvalidBase64 => {
-                reason.push_str("VLQ Invalid Base 64 value");
-            }
-            SourceMapErrorType::VlqOverflow => {
-                reason.push_str("VLQ Value overflowed, does not fit in u32");
-            }
-            SourceMapErrorType::IOError => {
-                reason.push_str("IO Error");
-            }
-            SourceMapErrorType::NameOutOfRange => {
-                reason.push_str("Name out of range");
-            }
-            SourceMapErrorType::SourceOutOfRange => {
-                reason.push_str("Source out of range");
-            }
-            SourceMapErrorType::InvalidFilePath => {
-                reason.push_str("Invalid FilePath");
-            }
-            SourceMapErrorType::BufferError => {
-                reason.push_str("Something went wrong while writing/reading a sourcemap buffer");
-            }
-            SourceMapErrorType::FromUtf8Error => {
-                reason.push_str("Could not convert utf-8 array to string");
-            }
-        }
-
-        // Add reason to error string if there is one
-
-        if let Some(r) = &self.reason {
-            reason.push_str(", ");
-            reason.push_str(&r[..]);
-        }
-
-        reason
     }
 }
 
