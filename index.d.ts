@@ -67,6 +67,7 @@ export type GenerateEmptyMapOptions = {
 * A source map to assist in debugging during development
 */
 export default class SourceMap {
+  constructor(projectRoot?: string, buffer?: Buffer);
   static generateEmptyMap(opts: GenerateEmptyMapOptions): SourceMap;
   addEmptyMap(sourceName: string, sourceContent: string, lineOffset?: number): SourceMap;
   addVLQMap(map: VLQMap, lineOffset?: number, columnOffset?: number): SourceMap;
