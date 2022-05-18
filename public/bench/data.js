@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1650208558023,
+  "lastUpdate": 1652896239735,
   "repoUrl": "https://github.com/parcel-bundler/source-map",
   "entries": {
     "Parcel sourcemap benchmark": [
@@ -2616,6 +2616,100 @@ window.BENCHMARK_DATA = {
             "name": "append#addSourceMap",
             "value": 177,
             "range": "±6.0%",
+            "unit": "ops/sec",
+            "extra": "10 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "chance.strickland@gmail.com",
+            "name": "Chance Strickland",
+            "username": "chaance"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "3eb2c9641ab87b0899fc7b8c99600e9483d8c5ef",
+          "message": "fix: Add constructor to SourceMap TS def (#98)",
+          "timestamp": "2022-05-18T19:48:39+02:00",
+          "tree_id": "3261c4189f13c381e8ae6fc9b31b349863b749ff",
+          "url": "https://github.com/parcel-bundler/source-map/commit/3eb2c9641ab87b0899fc7b8c99600e9483d8c5ef"
+        },
+        "date": 1652896238504,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "consume#consume buffer",
+            "value": 144591,
+            "range": "±12%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "consume#consume JS Mappings",
+            "value": 54498,
+            "range": "±5.9%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "consume#consume vlq mappings",
+            "value": 49543,
+            "range": "±13%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "serialize#Save buffer",
+            "value": 423,
+            "range": "±0.70%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "serialize#Serialize to vlq",
+            "value": 289,
+            "range": "±1.1%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "modify#positive column offset",
+            "value": 62698,
+            "range": "±17%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "modify#negative column offset",
+            "value": 58308,
+            "range": "±10%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "modify#positive line offset",
+            "value": 33995,
+            "range": "±7.0%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "modify#negative line offset",
+            "value": 33222,
+            "range": "±5.6%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "append#addSourceMap",
+            "value": 211,
+            "range": "±0.65%",
             "unit": "ops/sec",
             "extra": "10 samples"
           }
