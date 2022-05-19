@@ -45,10 +45,11 @@
     "dist",
     "index.d.ts",
     "package.json",
-    "parcel_sourcemap_node",
-    "parcel_sourcemap_wasm",
+    "parcel_sourcemap_node/artifacts/*.node",
+    "parcel_sourcemap_wasm/dist-node/**",
+    "parcel_sourcemap_wasm/dist-web/**",
     "README.md",
-    "src"
+    "!.gitignore"
   ],
   "binary": {
     "napi_versions": [

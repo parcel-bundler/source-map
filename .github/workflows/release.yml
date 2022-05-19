@@ -172,6 +172,8 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Build wasm-web release
         run: yarn run build:wasm-web-release
+      - name: Build wasm-node release
+        run: yarn run build:wasm-node-release
       - run: npm publish
 
   release-crates:
