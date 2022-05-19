@@ -10,4 +10,4 @@ repository = "https://github.com/parcel-bundler/source-map"
 
 [dependencies]
 "vlq" = "0.5.1"
-rkyv = "0.6.7"
+rkyv = "0.7.38"
