@@ -14,9 +14,11 @@ use std::io;
 
 use rkyv::{
     archived_root,
-    de::deserializers::AllocDeserializer,
-    ser::{serializers::AlignedSerializer, Serializer},
-    AlignedVec, Archive, Deserialize, Serialize,
+    ser::{
+        serializers::{AlignedSerializer, AllocScratch, CompositeSerializer},
+        Serializer,
+    },
+    AlignedVec, Archive, Deserialize, Infallible, Serialize,
 };
 
 use vlq_utils::{is_mapping_separator, read_relative_vlq};
@@ -336,7 +338,11 @@ impl SourceMap {
     // Write the sourcemap instance to a buffer
     pub fn to_buffer(&self, output: &mut AlignedVec) -> Result<(), SourceMapError> {
         output.clear();
-        let mut serializer = AlignedSerializer::new(output);
+        let mut serializer = CompositeSerializer::new(
+            AlignedSerializer::new(output),
+            AllocScratch::default(),
+            Infallible,
+        );
         serializer.serialize_value(&self.inner)?;
         Ok(())
     }
@@ -345,8 +351,7 @@ impl SourceMap {
     pub fn from_buffer(project_root: &str, buf: &[u8]) -> Result<SourceMap, SourceMapError> {
         let archived = unsafe { archived_root::<SourceMapInner>(buf) };
         // TODO: see if we can use the archived data directly rather than deserializing at all...
-        let mut deserializer = AllocDeserializer;
-        let inner = archived.deserialize(&mut deserializer)?;
+        let inner = archived.deserialize(&mut Infallible)?;
         Ok(SourceMap {
             project_root: String::from(project_root),
             inner,

@@ -1,4 +1,5 @@
-use std::io;
+use rkyv::ser::serializers::{AllocScratchError, CompositeSerializerError};
+use std::{convert::Infallible, io};
 
 // Errors that can occur during processing/modifying source map
 #[derive(Copy, Clone, Debug)]
@@ -139,9 +140,18 @@ impl From<io::Error> for SourceMapError {
     }
 }
 
-impl From<rkyv::Unreachable> for SourceMapError {
+impl From<Infallible> for SourceMapError {
     #[inline]
-    fn from(_err: rkyv::Unreachable) -> SourceMapError {
+    fn from(_err: Infallible) -> SourceMapError {
+        SourceMapError::new(SourceMapErrorType::BufferError)
+    }
+}
+
+impl From<CompositeSerializerError<Infallible, AllocScratchError, Infallible>> for SourceMapError {
+    #[inline]
+    fn from(
+        _err: CompositeSerializerError<Infallible, AllocScratchError, Infallible>,
+    ) -> SourceMapError {
         SourceMapError::new(SourceMapErrorType::BufferError)
     }
 }
