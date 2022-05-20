@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1653031310429,
+  "lastUpdate": 1653035592190,
   "repoUrl": "https://github.com/parcel-bundler/source-map",
   "entries": {
     "Parcel sourcemap benchmark": [
@@ -3086,6 +3086,100 @@ window.BENCHMARK_DATA = {
             "name": "append#addSourceMap",
             "value": 191,
             "range": "±5.3%",
+            "unit": "ops/sec",
+            "extra": "10 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jasperdemoor@gmail.com",
+            "name": "Jasper De Moor",
+            "username": "DeMoorJasper"
+          },
+          "committer": {
+            "email": "jasperdemoor@gmail.com",
+            "name": "Jasper De Moor",
+            "username": "DeMoorJasper"
+          },
+          "distinct": true,
+          "id": "fc948c6d93996b05dd924291f575fdbbdf6cbd60",
+          "message": "fix: add all node files for local building and index.js",
+          "timestamp": "2022-05-20T10:30:56+02:00",
+          "tree_id": "7f4e007b74b4ebdd9ca1f824b62f1f4829fed80a",
+          "url": "https://github.com/parcel-bundler/source-map/commit/fc948c6d93996b05dd924291f575fdbbdf6cbd60"
+        },
+        "date": 1653035590882,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "consume#consume buffer",
+            "value": 199557,
+            "range": "±10%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "consume#consume JS Mappings",
+            "value": 60826,
+            "range": "±8.1%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "consume#consume vlq mappings",
+            "value": 55846,
+            "range": "±15%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "serialize#Save buffer",
+            "value": 398,
+            "range": "±0.79%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "serialize#Serialize to vlq",
+            "value": 323,
+            "range": "±1.1%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "modify#negative column offset",
+            "value": 56550,
+            "range": "±9.4%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "modify#positive column offset",
+            "value": 55663,
+            "range": "±13%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "modify#positive line offset",
+            "value": 29963,
+            "range": "±5.5%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "modify#negative line offset",
+            "value": 28524,
+            "range": "±4.9%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "append#addSourceMap",
+            "value": 224,
+            "range": "±0.51%",
             "unit": "ops/sec",
             "extra": "10 samples"
           }
