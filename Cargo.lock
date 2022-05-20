@@ -178,7 +178,7 @@ checksum = "7b10983b38c53aebdf33f542c6275b0f58a238129d00c4ae0e6fb59738d783ca"
 
 [[package]]
 name = "parcel_sourcemap"
-version = "2.0.4"
+version = "2.0.5"
 dependencies = [
  "rkyv",
  "vlq",
