@@ -94,3 +94,8 @@ export default class SourceMap {
   delete(): void;
   stringify(options: SourceMapStringifyOptions): Promise<string | VLQMap>;
 }
+
+/**
+* Only used by the wasm version, await this to ensure the wasm binary is loaded
+*/
+export const init: Promise<void>
