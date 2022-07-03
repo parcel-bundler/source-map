@@ -38,6 +38,13 @@ pub enum SourceMapErrorType {
 
     // Failed to convert utf-8 to array
     FromUtf8Error = 11,
+
+    // Failed to serialize to JSON
+    JSONError = 12,
+
+    // Failed to parse data url
+    #[cfg(feature = "json")]
+    DataUrlError = 13,
 }
 
 #[derive(Debug)]
@@ -107,6 +114,13 @@ impl std::fmt::Display for SourceMapError {
             SourceMapErrorType::FromUtf8Error => {
                 write!(f, "Could not convert utf-8 array to string")?;
             }
+            SourceMapErrorType::JSONError => {
+                write!(f, "Error reading or writing to JSON")?;
+            }
+            #[cfg(feature = "json")]
+            SourceMapErrorType::DataUrlError => {
+                write!(f, "Error parsing data url")?;
+            }
         }
 
         // Add reason to error string if there is one
@@ -160,5 +174,21 @@ impl From<std::string::FromUtf8Error> for SourceMapError {
     #[inline]
     fn from(_err: std::string::FromUtf8Error) -> SourceMapError {
         SourceMapError::new(SourceMapErrorType::FromUtf8Error)
+    }
+}
+
+#[cfg(feature = "json")]
+impl From<serde_json::Error> for SourceMapError {
+    #[inline]
+    fn from(_err: serde_json::Error) -> SourceMapError {
+        SourceMapError::new(SourceMapErrorType::JSONError)
+    }
+}
+
+#[cfg(feature = "json")]
+impl From<data_url::DataUrlError> for SourceMapError {
+    #[inline]
+    fn from(_err: data_url::DataUrlError) -> SourceMapError {
+        SourceMapError::new(SourceMapErrorType::DataUrlError)
     }
 }
