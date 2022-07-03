@@ -631,7 +631,7 @@ impl SourceMap {
         }
 
         let line = generated_line as usize;
-        let abs_offset = generated_line_offset.abs() as usize;
+        let abs_offset = generated_line_offset.unsigned_abs() as usize;
         if generated_line_offset > 0 {
             if line > self.inner.mapping_lines.len() {
                 self.ensure_lines(line + abs_offset);

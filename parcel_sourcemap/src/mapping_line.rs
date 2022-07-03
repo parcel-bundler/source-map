@@ -108,7 +108,7 @@ impl MappingLine {
             index = start_index;
         }
 
-        let abs_offset = generated_column_offset.abs() as u32;
+        let abs_offset = generated_column_offset.unsigned_abs() as u32;
         for i in index..self.mappings.len() {
             let mapping = &mut self.mappings[i];
             mapping.generated_column = if generated_column_offset < 0 {
