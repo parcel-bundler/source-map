@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1655636578995,
+  "lastUpdate": 1656957354244,
   "repoUrl": "https://github.com/parcel-bundler/source-map",
   "entries": {
     "Parcel sourcemap benchmark": [
@@ -3368,6 +3368,100 @@ window.BENCHMARK_DATA = {
             "name": "append#addSourceMap",
             "value": 229,
             "range": "±1.5%",
+            "unit": "ops/sec",
+            "extra": "10 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "devongovett@gmail.com",
+            "name": "Devon Govett",
+            "username": "devongovett"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c28baca8545d1efb814e25bfe8fa3ecca83ba2f1",
+          "message": "Add JSON and data URL parsing and serialization support to Rust API (#109)",
+          "timestamp": "2022-07-04T10:52:54-07:00",
+          "tree_id": "cb9f078589fe3e2d399cb02abba3388cf7bfb6fb",
+          "url": "https://github.com/parcel-bundler/source-map/commit/c28baca8545d1efb814e25bfe8fa3ecca83ba2f1"
+        },
+        "date": 1656957353491,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "consume#consume buffer",
+            "value": 144133,
+            "range": "±13%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "consume#consume JS Mappings",
+            "value": 47436,
+            "range": "±6.4%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "consume#consume vlq mappings",
+            "value": 36336,
+            "range": "±17%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "serialize#Save buffer",
+            "value": 312,
+            "range": "±2.3%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "serialize#Serialize to vlq",
+            "value": 247,
+            "range": "±3.1%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "modify#negative column offset",
+            "value": 58695,
+            "range": "±11%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "modify#positive column offset",
+            "value": 54156,
+            "range": "±15%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "modify#positive line offset",
+            "value": 31941,
+            "range": "±6.7%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "modify#negative line offset",
+            "value": 30287,
+            "range": "±4.3%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "append#addSourceMap",
+            "value": 165,
+            "range": "±0.43%",
             "unit": "ops/sec",
             "extra": "10 samples"
           }
