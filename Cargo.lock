@@ -199,7 +199,7 @@ checksum = "7b10983b38c53aebdf33f542c6275b0f58a238129d00c4ae0e6fb59738d783ca"
 
 [[package]]
 name = "parcel_sourcemap"
-version = "2.0.5"
+version = "2.1.0"
 dependencies = [
  "base64",
  "data-url",
@@ -211,7 +211,7 @@ dependencies = [
 
 [[package]]
 name = "parcel_sourcemap_node"
-version = "2.0.5"
+version = "2.1.0"
 dependencies = [
  "jemallocator",
  "napi",
@@ -225,7 +225,7 @@ dependencies = [
 
 [[package]]
 name = "parcel_sourcemap_wasm"
-version = "2.0.5"
+version = "2.1.0"
 dependencies = [
  "js-sys",
  "parcel_sourcemap",

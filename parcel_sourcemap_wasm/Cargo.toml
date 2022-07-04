@@ -1,6 +1,6 @@
 [package]
 name = "parcel_sourcemap_wasm"
-version = "2.0.5"
+version = "2.1.0"
 authors = ["Jasper De Moor <jasperdemoor@gmail.com>"]
 edition = "2018"
 
