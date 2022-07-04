@@ -2,6 +2,7 @@
   "name": "@parcel/source-map",
   "version": "2.1.0",
   "main": "./dist/node.js",
+  "module": "./dist/node.mjs",
   "types": "index.d.ts",
   "license": "MIT",
   "repository": {
@@ -15,7 +16,9 @@
     "benchmark": "node ./bench/run",
     "benchmark:node": "cross-env BACKEND=node yarn benchmark",
     "benchmark:wasm": "cross-env BACKEND=wasm yarn benchmark",
-    "transpile": "babel ./src/*.js --out-dir ./dist && flow-copy-source -v src dist",
+    "transpile:cjs": "babel ./src/*.js --out-dir ./dist --config-file ./babelrc.cjs.json",
+    "transpile:esm": "babel ./src/*.js --out-dir ./dist --out-file-extension .mjs --config-file ./babelrc.esm.json",
+    "transpile": "yarn transpile:cjs && yarn transpile:esm && flow-copy-source -v src dist",
     "build:clean": "cd ./parcel_sourcemap_node && rm -rf artifacts && mkdir artifacts",
     "build:node": "yarn build:clean && node parcel_sourcemap_node/build.js",
     "build:node-release": "yarn build:clean && node parcel_sourcemap_node/build.js --release",
