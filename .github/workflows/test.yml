@@ -38,6 +38,8 @@ jobs:
         run: yarn run build:node-release
       - name: Run node tests
         run: yarn run test:node
+      - name: Run rust tests
+        run: cargo test --all-features
 
   test-wasm:
     name: wasm

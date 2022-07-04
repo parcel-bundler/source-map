@@ -7,9 +7,13 @@ pub mod utils;
 mod vlq_utils;
 
 use crate::utils::make_relative_path;
+#[cfg(feature = "json")]
+use data_url::DataUrl;
 pub use mapping::{Mapping, OriginalLocation};
 use mapping_line::MappingLine;
 pub use sourcemap_error::{SourceMapError, SourceMapErrorType};
+#[cfg(feature = "json")]
+use std::borrow::Cow;
 use std::io;
 
 use rkyv::{
@@ -229,11 +233,11 @@ impl SourceMap {
         }
     }
 
-    pub fn add_sources(&mut self, sources: Vec<&str>) -> Vec<u32> {
+    pub fn add_sources<I: AsRef<str>>(&mut self, sources: Vec<I>) -> Vec<u32> {
         self.inner.sources.reserve(sources.len());
         let mut result_vec = Vec::with_capacity(sources.len());
         for s in sources.iter() {
-            result_vec.push(self.add_source(s));
+            result_vec.push(self.add_source(s.as_ref()));
         }
         result_vec
     }
@@ -270,9 +274,9 @@ impl SourceMap {
         };
     }
 
-    pub fn add_names(&mut self, names: Vec<&str>) -> Vec<u32> {
+    pub fn add_names<I: AsRef<str>>(&mut self, names: Vec<I>) -> Vec<u32> {
         self.inner.names.reserve(names.len());
-        return names.iter().map(|n| self.add_name(n)).collect();
+        return names.iter().map(|n| self.add_name(n.as_ref())).collect();
     }
 
     pub fn get_name_index(&self, name: &str) -> Option<u32> {
@@ -510,12 +514,12 @@ impl SourceMap {
         Ok(())
     }
 
-    pub fn add_vlq_map(
+    pub fn add_vlq_map<I: AsRef<str>>(
         &mut self,
         input: &[u8],
-        sources: Vec<&str>,
-        sources_content: Vec<&str>,
-        names: Vec<&str>,
+        sources: Vec<I>,
+        sources_content: Vec<I>,
+        names: Vec<I>,
         line_offset: i64,
         column_offset: i64,
     ) -> Result<(), SourceMapError> {
@@ -532,7 +536,7 @@ impl SourceMap {
         self.inner.sources_content.reserve(sources_content.len());
         for (i, source_content) in sources_content.iter().enumerate() {
             if let Some(source_index) = source_indexes.get(i) {
-                self.set_source_content(*source_index as usize, source_content)?;
+                self.set_source_content(*source_index as usize, source_content.as_ref())?;
             }
         }
 
@@ -627,7 +631,7 @@ impl SourceMap {
         }
 
         let line = generated_line as usize;
-        let abs_offset = generated_line_offset.abs() as usize;
+        let abs_offset = generated_line_offset.unsigned_abs() as usize;
         if generated_line_offset > 0 {
             if line > self.inner.mapping_lines.len() {
                 self.ensure_lines(line + abs_offset);
@@ -670,6 +674,85 @@ impl SourceMap {
 
         Ok(())
     }
+
+    #[cfg(feature = "json")]
+    pub fn from_json<'a>(project_root: &str, input: &'a str) -> Result<Self, SourceMapError> {
+        #[derive(serde::Deserialize)]
+        #[serde(rename_all = "camelCase")]
+        struct JSONSourceMap<'a> {
+            mappings: &'a str,
+            #[serde(borrow)]
+            sources: Vec<Cow<'a, str>>,
+            sources_content: Vec<Cow<'a, str>>,
+            names: Vec<Cow<'a, str>>,
+        }
+
+        let json: JSONSourceMap = serde_json::from_str(input)?;
+        let mut sm = Self::new(project_root);
+        sm.add_vlq_map(
+            json.mappings.as_bytes(),
+            json.sources,
+            json.sources_content,
+            json.names,
+            0,
+            0,
+        )?;
+        Ok(sm)
+    }
+
+    #[cfg(feature = "json")]
+    pub fn to_json(&mut self, source_root: Option<&str>) -> Result<String, SourceMapError> {
+        let mut vlq_output: Vec<u8> = Vec::new();
+        self.write_vlq(&mut vlq_output)?;
+
+        #[derive(serde::Serialize)]
+        #[serde(rename_all = "camelCase")]
+        struct JSONSourceMap<'a> {
+            version: u8,
+            source_root: Option<&'a str>,
+            mappings: &'a str,
+            sources: &'a Vec<String>,
+            sources_content: &'a Vec<String>,
+            names: &'a Vec<String>,
+        }
+
+        let sm = JSONSourceMap {
+            version: 3,
+            source_root,
+            mappings: unsafe { std::str::from_utf8_unchecked(&vlq_output) },
+            sources: self.get_sources(),
+            sources_content: self.get_sources_content(),
+            names: self.get_names(),
+        };
+
+        Ok(serde_json::to_string(&sm)?)
+    }
+
+    #[cfg(feature = "json")]
+    pub fn from_data_url(project_root: &str, data_url: &str) -> Result<Self, SourceMapError> {
+        let url = DataUrl::process(&data_url)?;
+        let mime = url.mime_type();
+        if mime.type_ != "application" || mime.subtype != "json" {
+            return Err(SourceMapError::new(SourceMapErrorType::DataUrlError));
+        }
+
+        let (data, _) = url
+            .decode_to_vec()
+            .map_err(|_| SourceMapError::new(SourceMapErrorType::DataUrlError))?;
+        let input = unsafe { std::str::from_utf8_unchecked(data.as_slice()) };
+
+        Self::from_json(project_root, input)
+    }
+
+    #[cfg(feature = "json")]
+    pub fn to_data_url(&mut self, source_root: Option<&str>) -> Result<String, SourceMapError> {
+        let buf = self.to_json(source_root)?;
+        let b64 = base64::encode(&buf);
+        Ok(format!(
+            "data:application/json;charset=utf-8;base64,{}",
+            b64
+        ))
+    }
 }
 
 #[allow(non_fmt_panics)]
@@ -687,4 +770,59 @@ fn test_buffers() {
         }
         Err(err) => panic!(err),
     }
+}
+
+#[cfg(feature = "json")]
+#[test]
+fn test_to_json() {
+    let mut map = SourceMap::new("/");
+    map.add_mapping(1, 1, None);
+    let json = map.to_json(Some("/")).unwrap();
+    assert_eq!(
+        json,
+        r#"{"version":3,"sourceRoot":"/","mappings":";C","sources":[],"sourcesContent":[],"names":[]}"#
+    );
+}
+
+#[cfg(feature = "json")]
+#[test]
+fn test_from_json() {
+    let map = SourceMap::from_json("/", r#"{"version":3,"sourceRoot":"/","mappings":";C","sources":[],"sourcesContent":[],"names":[]}"#).unwrap();
+    let mappings = map.get_mappings();
+    assert_eq!(
+        mappings,
+        vec![Mapping {
+            generated_line: 1,
+            generated_column: 1,
+            original: None
+        }]
+    );
+}
+
+#[cfg(feature = "json")]
+#[test]
+fn test_to_data_url() {
+    let mut map = SourceMap::new("/");
+    map.add_mapping(1, 1, None);
+    let url = map.to_data_url(Some("/")).unwrap();
+    println!("{}", url);
+    assert_eq!(
+        url,
+        r#"data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VSb290IjoiLyIsIm1hcHBpbmdzIjoiO0MiLCJzb3VyY2VzIjpbXSwic291cmNlc0NvbnRlbnQiOltdLCJuYW1lcyI6W119"#
+    );
+}
+
+#[cfg(feature = "json")]
+#[test]
+fn test_from_data_url() {
+    let map = SourceMap::from_data_url("/", r#"data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VSb290IjoiLyIsIm1hcHBpbmdzIjoiO0MiLCJzb3VyY2VzIjpbXSwic291cmNlc0NvbnRlbnQiOltdLCJuYW1lcyI6W119"#).unwrap();
+    let mappings = map.get_mappings();
+    assert_eq!(
+        mappings,
+        vec![Mapping {
+            generated_line: 1,
+            generated_column: 1,
+            original: None
+        }]
+    );
 }
