@@ -13,8 +13,8 @@ repository = "https://github.com/parcel-bundler/source-map"
 rkyv = "0.7.38"
 serde = {version = "1", features = ["derive"], optional = true}
 serde_json = { version = "1", optional = true }
-base64 = { version = "0.13.0", optional = true }
+base64-simd = { version = "0.7", optional = true }
 data-url = { version = "0.1.1", optional = true }
 
 [features]
-json = ["serde", "serde_json", "base64", "data-url"]
+json = ["serde", "serde_json", "base64-simd", "data-url"]

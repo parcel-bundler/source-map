@@ -747,7 +747,7 @@ impl SourceMap {
     #[cfg(feature = "json")]
     pub fn to_data_url(&mut self, source_root: Option<&str>) -> Result<String, SourceMapError> {
         let buf = self.to_json(source_root)?;
-        let b64 = base64::encode(&buf);
+        let b64 = base64_simd::Base64::STANDARD.encode_to_boxed_str(buf.as_bytes());
         Ok(format!(
             "data:application/json;charset=utf-8;base64,{}",
             b64
