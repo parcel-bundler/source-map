@@ -1,6 +1,6 @@
 use rkyv::{Archive, Deserialize, Serialize};
 
-#[derive(Archive, Serialize, Deserialize, Debug, Clone, Copy, PartialEq)]
+#[derive(Archive, Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct OriginalLocation {
     pub original_line: u32,
     pub original_column: u32,
@@ -19,7 +19,7 @@ impl OriginalLocation {
     }
 }
 
-#[derive(Archive, Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Archive, Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub struct Mapping {
     pub generated_line: u32,
     pub generated_column: u32,
