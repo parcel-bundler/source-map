@@ -8,7 +8,7 @@ pub struct LineMapping {
     pub original: Option<OriginalLocation>,
 }
 
-#[derive(Archive, Serialize, Deserialize, Debug, Default)]
+#[derive(Archive, Serialize, Deserialize, Debug, Default, Clone)]
 pub struct MappingLine {
     pub mappings: Vec<LineMapping>,
     pub last_column: u32,

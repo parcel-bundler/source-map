@@ -27,7 +27,7 @@ use rkyv::{
 
 use vlq_utils::{is_mapping_separator, read_relative_vlq};
 
-#[derive(Archive, Serialize, Deserialize, Debug, Default)]
+#[derive(Archive, Serialize, Deserialize, Debug, Default, Clone)]
 pub struct SourceMapInner {
     pub sources: Vec<String>,
     pub sources_content: Vec<String>,
@@ -35,7 +35,7 @@ pub struct SourceMapInner {
     pub mapping_lines: Vec<MappingLine>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SourceMap {
     pub project_root: String,
     inner: SourceMapInner,
