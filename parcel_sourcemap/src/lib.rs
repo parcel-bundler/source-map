@@ -676,23 +676,33 @@ impl SourceMap {
     }
 
     #[cfg(feature = "json")]
-    pub fn from_json<'a>(project_root: &str, input: &'a str) -> Result<Self, SourceMapError> {
+    pub fn from_json(project_root: &str, input: &str) -> Result<Self, SourceMapError> {
         #[derive(serde::Deserialize)]
         #[serde(rename_all = "camelCase")]
         struct JSONSourceMap<'a> {
             mappings: &'a str,
             #[serde(borrow)]
             sources: Vec<Cow<'a, str>>,
-            sources_content: Vec<Cow<'a, str>>,
+            #[serde(borrow, default)]
+            sources_content: Vec<Option<Cow<'a, str>>>,
             names: Vec<Cow<'a, str>>,
         }
 
         let json: JSONSourceMap = serde_json::from_str(input)?;
+        let mut sources_content = Vec::with_capacity(json.sources.len());
+        for i in 0..json.sources.len() {
+            sources_content.push(if let Some(Some(content)) = json.sources_content.get(i) {
+                content.to_owned()
+            } else {
+                "".into()
+            });
+        }
+
         let mut sm = Self::new(project_root);
         sm.add_vlq_map(
             json.mappings.as_bytes(),
             json.sources,
-            json.sources_content,
+            sources_content,
             json.names,
             0,
             0,
@@ -730,7 +740,7 @@ impl SourceMap {
 
     #[cfg(feature = "json")]
     pub fn from_data_url(project_root: &str, data_url: &str) -> Result<Self, SourceMapError> {
-        let url = DataUrl::process(&data_url)?;
+        let url = DataUrl::process(data_url)?;
         let mime = url.mime_type();
         if mime.type_ != "application" || mime.subtype != "json" {
             return Err(SourceMapError::new(SourceMapErrorType::DataUrlError));
@@ -797,6 +807,23 @@ fn test_from_json() {
             original: None
         }]
     );
+}
+
+#[cfg(feature = "json")]
+#[test]
+fn test_from_json_no_sources_content() {
+    let map = SourceMap::from_json(
+        "/",
+        r#"{"version":3,"sourceRoot":"/","mappings":";C","sources":["file.js"],"names":[]}"#,
+    )
+    .unwrap();
+    assert_eq!(map.get_sources_content(), &vec![""]);
+    let map = SourceMap::from_json(
+        "/",
+        r#"{"version":3,"sourceRoot":"/","mappings":";C","sources":["file.js"],"sourcesContent":[null],"names":[]}"#,
+    )
+    .unwrap();
+    assert_eq!(map.get_sources_content(), &vec![""]);
 }
 
 #[cfg(feature = "json")]
