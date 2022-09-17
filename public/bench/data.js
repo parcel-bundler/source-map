@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1663435181562,
+  "lastUpdate": 1663435544306,
   "repoUrl": "https://github.com/parcel-bundler/source-map",
   "entries": {
     "Parcel sourcemap benchmark": [
@@ -4120,6 +4120,100 @@ window.BENCHMARK_DATA = {
             "name": "append#addSourceMap",
             "value": 173,
             "range": "±4.6%",
+            "unit": "ops/sec",
+            "extra": "10 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "devongovett@gmail.com",
+            "name": "Devon Govett",
+            "username": "devongovett"
+          },
+          "committer": {
+            "email": "devongovett@gmail.com",
+            "name": "Devon Govett",
+            "username": "devongovett"
+          },
+          "distinct": true,
+          "id": "30fd52a6e422cad3ae8ff21932042d9f8e980e9c",
+          "message": "Fix build",
+          "timestamp": "2022-09-17T10:24:02-07:00",
+          "tree_id": "e2cc8e3d85df677576dfd0ce98377c1763a8406d",
+          "url": "https://github.com/parcel-bundler/source-map/commit/30fd52a6e422cad3ae8ff21932042d9f8e980e9c"
+        },
+        "date": 1663435543606,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "consume#consume buffer",
+            "value": 150193,
+            "range": "±18%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "consume#consume JS Mappings",
+            "value": 52720,
+            "range": "±5.6%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "consume#consume vlq mappings",
+            "value": 46739,
+            "range": "±13%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "serialize#Save buffer",
+            "value": 348,
+            "range": "±0.86%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "serialize#Serialize to vlq",
+            "value": 295,
+            "range": "±0.93%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "modify#positive column offset",
+            "value": 72784,
+            "range": "±19%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "modify#negative column offset",
+            "value": 67938,
+            "range": "±13%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "modify#negative line offset",
+            "value": 34400,
+            "range": "±5.3%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "modify#positive line offset",
+            "value": 33653,
+            "range": "±7.8%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "append#addSourceMap",
+            "value": 199,
+            "range": "±1.1%",
             "unit": "ops/sec",
             "extra": "10 samples"
           }
