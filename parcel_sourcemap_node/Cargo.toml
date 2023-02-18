@@ -1,6 +1,6 @@
 [package]
 authors = ["Jasper De Moor <jasperdemoor@gmail.com>"]
-edition = "2018"
+edition = "2021"
 name = "parcel_sourcemap_node"
 version = "2.1.1"
 
@@ -8,8 +8,8 @@ version = "2.1.1"
 crate-type = ["cdylib"]
 
 [dependencies]
-napi = {version = "1.7.3", features = ["napi4", "serde-json"]}
-napi-derive = "1.1.0"
+napi = {version = "2", features = ["napi4", "serde-json"]}
+napi-derive = "2"
 parcel_sourcemap = {path = "../parcel_sourcemap"}
 serde = "1"
 serde_json = "1"
@@ -19,4 +19,4 @@ rkyv = "0.7.38"
 jemallocator = {version = "0.3.2", features = ["disable_initial_exec_tls"]}
 
 [build-dependencies]
-napi-build = "1.0.2"
+napi-build = "2"
