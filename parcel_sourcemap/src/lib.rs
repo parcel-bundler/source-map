@@ -692,7 +692,7 @@ impl SourceMap {
         let mut sources_content = Vec::with_capacity(json.sources.len());
         for i in 0..json.sources.len() {
             sources_content.push(if let Some(Some(content)) = json.sources_content.get(i) {
-                content.to_owned()
+                content.clone()
             } else {
                 "".into()
             });
