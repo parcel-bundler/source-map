@@ -772,13 +772,13 @@ fn test_buffers() {
     let mut output = AlignedVec::new();
     match map.to_buffer(&mut output) {
         Ok(_) => {}
-        Err(err) => panic!(err),
+        Err(err) => panic!("{}", err),
     }
     match SourceMap::from_buffer("/", &output) {
         Ok(map) => {
             println!("{:?}", map)
         }
-        Err(err) => panic!(err),
+        Err(err) => panic!("{}", err),
     }
 }
 
