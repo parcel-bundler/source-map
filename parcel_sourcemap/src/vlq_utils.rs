@@ -8,7 +8,7 @@ where
     B: Iterator<Item = u8>,
 {
     let decoded = decode(input)?;
-    let (new, overflowed) = (*previous as i64).overflowing_add(decoded);
+    let (new, overflowed) = (*previous).overflowing_add(decoded);
     if overflowed || new > (u32::MAX as i64) {
         return Err(SourceMapError::new(
             SourceMapErrorType::UnexpectedlyBigNumber,
