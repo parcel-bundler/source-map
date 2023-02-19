@@ -211,9 +211,9 @@ checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 
 [[package]]
 name = "napi"
-version = "2.10.3"
+version = "2.11.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a967e17e9ba4e015a7bf9b92f90aa8dc321c6d913f6a6d2afd5b66a8ab36fc81"
+checksum = "a04bc019733ca752e011422075141df43ecf3f782b5e71c7a04443e5a474782c"
 dependencies = [
  "bitflags",
  "ctor",
@@ -268,9 +268,9 @@ dependencies = [
 
 [[package]]
 name = "once_cell"
-version = "1.11.0"
+version = "1.17.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7b10983b38c53aebdf33f542c6275b0f58a238129d00c4ae0e6fb59738d783ca"
+checksum = "b7e5500299e16ebb147ae15a00a942af264cf3688f47923b8fc2cd5858f23ad3"
 
 [[package]]
 name = "outref"
