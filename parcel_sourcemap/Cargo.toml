@@ -2,7 +2,7 @@
 name = "parcel_sourcemap"
 version = "2.1.1"
 authors = [ "Jasper De Moor <jasperdemoor@gmail.com>" ]
-edition = "2018"
+edition = "2021"
 description = "Parcel Source Map Library"
 license = "MIT"
 keywords = [ "sourcemap", "Node", "Parcel" ]

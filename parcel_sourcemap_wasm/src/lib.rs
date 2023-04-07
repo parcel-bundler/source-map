@@ -1,8 +1,6 @@
 #![deny(clippy::all)]
 #![allow(clippy::unused_unit)]
 
-extern crate parcel_sourcemap;
-
 use js_sys::Uint8Array;
 use parcel_sourcemap::{Mapping, OriginalLocation, SourceMap as NativeSourceMap, SourceMapError};
 use rkyv::AlignedVec;
@@ -127,7 +125,7 @@ impl SourceMap {
         for mapping in self.map.get_mappings().iter() {
             mappings.push(MappingResult {
                 generated: PositionResult {
-                    line: (mapping.generated_line + 1) as u32,
+                    line: mapping.generated_line + 1,
                     column: mapping.generated_column,
                 },
                 original: mapping.original.map(|p| PositionResult {

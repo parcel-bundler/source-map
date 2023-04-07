@@ -3,7 +3,7 @@ import type { ParsedMap, VLQMap, SourceMapStringifyOptions, IndexedMapping, Gene
 import path from 'path';
 import SourceMap from './SourceMap';
 
-const bindings = require('../parcel_sourcemap_node/index');
+const bindings = require('../parcel_sourcemap_node/artifacts/index');
 
 export default class NodeSourceMap extends SourceMap {
   constructor(projectRoot: string = '/', buffer?: Buffer) {
@@ -21,9 +21,9 @@ export default class NodeSourceMap extends SourceMap {
     }
     this.sourceMapInstance.addVLQMap(
       mappings,
-      JSON.stringify(sources),
-      JSON.stringify(sourcesContent.map((content) => (content ? content : ''))),
-      JSON.stringify(names),
+      sources,
+      sourcesContent.map((content) => (content ? content : '')),
+      names,
       lineOffset,
       columnOffset
     );
@@ -52,11 +52,11 @@ export default class NodeSourceMap extends SourceMap {
   }
 
   getNames(): Array<string> {
-    return JSON.parse(this.sourceMapInstance.getNames());
+    return this.sourceMapInstance.getNames();
   }
 
   getSources(): Array<string> {
-    return JSON.parse(this.sourceMapInstance.getSources());
+    return this.sourceMapInstance.getSources();
   }
 
   delete() {}

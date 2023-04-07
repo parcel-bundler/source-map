@@ -194,7 +194,7 @@ impl SourceMap {
                     previous_source = original_source;
 
                     let original_line = original.original_line as i64;
-                    vlq::encode((original_line - previous_original_line) as i64, output)?;
+                    vlq::encode(original_line - previous_original_line, output)?;
                     previous_original_line = original_line;
 
                     let original_column = original.original_column as i64;
@@ -692,7 +692,7 @@ impl SourceMap {
         let mut sources_content = Vec::with_capacity(json.sources.len());
         for i in 0..json.sources.len() {
             sources_content.push(if let Some(Some(content)) = json.sources_content.get(i) {
-                content.to_owned()
+                content.clone()
             } else {
                 "".into()
             });
@@ -772,13 +772,13 @@ fn test_buffers() {
     let mut output = AlignedVec::new();
     match map.to_buffer(&mut output) {
         Ok(_) => {}
-        Err(err) => panic!(err),
+        Err(err) => panic!("{}", err),
     }
     match SourceMap::from_buffer("/", &output) {
         Ok(map) => {
             println!("{:?}", map)
         }
-        Err(err) => panic!(err),
+        Err(err) => panic!("{}", err),
     }
 }
 
