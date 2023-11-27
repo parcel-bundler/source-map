@@ -1,8 +1,7 @@
 // @flow
 import type { ParsedMap, VLQMap, SourceMapStringifyOptions, IndexedMapping, GenerateEmptyMapOptions } from './types';
 
-import path from 'path';
-import { generateInlineMap, partialVlqMapToSourceMap } from './utils';
+import { partialVlqMapToSourceMap } from './utils';
 import { version } from '../package.json';
 
 export default class SourceMap {

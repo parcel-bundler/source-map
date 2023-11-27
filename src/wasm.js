@@ -1,6 +1,5 @@
 // @flow
-import type { ParsedMap, VLQMap, SourceMapStringifyOptions, IndexedMapping, GenerateEmptyMapOptions } from './types';
-import path from 'path';
+import type { VLQMap, GenerateEmptyMapOptions } from './types';
 import SourceMap from './SourceMap';
 
 import * as bindings from './wasm-bindings';
