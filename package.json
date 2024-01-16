@@ -77,8 +77,7 @@
     "prettier": "^2.3.0",
     "shx": "^0.3.3",
     "source-map": "^0.7.3",
-    "tiny-benchy": "^2.1.0",
-    "@khanacademy/flow-to-ts": "0.5.2"
+    "tiny-benchy": "^2.1.0"
   },
   "browser": {
     "./dist/node.js": "./dist/wasm.js",
