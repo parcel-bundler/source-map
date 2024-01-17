@@ -1,6 +1,6 @@
 [package]
 name = "parcel_sourcemap"
-version = "2.1.2"
+version = "2.1.1"
 authors = [ "Jasper De Moor <jasperdemoor@gmail.com>" ]
 edition = "2021"
 description = "Parcel Source Map Library"
