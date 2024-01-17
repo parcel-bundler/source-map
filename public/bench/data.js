@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1680882163757,
+  "lastUpdate": 1705455696333,
   "repoUrl": "https://github.com/parcel-bundler/source-map",
   "entries": {
     "Parcel sourcemap benchmark": [
@@ -4308,6 +4308,100 @@ window.BENCHMARK_DATA = {
             "name": "append#addSourceMap",
             "value": 190,
             "range": "±11%",
+            "unit": "ops/sec",
+            "extra": "10 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "81659591+Nikola-3@users.noreply.github.com",
+            "name": "Nikola-3",
+            "username": "Nikola-3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0cc878cbf9ec9d28497a3cdb8428415168fa7788",
+          "message": "Merge pull request #124 from parcel-bundler/alsh/fixing-lint-error\n\nFix: Clippy linting error",
+          "timestamp": "2024-01-17T12:40:18+11:00",
+          "tree_id": "ddc57cba05eb60430f4999692381311341236384",
+          "url": "https://github.com/parcel-bundler/source-map/commit/0cc878cbf9ec9d28497a3cdb8428415168fa7788"
+        },
+        "date": 1705455695083,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "consume#consume buffer",
+            "value": 159182,
+            "range": "±27%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "consume#consume vlq mappings",
+            "value": 76433,
+            "range": "±17%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "consume#consume JS Mappings",
+            "value": 73810,
+            "range": "±7.1%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "serialize#Save buffer",
+            "value": 409,
+            "range": "±1.1%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "serialize#Serialize to vlq",
+            "value": 291,
+            "range": "±11%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "modify#positive column offset",
+            "value": 119708,
+            "range": "±23%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "modify#negative column offset",
+            "value": 117194,
+            "range": "±14%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "modify#negative line offset",
+            "value": 107995,
+            "range": "±14%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "modify#positive line offset",
+            "value": 99934,
+            "range": "±13%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "append#addSourceMap",
+            "value": 294,
+            "range": "±6.8%",
             "unit": "ops/sec",
             "extra": "10 samples"
           }
