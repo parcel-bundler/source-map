@@ -460,7 +460,7 @@ impl SourceMap {
             }
         }
 
-        for (_generated_line, line_content) in self.inner.mapping_lines.iter_mut().enumerate() {
+        for line_content in self.inner.mapping_lines.iter_mut() {
             for mapping in line_content.mappings.iter_mut() {
                 let original_location_option = &mut mapping.original;
                 if let Some(original_location) = original_location_option {
