@@ -71,6 +71,7 @@ export default class SourceMap {
   static generateEmptyMap(opts: GenerateEmptyMapOptions): SourceMap;
   addEmptyMap(sourceName: string, sourceContent: string, lineOffset?: number): SourceMap;
   addVLQMap(map: VLQMap, lineOffset?: number, columnOffset?: number): SourceMap;
+  addSourceMap(sourcemap: SourceMap, lineOffset: number): SourceMap;
   addBuffer(buffer: Buffer, lineOffset?: number): SourceMap;
   addIndexedMapping(mapping: IndexedMapping<string>, lineOffset?: number, columnOffset?: number): void;
   addIndexedMappings(mappings: Array<IndexedMapping<string>>, lineOffset?: number, columnOffset?: number): void;
@@ -80,11 +81,17 @@ export default class SourceMap {
   addSources(sources: string[]): number[];
   getSourceIndex(source: string): number;
   getSource(index: number): string;
+  getSources(): string[];
   setSourceContent(sourceName: string, sourceContent: string): void;
   getSourceContent(sourceName: string): string;
+  getSourcesContent(): (string | null)[];
+  getSourcesContentMap(): { [key: string]: string | null };
   getNameIndex(name: string): number;
   getName(index: number): string;
-  extends(buffer: Buffer): SourceMap;
+  getNames(): string[];
+  getMappings(): IndexedMapping<number>[];
+  indexedMappingToStringMapping(mapping: IndexedMapping<number> | null | undefined): IndexedMapping<string> | null | undefined;
+  extends(buffer: Buffer | SourceMap): SourceMap;
   getMap(): ParsedMap;
   findClosestMapping(line: number, column: number): IndexedMapping<string> | undefined;
   offsetLines(line: number, lineOffset: number): IndexedMapping<string> | undefined;
