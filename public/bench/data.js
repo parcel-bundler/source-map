@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1705455696333,
+  "lastUpdate": 1705544289647,
   "repoUrl": "https://github.com/parcel-bundler/source-map",
   "entries": {
     "Parcel sourcemap benchmark": [
@@ -4402,6 +4402,100 @@ window.BENCHMARK_DATA = {
             "name": "append#addSourceMap",
             "value": 294,
             "range": "±6.8%",
+            "unit": "ops/sec",
+            "extra": "10 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "81659591+Nikola-3@users.noreply.github.com",
+            "name": "Nikola-3",
+            "username": "Nikola-3"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b290dae1bea9bf249a0691e06014e09f974f70dd",
+          "message": "Merge pull request #123 from parcel-bundler/fix-index-d-ts\n\nFix: update index d ts and remove unused imports",
+          "timestamp": "2024-01-18T13:17:12+11:00",
+          "tree_id": "91d23cc6773cc7f39584983752732f8d3d4c310d",
+          "url": "https://github.com/parcel-bundler/source-map/commit/b290dae1bea9bf249a0691e06014e09f974f70dd"
+        },
+        "date": 1705544289003,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "consume#consume buffer",
+            "value": 107047,
+            "range": "±1.1e+2%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "consume#consume vlq mappings",
+            "value": 76030,
+            "range": "±15%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "consume#consume JS Mappings",
+            "value": 74821,
+            "range": "±6.8%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "serialize#Save buffer",
+            "value": 419,
+            "range": "±1.3%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "serialize#Serialize to vlq",
+            "value": 304,
+            "range": "±10%",
+            "unit": "ops/sec",
+            "extra": "75 samples"
+          },
+          {
+            "name": "modify#negative column offset",
+            "value": 221458,
+            "range": "±26%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "modify#positive column offset",
+            "value": 195265,
+            "range": "±38%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "modify#negative line offset",
+            "value": 148071,
+            "range": "±16%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "modify#positive line offset",
+            "value": 136587,
+            "range": "±14%",
+            "unit": "ops/sec",
+            "extra": "100 samples"
+          },
+          {
+            "name": "append#addSourceMap",
+            "value": 312,
+            "range": "±3.1%",
             "unit": "ops/sec",
             "extra": "10 samples"
           }
