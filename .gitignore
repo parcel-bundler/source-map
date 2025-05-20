@@ -15,3 +15,4 @@ bench.txt
 
 parcel_sourcemap_wasm/dist-*
 parcel_sourcemap_node/artifacts
+.yarn/install-state.gz

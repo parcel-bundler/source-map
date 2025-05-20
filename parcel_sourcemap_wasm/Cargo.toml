@@ -10,6 +10,7 @@ crate-type = ["cdylib"]
 [dependencies]
 parcel_sourcemap = { path = "../parcel_sourcemap" }
 serde = { version = "1.0", features = ["derive"] }
+serde-wasm-bindgen = "0.6"
 wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
 js-sys = "0.3"
-rkyv = "0.7.38"
+rkyv = { version = "0.8.10", features = ["hashbrown-0_15", "indexmap-2"] }

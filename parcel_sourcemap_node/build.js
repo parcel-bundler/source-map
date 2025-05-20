@@ -42,5 +42,5 @@ function setupMacBuild() {
     encoding: 'utf8',
   }).trim();
   process.env.CFLAGS = `-isysroot ${sysRoot} -isystem ${sysRoot}`;
-  process.env.MACOSX_DEPLOYMENT_TARGET = '10.9';
+  process.env.MACOSX_DEPLOYMENT_TARGET = '10.12';
 }

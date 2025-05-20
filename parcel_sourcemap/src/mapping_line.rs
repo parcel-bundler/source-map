@@ -2,13 +2,13 @@ use crate::mapping::OriginalLocation;
 use crate::sourcemap_error::{SourceMapError, SourceMapErrorType};
 use rkyv::{Archive, Deserialize, Serialize};
 
-#[derive(Archive, Serialize, Deserialize, Debug, Clone, Copy, Default)]
+#[derive(Archive, Serialize, Deserialize, Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct LineMapping {
     pub generated_column: u32,
     pub original: Option<OriginalLocation>,
 }
 
-#[derive(Archive, Serialize, Deserialize, Debug, Default, Clone)]
+#[derive(Archive, Serialize, Deserialize, Debug, Default, Clone, PartialEq, Eq)]
 pub struct MappingLine {
     pub mappings: Vec<LineMapping>,
     pub last_column: u32,

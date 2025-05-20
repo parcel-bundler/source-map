@@ -9,15 +9,17 @@ jobs:
     name: Performance regression check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Setup node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
-          node-version: 14
+          node-version: 22
           check-latest: true
 
       - name: 'Install dependencies'
-        run: yarn install
+        run: |
+          corepack enable
+          yarn install
       - name: Build code
         run: yarn transpile && yarn build:node-release
       - name: 'Run benchmark'
@@ -25,7 +27,7 @@ jobs:
 
       # Run benchmark action
       - name: Compare benchmark results
-        uses: rhysd/github-action-benchmark@v1.8.1
+        uses: rhysd/github-action-benchmark@v1
         with:
           name: Parcel sourcemap benchmark
           tool: 'benchmarkjs'
