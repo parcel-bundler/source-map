@@ -1,5 +1,6 @@
 [workspace]
 members = [ "parcel_sourcemap", "parcel_sourcemap_node", "parcel_sourcemap_wasm" ]
+resolver = "2"
 
 [profile.release]
 lto = true

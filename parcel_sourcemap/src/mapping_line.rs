@@ -39,8 +39,7 @@ impl MappingLine {
 
     pub fn ensure_sorted(&mut self) {
         if !self.is_sorted {
-            self.mappings
-                .sort_by(|a, b| a.generated_column.cmp(&b.generated_column));
+            self.mappings.sort_by_key(|a| a.generated_column);
             self.is_sorted = true
         }
     }
@@ -86,23 +85,15 @@ impl MappingLine {
         }
 
         self.ensure_sorted();
-        let mut index = match self
+        let mut index = self
             .mappings
-            .binary_search_by(|m| m.generated_column.cmp(&generated_column))
-        {
-            Ok(index) => index,
-            Err(index) => index,
-        };
+            .binary_search_by(|m| m.generated_column.cmp(&generated_column)).unwrap_or_else(|index| index);
 
         if generated_column_offset < 0 {
             let u_start_column = start_column as u32;
-            let start_index = match self
+            let start_index = self
                 .mappings
-                .binary_search_by(|m| m.generated_column.cmp(&u_start_column))
-            {
-                Ok(index) => index,
-                Err(index) => index,
-            };
+                .binary_search_by(|m| m.generated_column.cmp(&u_start_column)).unwrap_or_else(|index| index);
 
             self.mappings.drain(start_index..index);
             index = start_index;
