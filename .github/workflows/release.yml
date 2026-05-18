@@ -19,22 +19,20 @@ jobs:
     name: build-${{ matrix.target }}
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
       - name: Install Node.JS
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v6
         with:
-          node-version: 14
+          node-version: 22
       - name: Install Rust
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
-          profile: minimal
-          override: true
+          targets: ${{ matrix.target }}
 
-      - name: Setup rust target
-        run: rustup target add ${{ matrix.target }}
-
-      - uses: bahmutov/npm-install@v1.1.0
+      - name: Install Yarn
+        run: npm install --global yarn@1
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
       - name: Transpile JavaScript
         run: yarn run transpile
       - name: Build node release
@@ -45,7 +43,7 @@ jobs:
         if: ${{ matrix.strip }}
         run: ${{ matrix.strip }} parcel_sourcemap_node/artifacts/*.node
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v6
         with:
           name: bindings-${{ matrix.target }}
           path: parcel_sourcemap_node/artifacts/*.node
@@ -54,22 +52,20 @@ jobs:
     name: build-apple-silicon
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
       - name: Install Node.JS
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v6
         with:
-          node-version: 14
+          node-version: 22
       - name: Install Rust
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
-          profile: minimal
-          override: true
+          targets: aarch64-apple-darwin
 
-      - name: Setup rust target
-        run: rustup target add aarch64-apple-darwin
-
-      - uses: bahmutov/npm-install@v1.1.0
+      - name: Install Yarn
+        run: npm install --global yarn@1
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
       - name: Transpile JavaScript
         run: yarn run transpile
       - name: Build node release
@@ -80,7 +76,7 @@ jobs:
       - name: Strip debug symbols # https://github.com/rust-lang/rust/issues/46034
         run: strip -x parcel_sourcemap_node/artifacts/*.node
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v6
         with:
           name: bindings-aarch64-apple-darwin
           path: parcel_sourcemap_node/artifacts/*.node
@@ -92,8 +88,7 @@ jobs:
         include:
           - target: x86_64-unknown-linux-gnu
             strip: strip
-            image: docker.io/centos/nodejs-12-centos7
-            setup: npm install --global yarn@1
+            image: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian
           - target: aarch64-unknown-linux-gnu
             strip: aarch64-linux-gnu-strip
             image: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian-aarch64
@@ -115,26 +110,24 @@ jobs:
       image: ${{ matrix.image }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
       - name: Install Node.JS
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v6
         with:
-          node-version: 14
+          node-version: 22
       - name: Install Rust
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
-          profile: minimal
-          override: true
+          targets: ${{ matrix.target }}
 
       - name: Setup cross compile toolchain
         if: ${{ matrix.setup }}
         run: ${{ matrix.setup }}
 
-      - name: Setup rust target
-        run: rustup target add ${{ matrix.target }}
-
-      - uses: bahmutov/npm-install@v1.1.0
+      - name: Install Yarn
+        run: npm install --global yarn@1
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
       - name: Transpile JavaScript
         run: yarn run transpile
       - name: Build node release
@@ -145,7 +138,7 @@ jobs:
         if: ${{ matrix.strip }}
         run: ${{ matrix.strip }} parcel_sourcemap_node/artifacts/*.node
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v6
         with:
           name: bindings-${{ matrix.target }}
           path: parcel_sourcemap_node/artifacts/*.node
@@ -158,12 +151,19 @@ jobs:
       - build-linux
       - build-apple-silicon
     steps:
-      - uses: actions/checkout@v1
-      - uses: bahmutov/npm-install@v1.1.0
+      - uses: actions/checkout@v6
+      - name: Install Node.JS
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - name: Install Yarn
+        run: npm install --global yarn@1
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
       - name: Install wasm-pack
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
       - name: Download artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v8
         with:
           path: parcel_sourcemap_node/artifacts
       - name: Move artifacts
@@ -181,14 +181,17 @@ jobs:
     runs-on: ubuntu-latest
     name: Release Rust crate
     steps:
-      - uses: actions/checkout@v1
-      - uses: bahmutov/npm-install@v1.1.0
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v6
+      - name: Install Node.JS
+        uses: actions/setup-node@v6
         with:
-          toolchain: stable
-          profile: minimal
-          override: true
+          node-version: 22
+      - name: Install Yarn
+        run: npm install --global yarn@1
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
       - run: cargo login ${CRATES_IO_TOKEN}
         env:
           CRATES_IO_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}

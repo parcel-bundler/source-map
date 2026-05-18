@@ -10,29 +10,22 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-        node-version: [12.x, 14.x]
+        node-version: [20.x, 22.x, 24.x]
     name: ${{ matrix.os }}-${{ matrix.node-version }}
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
       - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-          override: true
-      # Caching
-      - name: Cache NPM dependencies
-        uses: actions/cache@v1
-        with:
-          path: node_modules
-          key: node-modules-${{ runner.os }}-${{ hashFiles('yarn.lock') }}-${{ matrix.node-version }}
+        uses: dtolnay/rust-toolchain@stable
 
-      - uses: bahmutov/npm-install@v1.1.0
+      - name: Install Yarn
+        run: npm install --global yarn@1
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
       - name: Transpile JavaScript
         run: yarn run transpile
       - name: Build node release
@@ -46,31 +39,23 @@ jobs:
     name: wasm
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Use Node.js 14.x
-        uses: actions/setup-node@v2
+      - uses: actions/checkout@v6
+      - name: Use Node.js 22.x
+        uses: actions/setup-node@v6
         with:
-          node-version: 14.x
+          node-version: 22.x
       - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-          override: true
+        uses: dtolnay/rust-toolchain@stable
       - name: Install wasm-pack
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-      # Caching
-      - name: Cache NPM dependencies
-        uses: actions/cache@v1
-        with:
-          path: node_modules
-          key: node-modules-${{ runner.os }}-${{ hashFiles('yarn.lock') }}-14.x
 
-      - uses: bahmutov/npm-install@v1.1.0
+      - name: Install Yarn
+        run: npm install --global yarn@1
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
       - name: Transpile JavaScript
         run: yarn run transpile
       - name: Build wasm release
         run: yarn run build:wasm-node-release
       - name: Run wasm tests
         run: yarn run test:wasm
-
