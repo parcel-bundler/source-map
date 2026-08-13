@@ -133,7 +133,7 @@ impl SourceMap {
     pub fn get_mappings(&self) -> Vec<Mapping> {
         let mut mappings = Vec::new();
         for (generated_line, mapping_line) in self.inner.mapping_lines.iter().enumerate() {
-            for mapping in mapping_line.mappings.iter() {
+            for mapping in &mapping_line.mappings {
                 mappings.push(Mapping {
                     generated_line: generated_line as u32,
                     generated_column: mapping.generated_column,
@@ -229,7 +229,7 @@ impl SourceMap {
     pub fn add_sources<I: AsRef<str>>(&mut self, sources: Vec<I>) -> Vec<u32> {
         self.inner.sources.reserve(sources.len());
         let mut result_vec = Vec::with_capacity(sources.len());
-        for s in sources.iter() {
+        for s in &sources {
             result_vec.push(self.add_source(s.as_ref()));
         }
         result_vec
@@ -356,14 +356,14 @@ impl SourceMap {
         self.inner.sources.reserve(sourcemap.inner.sources.len());
         let mut source_indexes = Vec::with_capacity(sourcemap.inner.sources.len());
         let sources = std::mem::take(&mut sourcemap.inner.sources);
-        for s in sources.iter() {
+        for s in &sources {
             source_indexes.push(self.add_source(s));
         }
 
         self.inner.names.reserve(sourcemap.inner.names.len());
         let mut names_indexes = Vec::with_capacity(sourcemap.inner.names.len());
         let names = std::mem::take(&mut sourcemap.inner.names);
-        for n in names.iter() {
+        for n in &names {
             names_indexes.push(self.add_name(n));
         }
 
@@ -382,7 +382,7 @@ impl SourceMap {
             let generated_line = (line as i64) + line_offset;
             if generated_line >= 0 {
                 let mut line = mapping_line;
-                for mapping in line.mappings.iter_mut() {
+                for mapping in &mut line.mappings {
                     match &mut mapping.original {
                         Some(original_mapping_location) => {
                             original_mapping_location.source = match source_indexes
@@ -425,7 +425,7 @@ impl SourceMap {
             .sources
             .reserve(original_sourcemap.inner.sources.len());
         let mut source_indexes = Vec::with_capacity(original_sourcemap.inner.sources.len());
-        for s in original_sourcemap.inner.sources.iter() {
+        for s in &original_sourcemap.inner.sources {
             source_indexes.push(self.add_source(s));
         }
 
@@ -433,7 +433,7 @@ impl SourceMap {
             .names
             .reserve(original_sourcemap.inner.names.len());
         let mut names_indexes = Vec::with_capacity(original_sourcemap.inner.names.len());
-        for n in original_sourcemap.inner.names.iter() {
+        for n in &original_sourcemap.inner.names {
             names_indexes.push(self.add_name(n));
         }
 
@@ -446,8 +446,8 @@ impl SourceMap {
             }
         }
 
-        for line_content in self.inner.mapping_lines.iter_mut() {
-            for mapping in line_content.mappings.iter_mut() {
+        for line_content in &mut self.inner.mapping_lines {
+            for mapping in &mut line_content.mappings {
                 let original_location_option = &mut mapping.original;
                 if let Some(original_location) = original_location_option {
                     let found_mapping = original_sourcemap.find_closest_mapping(

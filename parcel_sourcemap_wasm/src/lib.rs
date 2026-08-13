@@ -123,7 +123,7 @@ impl SourceMap {
 
     pub fn getMappings(&self) -> Result<JsValue, JsValue> {
         let mut mappings: Vec<MappingResult> = vec![];
-        for mapping in self.map.get_mappings().iter() {
+        for mapping in &self.map.get_mappings() {
             mappings.push(MappingResult {
                 generated: PositionResult {
                     line: mapping.generated_line + 1,

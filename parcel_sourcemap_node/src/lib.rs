@@ -123,7 +123,7 @@ impl JsSourceMap {
     pub fn get_mappings(&self, env: Env) -> Result<Array<'_>> {
         let mappings = self.source_map.get_mappings();
         let mut mapping_objects = Vec::with_capacity(mappings.len());
-        for mapping in mappings.iter() {
+        for mapping in &mappings {
             mapping_objects.push(mapping_to_js_object(&env, mapping)?);
         }
         Array::from_vec(&env, mapping_objects)

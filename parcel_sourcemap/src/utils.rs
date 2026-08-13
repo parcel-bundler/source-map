@@ -26,7 +26,7 @@ fn get_common_prefix_len<'a>(items: &'a [Cow<'a, [&'a str]>]) -> usize {
 
     let shortest = &items[0];
     let mut max_idx = None;
-    for seq in items.iter() {
+    for seq in items {
         let mut seq_max_idx = None;
         for (idx, &comp) in shortest.iter().enumerate() {
             if seq.get(idx) != Some(&comp) {
