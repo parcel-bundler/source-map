@@ -258,18 +258,18 @@ impl SourceMap {
     }
 
     pub fn add_name(&mut self, name: &str) -> u32 {
-        return match self.inner.names.iter().position(|s| name.eq(s)) {
+        match self.inner.names.iter().position(|s| name.eq(s)) {
             Some(i) => i as u32,
             None => {
                 self.inner.names.push(String::from(name));
                 (self.inner.names.len() - 1) as u32
             }
-        };
+        }
     }
 
     pub fn add_names<I: AsRef<str>>(&mut self, names: Vec<I>) -> Vec<u32> {
         self.inner.names.reserve(names.len());
-        return names.iter().map(|n| self.add_name(n.as_ref())).collect();
+        names.iter().map(|n| self.add_name(n.as_ref())).collect()
     }
 
     pub fn get_name_index(&self, name: &str) -> Option<u32> {

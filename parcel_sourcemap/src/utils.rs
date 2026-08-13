@@ -47,10 +47,10 @@ fn get_common_prefix_len<'a>(items: &'a [Cow<'a, [&'a str]>]) -> usize {
 }
 
 fn chunk_path(p: &str) -> Vec<&str> {
-    return p
+    p
         .split(&['/', '\\'][..])
         .filter(|x| !x.is_empty() && *x != ".")
-        .collect();
+        .collect()
 }
 
 // Helper function to calculate the path from a base file to a target file.
@@ -67,7 +67,7 @@ pub fn make_relative_path(base: &str, target: &str) -> String {
         if target_str.contains(':') {
             String::from(target_str)
         } else {
-            return chunk_path(target_str).join("/");
+            chunk_path(target_str).join("/")
         }
     } else {
         let target_path: Vec<&str> = chunk_path(target_str);
