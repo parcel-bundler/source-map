@@ -10,7 +10,7 @@ repository = "https://github.com/parcel-bundler/source-map"
 
 [dependencies]
 "vlq" = "0.5.1"
-rkyv = "0.7.38"
+rkyv = "0.8.18"
 serde = {version = "1", features = ["derive"], optional = true}
 serde_json = { version = "1", optional = true }
 base64-simd = { version = "0.7", optional = true }
