@@ -383,11 +383,9 @@ impl SourceMap {
             if generated_line >= 0 {
                 let mut line = mapping_line;
                 for mapping in &mut line.mappings {
-                    match &mut mapping.original {
-                        Some(original_mapping_location) => {
-                            original_mapping_location.source = match source_indexes
-                                .get(original_mapping_location.source as usize)
-                            {
+                    if let Some(original_mapping_location) = &mut mapping.original {
+                        original_mapping_location.source =
+                            match source_indexes.get(original_mapping_location.source as usize) {
                                 Some(new_source_index) => *new_source_index,
                                 None => {
                                     return Err(SourceMapError::new(
@@ -396,19 +394,17 @@ impl SourceMap {
                                 }
                             };
 
-                            original_mapping_location.name = match original_mapping_location.name {
-                                Some(name_index) => match names_indexes.get(name_index as usize) {
-                                    Some(new_name_index) => Some(*new_name_index),
-                                    None => {
-                                        return Err(SourceMapError::new(
-                                            SourceMapErrorType::NameOutOfRange,
-                                        ));
-                                    }
-                                },
-                                None => None,
-                            };
-                        }
-                        None => {}
+                        original_mapping_location.name = match original_mapping_location.name {
+                            Some(name_index) => match names_indexes.get(name_index as usize) {
+                                Some(new_name_index) => Some(*new_name_index),
+                                None => {
+                                    return Err(SourceMapError::new(
+                                        SourceMapErrorType::NameOutOfRange,
+                                    ));
+                                }
+                            },
+                            None => None,
+                        };
                     }
                 }
 
