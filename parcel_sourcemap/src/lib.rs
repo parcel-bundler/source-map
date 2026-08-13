@@ -543,7 +543,7 @@ impl SourceMap {
 
                     // Read source, original line, and original column if the
                     // mapping has them.
-                    let original = if input.peek().cloned().map_or(true, is_mapping_separator) {
+                    let original = if input.peek().cloned().is_none_or(is_mapping_separator) {
                         None
                     } else {
                         read_relative_vlq(&mut source, &mut input)?;
@@ -560,7 +560,7 @@ impl SourceMap {
                                     ));
                                 }
                             },
-                            if input.peek().cloned().map_or(true, is_mapping_separator) {
+                            if input.peek().cloned().is_none_or(is_mapping_separator) {
                                 None
                             } else {
                                 read_relative_vlq(&mut name, &mut input)?;
