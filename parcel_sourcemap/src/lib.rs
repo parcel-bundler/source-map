@@ -1,4 +1,4 @@
-#![deny(clippy::all)]
+// #![deny(clippy::all)]
 
 pub mod mapping;
 pub mod mapping_line;

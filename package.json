@@ -51,10 +51,8 @@
     "README.md",
     "!.gitignore"
   ],
-  "binary": {
-    "napi_versions": [
-      4
-    ]
+  "napi": {
+    "name": "parcel-sourcemap"
   },
   "engines": {
     "node": "^12.18.3 || >=14"
@@ -65,7 +63,7 @@
     "@babel/preset-env": "^7.14.2",
     "@babel/preset-flow": "^7.13.13",
     "@babel/register": "^7.13.16",
-    "@napi-rs/cli": "^2.14.8",
+    "@napi-rs/cli": "^3.7.2",
     "cross-env": "^7.0.3",
     "flow-bin": "^0.151.0",
     "flow-copy-source": "^2.0.9",
