@@ -522,8 +522,8 @@ impl SourceMap {
             }
         }
 
-        let mut input = input.iter().cloned().peekable();
-        while let Some(byte) = input.peek().cloned() {
+        let mut input = input.iter().copied().peekable();
+        while let Some(byte) = input.peek().copied() {
             match byte {
                 b';' => {
                     generated_line += 1;
@@ -539,7 +539,7 @@ impl SourceMap {
 
                     // Read source, original line, and original column if the
                     // mapping has them.
-                    let original = if input.peek().cloned().is_none_or(is_mapping_separator) {
+                    let original = if input.peek().copied().is_none_or(is_mapping_separator) {
                         None
                     } else {
                         read_relative_vlq(&mut source, &mut input)?;
@@ -556,7 +556,7 @@ impl SourceMap {
                                     ));
                                 }
                             },
-                            if input.peek().cloned().is_none_or(is_mapping_separator) {
+                            if input.peek().copied().is_none_or(is_mapping_separator) {
                                 None
                             } else {
                                 read_relative_vlq(&mut name, &mut input)?;
