@@ -68,7 +68,7 @@ impl SourceMap {
 
     pub fn add_mapping_with_offset(
         &mut self,
-        mapping: Mapping,
+        mapping: &Mapping,
         line_offset: i64,
         column_offset: i64,
     ) -> Result<(), SourceMapError> {
@@ -226,10 +226,10 @@ impl SourceMap {
         }
     }
 
-    pub fn add_sources<I: AsRef<str>>(&mut self, sources: Vec<I>) -> Vec<u32> {
+    pub fn add_sources<I: AsRef<str>>(&mut self, sources: &[I]) -> Vec<u32> {
         self.inner.sources.reserve(sources.len());
         let mut result_vec = Vec::with_capacity(sources.len());
-        for s in &sources {
+        for s in sources {
             result_vec.push(self.add_source(s.as_ref()));
         }
         result_vec
@@ -267,7 +267,7 @@ impl SourceMap {
         }
     }
 
-    pub fn add_names<I: AsRef<str>>(&mut self, names: Vec<I>) -> Vec<u32> {
+    pub fn add_names<I: AsRef<str>>(&mut self, names: &[I]) -> Vec<u32> {
         self.inner.names.reserve(names.len());
         names.iter().map(|n| self.add_name(n.as_ref())).collect()
     }
@@ -499,9 +499,9 @@ impl SourceMap {
     pub fn add_vlq_map<I: AsRef<str>>(
         &mut self,
         input: &[u8],
-        sources: Vec<I>,
-        sources_content: Vec<I>,
-        names: Vec<I>,
+        sources: &[I],
+        sources_content: &[I],
+        names: &[I],
         line_offset: i64,
         column_offset: i64,
     ) -> Result<(), SourceMapError> {
@@ -683,9 +683,9 @@ impl SourceMap {
         let mut sm = Self::new(project_root);
         sm.add_vlq_map(
             json.mappings.as_bytes(),
-            json.sources,
-            sources_content,
-            json.names,
+            &json.sources,
+            &sources_content,
+            &json.names,
             0,
             0,
         )?;

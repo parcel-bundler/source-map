@@ -61,19 +61,16 @@ pub struct SourceMap {
 #[allow(non_snake_case)]
 impl SourceMap {
     #[wasm_bindgen(constructor)]
-    pub fn new(project_root: String, buffer: JsValue) -> Result<SourceMap, JsValue> {
+    pub fn new(project_root: &str, buffer: JsValue) -> Result<SourceMap, JsValue> {
         if !buffer.is_undefined() {
             return Ok(SourceMap {
-                map: NativeSourceMap::from_buffer(
-                    &project_root,
-                    &Uint8Array::from(buffer).to_vec(),
-                )
-                .map_err(to_wasm_error)?,
+                map: NativeSourceMap::from_buffer(project_root, &Uint8Array::from(buffer).to_vec())
+                    .map_err(|e| to_wasm_error(&e))?,
             });
         }
 
         Ok(SourceMap {
-            map: NativeSourceMap::new(&project_root),
+            map: NativeSourceMap::new(project_root),
         })
     }
 
@@ -83,7 +80,7 @@ impl SourceMap {
 
     pub fn addVLQMap(
         &mut self,
-        vlq_mappings: String,
+        vlq_mappings: &str,
         sources: JsValue,
         sources_content: JsValue,
         names: JsValue,
@@ -97,20 +94,28 @@ impl SourceMap {
         self.map
             .add_vlq_map(
                 vlq_mappings.as_bytes(),
-                sources_string.iter().map(|s| s.as_str()).collect(),
-                sources_content_string.iter().map(|s| s.as_str()).collect(),
-                names_string.iter().map(|s| s.as_str()).collect(),
+                &sources_string
+                    .iter()
+                    .map(|s| s.as_str())
+                    .collect::<Vec<_>>(),
+                &sources_content_string
+                    .iter()
+                    .map(|s| s.as_str())
+                    .collect::<Vec<_>>(),
+                &names_string.iter().map(|s| s.as_str()).collect::<Vec<_>>(),
                 line_offset.into(),
                 column_offset.into(),
             )
-            .map_err(to_wasm_error)?;
+            .map_err(|e| to_wasm_error(&e))?;
 
         Ok(JsValue::UNDEFINED)
     }
 
     pub fn toVLQ(&mut self) -> Result<JsValue, JsValue> {
         let mut vlq_output: Vec<u8> = vec![];
-        self.map.write_vlq(&mut vlq_output).map_err(to_wasm_error)?;
+        self.map
+            .write_vlq(&mut vlq_output)
+            .map_err(|e| to_wasm_error(&e))?;
 
         let result = VLQResult {
             mappings: String::from_utf8(vlq_output).unwrap(),
@@ -176,7 +181,11 @@ impl SourceMap {
     }
 
     pub fn getSourceIndex(&self, source: &str) -> Result<JsValue, JsValue> {
-        let mapped_val: i32 = match self.map.get_source_index(source).map_err(to_wasm_error)? {
+        let mapped_val: i32 = match self
+            .map
+            .get_source_index(source)
+            .map_err(|e| to_wasm_error(&e))?
+        {
             Some(found_source_index) => i32::try_from(found_source_index).unwrap_or(-1),
             None => -1,
         };
@@ -234,7 +243,7 @@ impl SourceMap {
         let mut buffer_data = AlignedVec::new();
         self.map
             .to_buffer(&mut buffer_data)
-            .map_err(to_wasm_error)?;
+            .map_err(|e| to_wasm_error(&e))?;
         Ok(Uint8Array::from(buffer_data.as_slice()).into())
     }
 
@@ -245,7 +254,7 @@ impl SourceMap {
     ) -> Result<JsValue, JsValue> {
         self.map
             .add_sourcemap(&mut previous_map_instance.map, line_offset.into())
-            .map_err(to_wasm_error)?;
+            .map_err(|e| to_wasm_error(&e))?;
 
         Ok(JsValue::UNDEFINED)
     }
@@ -258,16 +267,22 @@ impl SourceMap {
         let source_index = self.addSource(source) as usize;
         self.map
             .set_source_content(source_index, source_content)
-            .map_err(to_wasm_error)?;
+            .map_err(|e| to_wasm_error(&e))?;
 
         Ok(JsValue::UNDEFINED)
     }
 
     pub fn getSourceContentBySource(&self, source: &str) -> Result<JsValue, JsValue> {
-        let source_index = self.map.get_source_index(source).map_err(to_wasm_error)?;
+        let source_index = self
+            .map
+            .get_source_index(source)
+            .map_err(|e| to_wasm_error(&e))?;
         match source_index {
             Some(i) => {
-                let source_content = self.map.get_source_content(i).map_err(to_wasm_error)?;
+                let source_content = self
+                    .map
+                    .get_source_content(i)
+                    .map_err(|e| to_wasm_error(&e))?;
                 Ok(JsValue::from_str(source_content))
             }
             None => Ok(JsValue::from_str("")),
@@ -282,7 +297,7 @@ impl SourceMap {
     ) -> Result<JsValue, JsValue> {
         self.map
             .add_empty_map(source, source_content, line_offset.into())
-            .map_err(to_wasm_error)?;
+            .map_err(|e| to_wasm_error(&e))?;
 
         Ok(JsValue::UNDEFINED)
     }
@@ -290,7 +305,7 @@ impl SourceMap {
     pub fn extends(&mut self, previous_map_instance: &mut SourceMap) -> Result<JsValue, JsValue> {
         self.map
             .extends(&mut previous_map_instance.map)
-            .map_err(to_wasm_error)?;
+            .map_err(|e| to_wasm_error(&e))?;
 
         Ok(JsValue::UNDEFINED)
     }
@@ -312,7 +327,7 @@ impl SourceMap {
     ) -> Result<JsValue, JsValue> {
         self.map
             .offset_lines(generated_line, generated_line_offset.into())
-            .map_err(to_wasm_error)?;
+            .map_err(|e| to_wasm_error(&e))?;
 
         Ok(JsValue::UNDEFINED)
     }
@@ -329,13 +344,13 @@ impl SourceMap {
                 generated_column,
                 generated_column_offset.into(),
             )
-            .map_err(to_wasm_error)?;
+            .map_err(|e| to_wasm_error(&e))?;
 
         Ok(JsValue::UNDEFINED)
     }
 }
 
 #[inline]
-fn to_wasm_error(err: SourceMapError) -> JsValue {
+fn to_wasm_error(err: &SourceMapError) -> JsValue {
     js_sys::Error::new(&err.to_string()).into()
 }
