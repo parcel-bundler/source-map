@@ -1,10 +1,12 @@
+#![allow(clippy::needless_pass_by_value)]
+
 use napi::{
-    bindgen_prelude::{Array, Buffer, ToNapiValue},
-    Env, JsObject, JsTypedArray, JsUnknown, NapiValue, Result,
+    bindgen_prelude::{Array, Buffer, Int32Array, JsObjectValue, Object, ToNapiValue},
+    Env, Result,
 };
 use napi_derive::napi;
 use parcel_sourcemap::{Mapping, OriginalLocation, SourceMap, SourceMapError};
-use rkyv::AlignedVec;
+use rkyv::util::AlignedVec;
 
 #[cfg(target_os = "macos")]
 #[global_allocator]
@@ -21,7 +23,7 @@ impl JsSourceMap {
     pub fn new(project_root: String, buffer: Option<Buffer>) -> Result<Self> {
         let source_map = match buffer {
             Some(buffer) => {
-                SourceMap::from_buffer(&project_root, &buffer).map_err(to_napi_error)?
+                SourceMap::from_buffer(&project_root, &buffer).map_err(|e| to_napi_error(&e))?
             }
             None => SourceMap::new(&project_root),
         };
@@ -56,7 +58,7 @@ impl JsSourceMap {
         let source_index = self
             .source_map
             .get_source_index(&source)
-            .map_err(to_napi_error)?;
+            .map_err(|e| to_napi_error(&e))?;
         match source_index {
             Some(i) => Ok(i as i32),
             None => Ok(-1),
@@ -72,7 +74,7 @@ impl JsSourceMap {
         let source_index = self.source_map.add_source(&source) as usize;
         self.source_map
             .set_source_content(source_index, &source_content)
-            .map_err(to_napi_error)?;
+            .map_err(|e| to_napi_error(&e))?;
         Ok(())
     }
 
@@ -81,13 +83,13 @@ impl JsSourceMap {
         let source_index = self
             .source_map
             .get_source_index(&source)
-            .map_err(to_napi_error)?;
+            .map_err(|e| to_napi_error(&e))?;
         match source_index {
             Some(i) => self
                 .source_map
                 .get_source_content(i)
                 .map(|s| s.to_owned())
-                .map_err(to_napi_error),
+                .map_err(|e| to_napi_error(&e)),
             None => Ok(String::new()),
         }
     }
@@ -120,13 +122,13 @@ impl JsSourceMap {
     }
 
     #[napi]
-    pub fn get_mappings(&self, env: Env) -> Result<Array> {
+    pub fn get_mappings(&self, env: Env) -> Result<Array<'_>> {
         let mappings = self.source_map.get_mappings();
-        let mut mappings_arr = env.create_array(mappings.len() as u32)?;
-        for (index, mapping) in mappings.iter().enumerate() {
-            mappings_arr.set(index as u32, mapping_to_js_object(&env, mapping)?)?;
+        let mut mapping_objects = Vec::with_capacity(mappings.len());
+        for mapping in &mappings {
+            mapping_objects.push(mapping_to_js_object(&env, mapping)?);
         }
-        Ok(mappings_arr)
+        Array::from_vec(&env, mapping_objects)
     }
 
     #[napi]
@@ -134,7 +136,7 @@ impl JsSourceMap {
         let mut buffer_data = AlignedVec::new();
         self.source_map
             .to_buffer(&mut buffer_data)
-            .map_err(to_napi_error)?;
+            .map_err(|e| to_napi_error(&e))?;
 
         Ok(buffer_data.into_vec().into())
     }
@@ -147,7 +149,7 @@ impl JsSourceMap {
     ) -> Result<()> {
         self.source_map
             .add_sourcemap(&mut sourcemap_object.source_map, line_offset)
-            .map_err(to_napi_error)?;
+            .map_err(|e| to_napi_error(&e))?;
         Ok(())
     }
 
@@ -155,49 +157,49 @@ impl JsSourceMap {
     pub fn add_vlq_map(
         &mut self,
         vlq_mappings: String,
-        sources: Vec<&str>,
-        sources_content: Vec<&str>,
-        names: Vec<&str>,
+        sources: Vec<String>,
+        sources_content: Vec<String>,
+        names: Vec<String>,
         line_offset: i64,
         column_offset: i64,
     ) -> Result<()> {
         self.source_map
             .add_vlq_map(
                 vlq_mappings.as_bytes(),
-                sources,
-                sources_content,
-                names,
+                &sources,
+                &sources_content,
+                &names,
                 line_offset,
                 column_offset,
             )
-            .map_err(to_napi_error)?;
+            .map_err(|e| to_napi_error(&e))?;
         Ok(())
     }
 
     #[napi(js_name = "toVLQ")]
-    pub fn to_vlq(&mut self, env: Env) -> Result<JsObject> {
+    pub fn to_vlq(&mut self, env: Env) -> Result<Object<'_>> {
         let mut vlq_output: Vec<u8> = vec![];
         self.source_map
             .write_vlq(&mut vlq_output)
-            .map_err(to_napi_error)?;
+            .map_err(|e| to_napi_error(&e))?;
         let vlq_string = env.create_string_latin1(vlq_output.as_slice())?;
-        let mut result_obj: JsObject = env.create_object()?;
+        let mut result_obj = Object::new(&env)?;
         result_obj.set_named_property("mappings", vlq_string)?;
         result_obj.set_named_property("sources", unsafe {
             // This avoids copying the strings twice - they are converted directly to JS strings rather than cloned into a new Vec first.
-            JsUnknown::from_raw_unchecked(
+            Object::from_raw(
                 env.raw(),
                 ToNapiValue::to_napi_value(env.raw(), self.get_sources())?,
             )
         })?;
         result_obj.set_named_property("sourcesContent", unsafe {
-            JsUnknown::from_raw_unchecked(
+            Object::from_raw(
                 env.raw(),
                 ToNapiValue::to_napi_value(env.raw(), self.get_sources_content())?,
             )
         })?;
         result_obj.set_named_property("names", unsafe {
-            JsUnknown::from_raw_unchecked(
+            Object::from_raw(
                 env.raw(),
                 ToNapiValue::to_napi_value(env.raw(), self.get_names())?,
             )
@@ -206,9 +208,8 @@ impl JsSourceMap {
     }
 
     #[napi]
-    pub fn add_indexed_mappings(&mut self, mappings: JsTypedArray) -> Result<()> {
-        let mappings_value = mappings.into_value()?;
-        let mappings_arr: &[i32] = mappings_value.as_ref();
+    pub fn add_indexed_mappings(&mut self, mappings: Int32Array) -> Result<()> {
+        let mappings_arr: &[i32] = mappings.as_ref();
         let mappings_count = mappings_arr.len();
 
         let mut generated_line: u32 = 0; // 0
@@ -261,7 +262,7 @@ impl JsSourceMap {
     pub fn offset_lines(&mut self, generated_line: u32, generated_line_offset: i64) -> Result<()> {
         self.source_map
             .offset_lines(generated_line, generated_line_offset)
-            .map_err(to_napi_error)
+            .map_err(|e| to_napi_error(&e))
     }
 
     #[napi]
@@ -273,7 +274,7 @@ impl JsSourceMap {
     ) -> Result<()> {
         self.source_map
             .offset_columns(generated_line, generated_column, generated_column_offset)
-            .map_err(to_napi_error)
+            .map_err(|e| to_napi_error(&e))
     }
 
     #[napi]
@@ -285,28 +286,28 @@ impl JsSourceMap {
     ) -> Result<()> {
         self.source_map
             .add_empty_map(&source, &source_content, line_offset)
-            .map_err(to_napi_error)
+            .map_err(|e| to_napi_error(&e))
     }
 
     #[napi]
     pub fn extends(&mut self, original_sourcemap: &mut JsSourceMap) -> Result<()> {
         self.source_map
             .extends(&mut original_sourcemap.source_map)
-            .map_err(to_napi_error)
+            .map_err(|e| to_napi_error(&e))
     }
 
     #[napi]
-    pub fn find_closest_mapping(
+    pub fn find_closest_mapping<'a>(
         &mut self,
         generated_line: u32,
         generated_column: u32,
-        env: Env,
-    ) -> Result<Option<JsObject>> {
+        env: &'a Env,
+    ) -> Result<Option<Object<'a>>> {
         match self
             .source_map
             .find_closest_mapping(generated_line, generated_column)
         {
-            Some(mapping) => Ok(Some(mapping_to_js_object(&env, &mapping)?)),
+            Some(mapping) => Ok(Some(mapping_to_js_object(env, &mapping)?)),
             None => Ok(None),
         }
     }
@@ -317,33 +318,25 @@ impl JsSourceMap {
     }
 }
 
-fn mapping_to_js_object(env: &Env, mapping: &Mapping) -> Result<JsObject> {
-    let mut mapping_obj = env.create_object()?;
+fn mapping_to_js_object<'a>(env: &'a Env, mapping: &Mapping) -> Result<Object<'a>> {
+    let mut mapping_obj = Object::new(env)?;
 
-    let mut generated_position_obj = env.create_object()?;
-    generated_position_obj
-        .set_named_property("line", env.create_uint32((mapping.generated_line) + 1)?)?;
-    generated_position_obj
-        .set_named_property("column", env.create_uint32(mapping.generated_column)?)?;
+    let mut generated_position_obj = Object::new(env)?;
+    generated_position_obj.set_named_property("line", mapping.generated_line + 1)?;
+    generated_position_obj.set_named_property("column", mapping.generated_column)?;
     mapping_obj.set_named_property("generated", generated_position_obj)?;
 
     let original_position = mapping.original;
     if let Some(original_position) = original_position {
-        let mut original_position_obj = env.create_object()?;
-        original_position_obj.set_named_property(
-            "line",
-            env.create_uint32(original_position.original_line + 1)?,
-        )?;
-        original_position_obj.set_named_property(
-            "column",
-            env.create_uint32(original_position.original_column)?,
-        )?;
+        let mut original_position_obj = Object::new(env)?;
+        original_position_obj.set_named_property("line", original_position.original_line + 1)?;
+        original_position_obj.set_named_property("column", original_position.original_column)?;
         mapping_obj.set_named_property("original", original_position_obj)?;
 
-        mapping_obj.set_named_property("source", env.create_uint32(original_position.source)?)?;
+        mapping_obj.set_named_property("source", original_position.source)?;
 
         if let Some(name) = original_position.name {
-            mapping_obj.set_named_property("name", env.create_uint32(name)?)?;
+            mapping_obj.set_named_property("name", name)?;
         }
     }
 
@@ -351,6 +344,6 @@ fn mapping_to_js_object(env: &Env, mapping: &Mapping) -> Result<JsObject> {
 }
 
 #[inline]
-fn to_napi_error(err: SourceMapError) -> napi::Error {
+fn to_napi_error(err: &SourceMapError) -> napi::Error {
     napi::Error::new(napi::Status::GenericFailure, err.to_string())
 }

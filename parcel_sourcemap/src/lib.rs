@@ -1,4 +1,4 @@
-#![deny(clippy::all)]
+// #![deny(clippy::all)]
 
 pub mod mapping;
 pub mod mapping_line;
@@ -16,14 +16,7 @@ pub use sourcemap_error::{SourceMapError, SourceMapErrorType};
 use std::borrow::Cow;
 use std::io;
 
-use rkyv::{
-    archived_root,
-    ser::{
-        serializers::{AlignedSerializer, AllocScratch, CompositeSerializer},
-        Serializer,
-    },
-    AlignedVec, Archive, Deserialize, Infallible, Serialize,
-};
+use rkyv::{util::AlignedVec, Archive, Deserialize, Serialize};
 
 use vlq_utils::{is_mapping_separator, read_relative_vlq};
 
@@ -75,7 +68,7 @@ impl SourceMap {
 
     pub fn add_mapping_with_offset(
         &mut self,
-        mapping: Mapping,
+        mapping: &Mapping,
         line_offset: i64,
         column_offset: i64,
     ) -> Result<(), SourceMapError> {
@@ -140,7 +133,7 @@ impl SourceMap {
     pub fn get_mappings(&self) -> Vec<Mapping> {
         let mut mappings = Vec::new();
         for (generated_line, mapping_line) in self.inner.mapping_lines.iter().enumerate() {
-            for mapping in mapping_line.mappings.iter() {
+            for mapping in &mapping_line.mappings {
                 mappings.push(Mapping {
                     generated_line: generated_line as u32,
                     generated_column: mapping.generated_column,
@@ -233,10 +226,10 @@ impl SourceMap {
         }
     }
 
-    pub fn add_sources<I: AsRef<str>>(&mut self, sources: Vec<I>) -> Vec<u32> {
+    pub fn add_sources<I: AsRef<str>>(&mut self, sources: &[I]) -> Vec<u32> {
         self.inner.sources.reserve(sources.len());
         let mut result_vec = Vec::with_capacity(sources.len());
-        for s in sources.iter() {
+        for s in sources {
             result_vec.push(self.add_source(s.as_ref()));
         }
         result_vec
@@ -265,18 +258,18 @@ impl SourceMap {
     }
 
     pub fn add_name(&mut self, name: &str) -> u32 {
-        return match self.inner.names.iter().position(|s| name.eq(s)) {
+        match self.inner.names.iter().position(|s| name.eq(s)) {
             Some(i) => i as u32,
             None => {
                 self.inner.names.push(String::from(name));
                 (self.inner.names.len() - 1) as u32
             }
-        };
+        }
     }
 
-    pub fn add_names<I: AsRef<str>>(&mut self, names: Vec<I>) -> Vec<u32> {
+    pub fn add_names<I: AsRef<str>>(&mut self, names: &[I]) -> Vec<u32> {
         self.inner.names.reserve(names.len());
-        return names.iter().map(|n| self.add_name(n.as_ref())).collect();
+        names.iter().map(|n| self.add_name(n.as_ref())).collect()
     }
 
     pub fn get_name_index(&self, name: &str) -> Option<u32> {
@@ -341,21 +334,14 @@ impl SourceMap {
 
     // Write the sourcemap instance to a buffer
     pub fn to_buffer(&self, output: &mut AlignedVec) -> Result<(), SourceMapError> {
-        output.clear();
-        let mut serializer = CompositeSerializer::new(
-            AlignedSerializer::new(output),
-            AllocScratch::default(),
-            Infallible,
-        );
-        serializer.serialize_value(&self.inner)?;
+        *output = rkyv::to_bytes::<rkyv::rancor::Error>(&self.inner)?;
         Ok(())
     }
 
     // Create a sourcemap instance from a buffer
     pub fn from_buffer(project_root: &str, buf: &[u8]) -> Result<SourceMap, SourceMapError> {
-        let archived = unsafe { archived_root::<SourceMapInner>(buf) };
         // TODO: see if we can use the archived data directly rather than deserializing at all...
-        let inner = archived.deserialize(&mut Infallible)?;
+        let inner = rkyv::from_bytes::<SourceMapInner, rkyv::rancor::Error>(buf)?;
         Ok(SourceMap {
             project_root: String::from(project_root),
             inner,
@@ -370,14 +356,14 @@ impl SourceMap {
         self.inner.sources.reserve(sourcemap.inner.sources.len());
         let mut source_indexes = Vec::with_capacity(sourcemap.inner.sources.len());
         let sources = std::mem::take(&mut sourcemap.inner.sources);
-        for s in sources.iter() {
+        for s in &sources {
             source_indexes.push(self.add_source(s));
         }
 
         self.inner.names.reserve(sourcemap.inner.names.len());
         let mut names_indexes = Vec::with_capacity(sourcemap.inner.names.len());
         let names = std::mem::take(&mut sourcemap.inner.names);
-        for n in names.iter() {
+        for n in &names {
             names_indexes.push(self.add_name(n));
         }
 
@@ -396,12 +382,10 @@ impl SourceMap {
             let generated_line = (line as i64) + line_offset;
             if generated_line >= 0 {
                 let mut line = mapping_line;
-                for mapping in line.mappings.iter_mut() {
-                    match &mut mapping.original {
-                        Some(original_mapping_location) => {
-                            original_mapping_location.source = match source_indexes
-                                .get(original_mapping_location.source as usize)
-                            {
+                for mapping in &mut line.mappings {
+                    if let Some(original_mapping_location) = &mut mapping.original {
+                        original_mapping_location.source =
+                            match source_indexes.get(original_mapping_location.source as usize) {
                                 Some(new_source_index) => *new_source_index,
                                 None => {
                                     return Err(SourceMapError::new(
@@ -410,19 +394,17 @@ impl SourceMap {
                                 }
                             };
 
-                            original_mapping_location.name = match original_mapping_location.name {
-                                Some(name_index) => match names_indexes.get(name_index as usize) {
-                                    Some(new_name_index) => Some(*new_name_index),
-                                    None => {
-                                        return Err(SourceMapError::new(
-                                            SourceMapErrorType::NameOutOfRange,
-                                        ));
-                                    }
-                                },
-                                None => None,
-                            };
-                        }
-                        None => {}
+                        original_mapping_location.name = match original_mapping_location.name {
+                            Some(name_index) => match names_indexes.get(name_index as usize) {
+                                Some(new_name_index) => Some(*new_name_index),
+                                None => {
+                                    return Err(SourceMapError::new(
+                                        SourceMapErrorType::NameOutOfRange,
+                                    ));
+                                }
+                            },
+                            None => None,
+                        };
                     }
                 }
 
@@ -439,7 +421,7 @@ impl SourceMap {
             .sources
             .reserve(original_sourcemap.inner.sources.len());
         let mut source_indexes = Vec::with_capacity(original_sourcemap.inner.sources.len());
-        for s in original_sourcemap.inner.sources.iter() {
+        for s in &original_sourcemap.inner.sources {
             source_indexes.push(self.add_source(s));
         }
 
@@ -447,7 +429,7 @@ impl SourceMap {
             .names
             .reserve(original_sourcemap.inner.names.len());
         let mut names_indexes = Vec::with_capacity(original_sourcemap.inner.names.len());
-        for n in original_sourcemap.inner.names.iter() {
+        for n in &original_sourcemap.inner.names {
             names_indexes.push(self.add_name(n));
         }
 
@@ -460,8 +442,8 @@ impl SourceMap {
             }
         }
 
-        for line_content in self.inner.mapping_lines.iter_mut() {
-            for mapping in line_content.mappings.iter_mut() {
+        for line_content in &mut self.inner.mapping_lines {
+            for mapping in &mut line_content.mappings {
                 let original_location_option = &mut mapping.original;
                 if let Some(original_location) = original_location_option {
                     let found_mapping = original_sourcemap.find_closest_mapping(
@@ -517,9 +499,9 @@ impl SourceMap {
     pub fn add_vlq_map<I: AsRef<str>>(
         &mut self,
         input: &[u8],
-        sources: Vec<I>,
-        sources_content: Vec<I>,
-        names: Vec<I>,
+        sources: &[I],
+        sources_content: &[I],
+        names: &[I],
         line_offset: i64,
         column_offset: i64,
     ) -> Result<(), SourceMapError> {
@@ -540,8 +522,8 @@ impl SourceMap {
             }
         }
 
-        let mut input = input.iter().cloned().peekable();
-        while let Some(byte) = input.peek().cloned() {
+        let mut input = input.iter().copied().peekable();
+        while let Some(byte) = input.peek().copied() {
             match byte {
                 b';' => {
                     generated_line += 1;
@@ -557,7 +539,7 @@ impl SourceMap {
 
                     // Read source, original line, and original column if the
                     // mapping has them.
-                    let original = if input.peek().cloned().map_or(true, is_mapping_separator) {
+                    let original = if input.peek().copied().is_none_or(is_mapping_separator) {
                         None
                     } else {
                         read_relative_vlq(&mut source, &mut input)?;
@@ -574,7 +556,7 @@ impl SourceMap {
                                     ));
                                 }
                             },
-                            if input.peek().cloned().map_or(true, is_mapping_separator) {
+                            if input.peek().copied().is_none_or(is_mapping_separator) {
                                 None
                             } else {
                                 read_relative_vlq(&mut name, &mut input)?;
@@ -701,9 +683,9 @@ impl SourceMap {
         let mut sm = Self::new(project_root);
         sm.add_vlq_map(
             json.mappings.as_bytes(),
-            json.sources,
-            sources_content,
-            json.names,
+            &json.sources,
+            &sources_content,
+            &json.names,
             0,
             0,
         )?;

@@ -40,7 +40,7 @@ impl MappingLine {
     pub fn ensure_sorted(&mut self) {
         if !self.is_sorted {
             self.mappings
-                .sort_by(|a, b| a.generated_column.cmp(&b.generated_column));
+                .sort_by_key(|a| a.generated_column);
             self.is_sorted = true
         }
     }

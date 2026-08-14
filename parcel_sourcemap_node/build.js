@@ -12,7 +12,7 @@ async function build() {
   }
 
   await new Promise((resolve, reject) => {
-    let args = ['build', '--platform', '-c', '../package.json', './artifacts'];
+    let args = ['build', '--platform', '--package-json-path', '../package.json', '-o', './artifacts'];
     if (release) {
       args.push('--release');
     }
@@ -42,5 +42,5 @@ function setupMacBuild() {
     encoding: 'utf8',
   }).trim();
   process.env.CFLAGS = `-isysroot ${sysRoot} -isystem ${sysRoot}`;
-  process.env.MACOSX_DEPLOYMENT_TARGET = '10.9';
+  process.env.MACOSX_DEPLOYMENT_TARGET = '10.12';
 }
