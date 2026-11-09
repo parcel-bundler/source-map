@@ -719,6 +719,8 @@ impl SourceMap {
         #[serde(rename_all = "camelCase")]
         struct JSONSourceMap<'a> {
             version: u8,
+            // `sourceRoot` is an optional string, so it's left out rather than written as null.
+            #[serde(skip_serializing_if = "Option::is_none")]
             source_root: Option<&'a str>,
             mappings: &'a str,
             sources: &'a Vec<String>,
@@ -791,6 +793,18 @@ fn test_to_json() {
     assert_eq!(
         json,
         r#"{"version":3,"sourceRoot":"/","mappings":";C","sources":[],"sourcesContent":[],"names":[]}"#
+    );
+}
+
+#[cfg(feature = "json")]
+#[test]
+fn test_to_json_without_source_root() {
+    let mut map = SourceMap::new("/");
+    map.add_mapping(1, 1, None);
+    let json = map.to_json(None).unwrap();
+    assert_eq!(
+        json,
+        r#"{"version":3,"mappings":";C","sources":[],"sourcesContent":[],"names":[]}"#
     );
 }
 
