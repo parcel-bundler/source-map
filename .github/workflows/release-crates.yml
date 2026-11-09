@@ -1,0 +1,20 @@
+name: release-crates
+on:
+  workflow_dispatch:
+
+jobs:
+  release-crates:
+    runs-on: ubuntu-latest
+    name: Release Rust crate
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+      - run: cargo login ${CRATES_IO_TOKEN}
+        env:
+          CRATES_IO_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+      - run: cd parcel_sourcemap && cargo publish
