@@ -10,14 +10,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Install
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-          profile: default
-          override: true
           components: rustfmt, clippy
 
       # Should use comitted lockfile
@@ -27,13 +25,13 @@ jobs:
       #     command: generate-lockfile
 
       - name: Cache cargo registry
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.cargo/registry
           key: lint-cargo-registry-trimmed-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Cache cargo index
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.cargo/git
           key: lint-cargo-index-trimmed-${{ hashFiles('**/Cargo.lock') }}

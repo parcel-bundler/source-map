@@ -82,5 +82,6 @@
   "browser": {
     "./dist/node.js": "./dist/wasm.js",
     "./dist/wasm-bindings.js": "./dist/wasm-bindings-web.js"
-  }
+  },
+  "packageManager": "yarn@4.9.1"
 }

@@ -4,7 +4,7 @@ use napi::{
 };
 use napi_derive::napi;
 use parcel_sourcemap::{Mapping, OriginalLocation, SourceMap, SourceMapError};
-use rkyv::AlignedVec;
+use rkyv::util::AlignedVec;
 
 #[cfg(target_os = "macos")]
 #[global_allocator]

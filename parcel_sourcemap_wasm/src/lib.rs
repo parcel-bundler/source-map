@@ -3,7 +3,7 @@
 
 use js_sys::Uint8Array;
 use parcel_sourcemap::{Mapping, OriginalLocation, SourceMap as NativeSourceMap, SourceMapError};
-use rkyv::AlignedVec;
+use rkyv::util::AlignedVec;
 use serde::Serialize;
 use std::convert::TryFrom;
 use wasm_bindgen::prelude::*;
@@ -90,9 +90,10 @@ impl SourceMap {
         line_offset: i32,
         column_offset: i32,
     ) -> Result<JsValue, JsValue> {
-        let sources_string: Vec<String> = sources.into_serde().unwrap();
-        let sources_content_string: Vec<String> = sources_content.into_serde().unwrap();
-        let names_string: Vec<String> = names.into_serde().unwrap();
+        let sources_string: Vec<String> = serde_wasm_bindgen::from_value(sources).unwrap();
+        let sources_content_string: Vec<String> =
+            serde_wasm_bindgen::from_value(sources_content).unwrap();
+        let names_string: Vec<String> = serde_wasm_bindgen::from_value(names).unwrap();
         self.map
             .add_vlq_map(
                 vlq_mappings.as_bytes(),
@@ -117,7 +118,7 @@ impl SourceMap {
             sourcesContent: self.map.get_sources_content().clone(),
             names: self.map.get_names().clone(),
         };
-        Ok(JsValue::from_serde(&result).unwrap())
+        Ok(serde_wasm_bindgen::to_value(&result).unwrap())
     }
 
     pub fn getMappings(&self) -> Result<JsValue, JsValue> {
@@ -136,19 +137,19 @@ impl SourceMap {
                 source: mapping.original.map(|p| p.source),
             });
         }
-        Ok(JsValue::from_serde(&mappings).unwrap())
+        Ok(serde_wasm_bindgen::to_value(&mappings).unwrap())
     }
 
     pub fn getSources(&self) -> Result<JsValue, JsValue> {
-        Ok(JsValue::from_serde(&self.map.get_sources()).unwrap())
+        Ok(serde_wasm_bindgen::to_value(&self.map.get_sources()).unwrap())
     }
 
     pub fn getSourcesContent(&self) -> Result<JsValue, JsValue> {
-        Ok(JsValue::from_serde(&self.map.get_sources_content()).unwrap())
+        Ok(serde_wasm_bindgen::to_value(&self.map.get_sources_content()).unwrap())
     }
 
     pub fn getNames(&self) -> Result<JsValue, JsValue> {
-        Ok(JsValue::from_serde(&self.map.get_names()).unwrap())
+        Ok(serde_wasm_bindgen::to_value(&self.map.get_names()).unwrap())
     }
 
     pub fn addName(&mut self, name: &str) -> u32 {
@@ -299,7 +300,7 @@ impl SourceMap {
             .map
             .find_closest_mapping(generated_line, generated_column)
         {
-            Some(mapping) => JsValue::from_serde(&MappingResult::from(&mapping)).unwrap(),
+            Some(mapping) => serde_wasm_bindgen::to_value(&MappingResult::from(&mapping)).unwrap(),
             None => JsValue::NULL,
         }
     }
